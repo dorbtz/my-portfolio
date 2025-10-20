@@ -1,0 +1,284 @@
+/* Tailwind v4 core */
+@import "tailwindcss";
+@import "tailwindcss/preflight";
+@import "tailwindcss/utilities";
+
+/* ================= THEME TOKENS ================= */
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Inter", "Poppins", "Segoe UI", Roboto, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+
+  /* Dark defaults (Thor/space) */
+  --color-bg: 10 13 26;            /* deep midnight navy */
+  --color-ink: 245 247 255;
+
+  --color-accent: 235 29 40;       /* cape red */
+  --color-accent-2: 3 173 233;     /* cerulean */
+
+  --color-gold: 252 230 17;
+  --color-silver: 193 195 197;
+  --color-lightning: 125 249 255;
+
+  --radius-xl: 1.25rem;
+}
+
+/* ================= ROOT & THEME ================= */
+:root {
+  /* One source of truth for header height */
+  --hdr-h: 64px;                     /* matches h-16 */
+  color: rgb(var(--color-ink));
+  background: rgb(var(--color-bg));
+  scroll-behavior: smooth;
+  font-family: var(--font-sans);
+}
+
+/* Light theme (silver/very light gray) */
+[data-theme="light"] {
+  --color-bg: 244 246 248;
+  --color-ink: 27 30 36;
+  --color-accent: 200 23 33;
+  --color-accent-2: 9 132 185;
+}
+
+/* ================= GLOBAL STRUCTURE ================= */
+html, body { overflow-x: hidden; }
+
+/* General content container */
+.wrap { max-width: 72rem; margin-inline: auto; padding-inline: 1rem; }
+@media (min-width: 768px) { .wrap { padding-inline: 1.25rem; } }
+@media (min-width: 1024px) { .wrap { padding-inline: 1.5rem; } }
+
+/* Fluid container used only for Header (separate from .wrap) */
+.nav-wrap{ width:100%; max-width:1400px; margin-inline:auto; padding-inline:clamp(14px,4vw,28px); }
+:root { --hdr-h: 64px; }
+[id]{ scroll-margin-top: calc(var(--hdr-h) + 12px); }
+header{ z-index: 40; }
+
+/* Sections */
+.section { padding-block: 5rem; }
+#hero, .section { position: relative; z-index: 10; } /* sit above visual underlays */
+
+/* Prevent anchors from hiding under the fixed header */
+[id] { scroll-margin-top: calc(var(--hdr-h) + 12px); }
+
+/* Full-bleed helpers */
+.full-bleed { width: 100vw; margin-left: 50%; transform: translateX(-50%); }
+
+/* ================= TYPO & DECOR ================= */
+.gradient-text {
+  background: linear-gradient(90deg, rgb(var(--color-accent)) 0%, rgb(var(--color-accent-2)) 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* Cards (surface) */
+.card {
+  border-radius: var(--radius-xl);
+  backdrop-filter: blur(8px);
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,.12);
+  border: 1px solid rgba(255,255,255,.12);
+  background-color: rgba(255,255,255,.06);
+  transition: box-shadow .2s ease, transform .2s ease;
+}
+[data-theme="light"] .card {
+  border-color: rgba(0,0,0,.07);
+  background-color: rgba(255,255,255,.85);
+}
+
+/* ================= HERO BACKDROP ================= */
+.aurora {
+  position: absolute; inset: -20% -10% auto -10%; height: 60vh; filter: blur(40px);
+  background:
+    radial-gradient(35% 50% at 20% 20%, rgb(var(--color-accent)/.6) 0 40%, transparent 60%),
+    radial-gradient(35% 50% at 80% 30%, rgb(var(--color-accent-2)/.6) 0 40%, transparent 60%),
+    radial-gradient(60% 60% at 50% 80%, rgb(255 255 255 / .25) 0 35%, transparent 70%);
+  opacity: .7; pointer-events: none;
+}
+
+/* ================= REVEAL MOTION ================= */
+.reveal { opacity: 0; transform: translateY(16px); transition: opacity .6s ease, transform .6s ease; }
+.reveal.is-visible { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; } }
+
+/* ================= BUTTONS ================= */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: calc(var(--radius-xl) / 2);
+  padding: .5rem 1rem; border: 1px solid rgba(255,255,255,.18);
+  transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+}
+.btn-primary {
+  border-color: transparent; color: #fff;
+  background: linear-gradient(90deg, rgb(var(--color-accent)), rgb(var(--color-accent-2)));
+  box-shadow: 0 6px 22px rgb(var(--color-accent) / .35);
+}
+.btn-primary:hover { transform: translateY(-1px) scale(1.02); }
+.btn-outline { background: transparent; }
+.btn-outline:hover { transform: translateY(-1px) scale(1.02); }
+.btn-ghost { border-color: transparent; background: transparent; }
+
+/* ================= TITLES ================= */
+.section-title { scroll-margin-top: calc(var(--hdr-h) + 18px); margin-bottom: 1.25rem; }
+.eyebrow { letter-spacing: .18em; text-transform: uppercase; opacity: .7; font-size: .8rem; margin-bottom: .4rem; }
+.title-row { display: flex; align-items: center; gap: .8rem; }
+.title-text { font-weight: 800; line-height: 1.1; font-size: clamp(1.6rem, 2.5vw + 1rem, 2.4rem); }
+.title-accent {
+  flex: 1 1 auto; height: 3px; border-radius: 999px;
+  background: linear-gradient(90deg, rgb(var(--color-accent)), rgb(var(--color-accent-2)));
+  opacity: .6;
+}
+
+/* ================= THOR FX HOOKS ================= */
+.rain-underlay { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+
+.lightning-ambient { display: none; }
+[data-thor="on"] .lightning-ambient {
+  display: block;
+  position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen;
+  background:
+    radial-gradient(40% 40% at 70% 30%, rgb(var(--color-lightning) / .25), transparent 60%),
+    radial-gradient(30% 30% at 30% 70%, rgb(var(--color-accent-2) / .18), transparent 60%);
+  animation: thor-flash 7s infinite;
+  filter: blur(4px) saturate(1.1);
+}
+@keyframes thor-flash {
+  0%, 96%, 100% { opacity: 0; } 97% { opacity: .85; } 98% { opacity: .15; } 99% { opacity: .6; }
+}
+
+/* ================= LAYERS & TOUCH ================= */
+/* nav above everything */
+.storm-overlay { z-index: 35; }
+
+@media (max-width: 767px) {
+  a, button { -webkit-tap-highlight-color: transparent; }
+}
+
+/* keep header controls on one line on md+ */
+@media (min-width: 768px) {
+  header .nav-wrap > .md\\:flex.whitespace-nowrap { white-space: nowrap; }
+}
+
+/* ---------- Thor Hover Affordance ---------- */
+/* fallback if token is missing */
+:root {
+  --color-lightning: 125 249 255; /* cyan-electric fallback */
+}
+
+/* Subtle text glow on actionable items when hovered */
+[data-thor-hover]:where(:hover) {
+  text-shadow: 0 0 8px rgb(var(--color-lightning) / 0.55);
+}
+
+/* Reduce motion: remove glow animation ping if the OS requests it */
+@media (prefers-reduced-motion: reduce) {
+  .animate-ping {
+    animation: none !important;
+  }
+}
+
+/* Project cards focus ring refinement */
+[role="gridcell"]:focus-visible {
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgb(var(--color-lightning) / 0.25);
+}
+
+html:focus-within {
+  scroll-behavior: smooth;
+}
+
+.prose :where(h2,h3){ scroll-margin-top: calc(var(--hdr-h,72px) + 12px); }
+
+/* Case-study headings rhythm */
+.section-head {
+  font-size: clamp(1.25rem, 1.1rem + 1.2vw, 1.75rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.subhead {
+  font-size: clamp(1.05rem, 0.95rem + .6vw, 1.25rem);
+  font-weight: 600;
+}
+
+/* Subtle link style for side info */
+.link {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.link:hover { opacity: .9; }
+
+/* Make lists look nicer in dark */
+ul.list-disc > li::marker { color: rgba(255,255,255,.45); }
+
+/* Header baseline height (used by sticky + scroll padding) */
+:root { --hdr-h: 72px; }
+
+/* Make in-page anchor jumps stop *below* the fixed header */
+html { scroll-padding-top: calc(var(--hdr-h) + 16px); }
+
+/* Utility: keep long content from overflowing the container */
+.content-safe {
+  max-width: 72ch;
+  line-height: 1.7;
+  overflow-wrap: anywhere; /* prevents long links/words from breaking layout */
+}
+
+/* Optional: balance headings & list markers in dark */
+.section-head { font-size: clamp(1.25rem, 1.1rem + 1.2vw, 1.75rem); font-weight: 600; letter-spacing: -0.01em; }
+.subhead     { font-size: clamp(1.05rem, 0.95rem + .6vw, 1.25rem); font-weight: 600; }
+ul.list-disc > li::marker { color: rgba(255,255,255,.45); }
+
+/* ===== Case-study utilities (single source of truth) ===== */
+
+/* Header baseline height (used by sticky + scroll padding) */
+:root { --hdr-h: 72px; }
+
+/* Make in-page anchor jumps stop below the fixed header */
+html { scroll-padding-top: calc(var(--hdr-h) + 16px); }
+
+/* Readability and safe wrapping */
+.content-safe {
+  max-width: 72ch;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+
+/* Card surface */
+.card {
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.03);
+  border-radius: 1rem;
+  padding: 1.25rem;
+}
+
+/* Thin gradient divider */
+.hr-soft {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255,255,255,.35), rgba(255,255,255,.12) 40%, transparent);
+  border: 0;
+}
+
+/* Headings rhythm */
+.section-head {
+  font-size: clamp(1.25rem, 1.1rem + 1.2vw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: -0.0125em;
+}
+.subhead {
+  font-size: clamp(1.05rem, 0.95rem + .6vw, 1.25rem);
+  font-weight: 600;
+}
+
+/* Gentle reveal motion (respects reduced-motion) */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .reveal { animation: rise .5s both; }
+  .reveal-delay-1 { animation-delay: .06s; }
+  .reveal-delay-2 { animation-delay: .12s; }
+  .reveal-delay-3 { animation-delay: .18s; }
+}
+
+/* Marker tone in dark */
+ul.list-disc > li::marker { color: rgba(255,255,255,.45); }
