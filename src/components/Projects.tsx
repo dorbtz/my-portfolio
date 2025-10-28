@@ -1,5 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import ProjectCard from "./ProjectCard";
+import {
+  PROJECTS_GRID_GAP,
+  PROJECTS_GRID_PADDING,
+  PROJECTS_GRID_SPACING,
+  PROJECTS_HEADING_MARGIN,
+  PROJECTS_SECTION_PADDING,
+} from "./projectsTokens";
 import { listProjects } from "../services/projects";
 import type { Project } from "../types/project";
 
@@ -64,11 +71,15 @@ export default function Projects() {
   }, []);
 
   return (
-    <section id="projects" className="py-12 md:py-16">
+    <section id="projects" className={PROJECTS_SECTION_PADDING}>
       <div className="mx-auto max-w-6xl px-4 md:px-6">
-        <header className="mb-6 flex flex-col gap-4 md:mb-8 md:flex-row md:items-end md:justify-between">
+        <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">Projects</h2>
+            <h2
+              className={`${PROJECTS_HEADING_MARGIN} text-2xl font-semibold tracking-tight md:text-3xl`}
+            >
+              Projects
+            </h2>
             <p className="mt-1 text-sm/6 opacity-80">
               Powered by Supabase (with local fallback).
             </p>
@@ -88,7 +99,7 @@ export default function Projects() {
         <div
           ref={gridRef}
           role="grid"
-          className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
+          className={`${PROJECTS_GRID_SPACING} grid grid-cols-1 ${PROJECTS_GRID_GAP} ${PROJECTS_GRID_PADDING} sm:grid-cols-2 lg:grid-cols-3`}
         >
           {filtered.length ? (
             filtered.map((p, i) => <ProjectCard key={p.id} project={p} index={i} />)
