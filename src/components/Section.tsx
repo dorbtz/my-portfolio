@@ -1,7 +1,12 @@
 // src/components/Section.tsx
-import { PropsWithChildren, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
+import type { PropsWithChildren } from "react";
 
-type Props = PropsWithChildren<{ id?: string; className?: string }>;
+type Props = PropsWithChildren<{
+  id?: string;
+  className?: string;
+  label?: string;
+}>;
 
 /**
  * Section
@@ -9,7 +14,7 @@ type Props = PropsWithChildren<{ id?: string; className?: string }>;
  * - Automatically reveals any ".reveal" children on first intersection
  * - Adds a small bottom margin for anchor scrolling comfort via CSS (scroll-margin handled in index.css)
  */
-export default function Section({ id, className = "", children }: Props) {
+export default function Section({ id, className = "", label, children }: Props) {
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -37,7 +42,14 @@ export default function Section({ id, className = "", children }: Props) {
 
   return (
     <section ref={ref} id={id} className={`section ${className}`}>
-      <div className="wrap">{children}</div>
+      <div className="wrap section-inner">
+        {label ? (
+          <p className="section-label" data-section-label>
+            {label}
+          </p>
+        ) : null}
+        {children}
+      </div>
     </section>
   );
 }

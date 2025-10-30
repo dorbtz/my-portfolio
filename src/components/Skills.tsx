@@ -1,97 +1,78 @@
-// src/components/Skills.tsx
-import { useState } from "react";
 import Section from "./Section";
 import Title from "./Title";
 
 type Skill = {
   name: string;
-  level: number;           // 0..100
-  proof?: string | string[];
+  level: number;
+  note: string;
 };
 
 const SKILLS: Skill[] = [
-  { name: "React", level: 90, proof: `// Proof
-function useToggle(){
-  const [v,set] = useState(false);
-  return { v, on: () => set(true), off: () => set(false) }
-}` },
-  { name: "TypeScript", level: 88, proof: ["Type-safe props", "Generics for hooks", "Zod validation"] },
-  { name: "Tailwind", level: 92, proof: ["Design tokens", "v4 migration", "Utility-first systems"] },
-  { name: "Vite", level: 85 },
-  { name: "Playwright", level: 70, proof: ["UI smoke tests", "Visual diffs", "CI run"] },
-  { name: "Node", level: 75, proof: ["API routes", "SSR + edge", "Perf budgets"] },
-];
+  {
+    name: "React",
+    level: 92,
+    note: "Server components, streaming Suspense data, custom hooks, and micro-interactions that feel native.",
+  },
+  {
+    name: "TypeScript",
+    level: 90,
+    note: "Type-safe APIs, discriminated unions, generics for hooks, and Zod-powered runtime validation.",
+  },
+  {
+    name: "Tailwind",
+    level: 94,
+    note: "Design tokens, deeply themed systems, and Tailwind v4 primitives backing component libraries.",
+  },
+  {
+    name: "Vite",
+    level: 86,
+    note: "SSR/SSG pipelines, plugin authoring, instant HMR, and edge-ready deployments.",
+  },
+  {
+    name: "Playwright",
+    level: 74,
+    note: "Visual regression suites, accessibility assertions, and CI smoke tests that guard UX polish.",
+  },
+  {
+    name: "Node",
+    level: 78,
+    note: "API routes, edge middleware, streaming functions, and observability instrumentation.",
+  },
+] as const;
 
 export default function Skills() {
-  const [openIdx, setOpenIdx] = useState<number | null>(null);
-
   return (
-    <Section id="skills" className="section">
-      <Title eyebrow="Skills">Skills</Title>
+    <Section id="skills" label="Skills">
+      <Title
+        className="reveal"
+        eyebrow="Capabilities"
+        description="Engineering depth and design intuition working together from concept to iteration to launch."
+      >
+        Multidisciplinary craft, ready to ship.
+      </Title>
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {SKILLS.map((s, idx) => (
-          <article key={s.name} className="card skill-card">
-            <div className="flex items-baseline justify-between">
-              <h3 className="font-semibold text-xl">{s.name}</h3>
-              <span className="opacity-75">{s.level}%</span>
-            </div>
+      <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+        {SKILLS.map((skill) => (
+          <article key={skill.name} className="card skill-card">
+            <header className="skill-card__header">
+              <h3 className="skill-card__title">{skill.name}</h3>
+            </header>
 
-            <div className="mt-3 h-2 w-full rounded-full bg-[rgba(255,255,255,.08)] overflow-hidden">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-accent to-accent2"
-                style={{ width: `${s.level}%` }}
-              />
-            </div>
-
-            {/* Proof area — only show teaser + button; modal holds code/list */}
-            {s.proof ? (
-              <div className="mt-4">
-                <button
-                  className="btn btn-outline btn-sm"
-                  onClick={() => setOpenIdx(idx)}
-                >
-                  Show proof
-                </button>
+            <div className="skill-card__progress" aria-hidden="true">
+              <div className="skill-card__track">
+                <div
+                  className="skill-card__gauge"
+                  style={{ width: `${skill.level}%` }}
+                />
               </div>
-            ) : null}
+              <span className="skill-card__value">{skill.level}%</span>
+            </div>
+
+            <p className="skill-card__note">{skill.note}</p>
           </article>
         ))}
       </div>
-
-      {/* Modal — simple, keyboard friendly */}
-      {openIdx !== null ? (
-        <div
-          className="fixed inset-0 z-50 grid place-items-center p-4"
-          role="dialog"
-          aria-modal="true"
-          onClick={() => setOpenIdx(null)}
-        >
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div
-            className="relative max-w-2xl w-full card"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="font-semibold text-lg">{SKILLS[openIdx].name} — Proof</h4>
-              <button className="btn btn-outline btn-sm" onClick={() => setOpenIdx(null)}>Close</button>
-            </div>
-
-            {/* Render proof intelligently */}
-            <div className="proof-body">
-              {Array.isArray(SKILLS[openIdx].proof) ? (
-                <ul className="list-disc pl-5 space-y-1 opacity-90">
-                  {SKILLS[openIdx].proof!.map((p, i) => <li key={i}>{p}</li>)}
-                </ul>
-              ) : (
-                <pre className="code-block" aria-label="Code proof">
-                  <code>{SKILLS[openIdx].proof}</code>
-                </pre>
-              )}
-            </div>
-          </div>
-        </div>
-      ) : null}
     </Section>
   );
 }
+
