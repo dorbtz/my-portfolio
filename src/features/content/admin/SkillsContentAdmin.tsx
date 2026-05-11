@@ -29,12 +29,12 @@ import '../../admin-dashboard/styles/admin-dashboard.css';
 import { useSiteContentStore } from '../stores/siteContentStore';
 import { resolveSection } from '../services/siteContentMap';
 import { siteContentDefaults } from '../hooks/siteContentDefaults';
-import { useMode } from '../../../stores/mode';
+import { useMode } from '../../../shared/stores/mode';
 import type {
   SkillDomain,
   FutureRealm,
   FutureIsland,
-} from '../../../data/skills';
+} from '../../skills/data/skills';
 
 // Round 31 — Luffy-mode map editor. Lazy-loaded so the Thor-mode chunk stays
 // small (only loaded when the admin actually toggles into Luffy mode).

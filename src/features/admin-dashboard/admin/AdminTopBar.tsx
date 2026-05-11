@@ -11,9 +11,9 @@
 
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 // (NavLink stays — it's still used for the section nav row.)
-import { useMode } from '../../../stores/mode';
-import { useAuth } from '../../../hooks/useAuth.helpers';
-import { supabase } from '../../../lib/supabase';
+import { useMode } from '../../../shared/stores/mode';
+import { useAuth } from '../../auth/useAuth.helpers';
+import { supabase } from '../../../shared/lib/supabase';
 
 type LinkDef = {
   to: string;

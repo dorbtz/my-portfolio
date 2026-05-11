@@ -19,7 +19,7 @@
  * consumed by the seed script (`scripts/seed-site-content.mjs`) as well.
  */
 
-import { SKILL_DOMAINS, FUTURE_REALMS, FUTURE_ISLANDS } from '../../../data/skills';
+import { SKILL_DOMAINS, FUTURE_REALMS, FUTURE_ISLANDS } from '../../skills/data/skills';
 import type { SiteSection, SiteMode } from '../types';
 
 type DefaultsBag = Record<SiteSection, Record<SiteMode, Record<string, unknown>>>;

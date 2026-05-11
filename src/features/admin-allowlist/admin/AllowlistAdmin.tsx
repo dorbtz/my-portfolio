@@ -13,9 +13,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import AdminTopBar from '../../admin-dashboard/admin/AdminTopBar';
 import AdminPageIcon from '../../admin-dashboard/admin/AdminPageIcon';
-import { useMode } from '../../../stores/mode';
-import { useAuth } from '../../../hooks/useAuth.helpers';
-import { AdminField, AdminInput } from '../../../pages/admin/AdminField';
+import { useMode } from '../../../shared/stores/mode';
+import { useAuth } from '../../auth/useAuth.helpers';
+import { AdminField, AdminInput } from '../../admin-dashboard/admin/AdminField';
 import {
   addAdmin,
   isValidEmail,

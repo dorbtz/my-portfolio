@@ -5,7 +5,7 @@
  * is wrapped in try/catch so a single failing call doesn't blank the
  * whole dashboard — partial degradation is preferred to a hard error.
  */
-import { supabase } from '../../../lib/supabase';
+import { supabase } from '../../../shared/lib/supabase';
 
 const TABLES = ['projects', 'site_content', 'admin_emails', 'messages', 'profiles'] as const;
 export type TableName = (typeof TABLES)[number];

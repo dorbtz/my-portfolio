@@ -18,7 +18,7 @@
  * carries one in memory; we never render or log it). No JWTs.
  */
 
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../shared/lib/supabase';
 
 export type McpStatus = 'ok' | 'degraded' | 'down' | 'pending';
 

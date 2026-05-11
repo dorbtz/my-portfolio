@@ -274,7 +274,7 @@ describe('SkillsTreeEditor — star count contract', () => {
 
   it('every editor realm has a matching position entry exported from SkillsTree.helpers', () => {
     // Round 74 — constants live in SkillsTree.helpers.ts now.
-    const helpersSrc = readSource('src/components/SkillsTree.helpers.ts');
+    const helpersSrc = readSource('src/features/skills/SkillsTree.helpers.ts');
     const realmStars = helpersSrc.match(/export const REALM_STARS:[^=]*=\s*\[([\s\S]*?)\];/);
     const futureStars = helpersSrc.match(/export const FUTURE_STARS:[^=]*=\s*\[([\s\S]*?)\];/);
     expect(realmStars).not.toBeNull();
@@ -286,7 +286,7 @@ describe('SkillsTreeEditor — star count contract', () => {
   });
 
   it('TIER_COLORS is exported from SkillsTree.helpers.ts for editor reuse', () => {
-    const helpersSrc = readSource('src/components/SkillsTree.helpers.ts');
+    const helpersSrc = readSource('src/features/skills/SkillsTree.helpers.ts');
     expect(helpersSrc).toMatch(/export const TIER_COLORS\s*:/);
   });
 });

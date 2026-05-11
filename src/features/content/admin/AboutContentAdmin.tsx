@@ -13,7 +13,7 @@ import ContentAdminShell from './ContentAdminShell';
 import { useContentEditor } from './useContentEditor';
 import { SaveBar } from './HeroContentAdmin';
 import InlineEdit from './InlineEdit';
-import { useMode } from '../../../stores/mode';
+import { useMode } from '../../../shared/stores/mode';
 import type { SiteMode } from '../types';
 
 // Panel index → modifier class.  Mirrors the live About section so the

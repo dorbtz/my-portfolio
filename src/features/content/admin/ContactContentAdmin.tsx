@@ -15,9 +15,9 @@ import ContentAdminShell from './ContentAdminShell';
 import { useContentEditor } from './useContentEditor';
 import { SaveBar } from './HeroContentAdmin';
 import InlineEdit from './InlineEdit';
-import { useMode } from '../../../stores/mode';
+import { useMode } from '../../../shared/stores/mode';
 import type { SiteMode } from '../types';
-import { uploadContactMedia } from '../../../services/storage';
+import { uploadContactMedia } from '../../projects/services/storage';
 
 // ---------------------------------------------------------------------------
 // Default media — bundled assets used as a fallback when no admin upload

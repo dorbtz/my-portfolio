@@ -7,7 +7,7 @@
  * Picks a Marvel .ico in Thor mode and a One-Piece .ico in Luffy mode.
  */
 
-import { useMode } from '../../../stores/mode';
+import { useMode } from '../../../shared/stores/mode';
 
 type Section =
   | 'projects'

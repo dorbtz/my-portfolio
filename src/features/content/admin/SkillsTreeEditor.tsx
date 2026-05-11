@@ -34,13 +34,13 @@ import {
   REALM_STARS,
   FUTURE_STARS,
   TIER_COLORS,
-} from '../../../components/SkillsTree.helpers';
+} from '../../skills/SkillsTree.helpers';
 import type {
   SkillDomain,
   SkillLeaf,
   FutureRealm,
   FutureIsland,
-} from '../../../data/skills';
+} from '../../skills/data/skills';
 import { upsertSiteContentMany } from '../services/siteContent';
 import { useSiteContentStore } from '../stores/siteContentStore';
 import InlineEdit from './InlineEdit';

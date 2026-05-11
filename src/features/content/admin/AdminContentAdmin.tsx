@@ -28,7 +28,7 @@ import { useMemo } from 'react';
 import ContentAdminShell from './ContentAdminShell';
 import { SaveBar } from './HeroContentAdmin';
 import { useContentEditor } from './useContentEditor';
-import { useMode } from '../../../stores/mode';
+import { useMode } from '../../../shared/stores/mode';
 import { ADMIN_DEFAULTS } from '../hooks/siteContentDefaults';
 import type { SiteMode } from '../types';
 

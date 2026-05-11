@@ -28,14 +28,14 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import { ISLAND_SHAPES } from '../../../components/grandLineIslandShapes';
+import { ISLAND_SHAPES } from '../../skills/grandLineIslandShapes';
 import {
   FUTURE_ISLANDS as CANON_FUTURE_ISLANDS,
   type SkillDomain,
   type SkillLeaf,
   type FutureIsland,
   type FutureRealm,
-} from '../../../data/skills';
+} from '../../skills/data/skills';
 import { upsertSiteContentMany } from '../services/siteContent';
 import { useSiteContentStore } from '../stores/siteContentStore';
 import InlineEdit from './InlineEdit';

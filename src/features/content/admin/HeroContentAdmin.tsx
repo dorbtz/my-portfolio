@@ -16,8 +16,8 @@ import ContentAdminShell from './ContentAdminShell';
 import { useContentEditor } from './useContentEditor';
 import RotatingListEditor from './RotatingListEditor';
 import InlineEdit from './InlineEdit';
-import { AdminField } from '../../../pages/admin/AdminField';
-import { useMode } from '../../../stores/mode';
+import { AdminField } from '../../admin-dashboard/admin/AdminField';
+import { useMode } from '../../../shared/stores/mode';
 import type { SiteMode } from '../types';
 
 // ---------------------------------------------------------------------------

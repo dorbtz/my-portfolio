@@ -30,9 +30,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import AdminTopBar from './AdminTopBar';
-import { useMode } from '../../../stores/mode';
-import { useAuth } from '../../../hooks/useAuth.helpers';
-import { getProfile, type Profile } from '../../../services/profiles';
+import { useMode } from '../../../shared/stores/mode';
+import { useAuth } from '../../auth/useAuth.helpers';
+import { getProfile, type Profile } from '../../auth/services/profiles';
 import {
   formatRelative,
   getDashboardCounts,

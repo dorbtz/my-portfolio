@@ -1,23 +1,23 @@
 // src/App.tsx
 import { useEffect } from 'react';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import RainbowRain from './components/RainbowRain';
-import ThorEngine from './components/ThorEngine';
-import StormFX from './components/StormFX';
-import Cursor from './components/Cursor';
+import Header from './features/chrome/Header';
+import Footer from './features/chrome/Footer';
+import RainbowRain from './features/effects/RainbowRain';
+import ThorEngine from './features/effects/ThorEngine';
+import StormFX from './features/effects/StormFX';
+import Cursor from './features/effects/Cursor';
 // Bifrost intro loader removed (Round 37) — site lands directly on the
 // homepage with no overlay so visitors see the hero immediately.
-// import BifrostLoader from './components/BifrostLoader';
-import CrossFandomBackdrop from './components/CrossFandomBackdrop';
-import CinematicOverlay from './components/CinematicOverlay';
-import LuffyImageRain from './components/LuffyImageRain';
-import SmoothScrollProvider from './providers/SmoothScrollProvider';
-import { AuthProvider } from './hooks/useAuth';
+// import BifrostLoader from './features/effects/BifrostLoader';
+import CrossFandomBackdrop from './features/effects/CrossFandomBackdrop';
+import CinematicOverlay from './features/effects/CinematicOverlay';
+import LuffyImageRain from './features/effects/LuffyImageRain';
+import SmoothScrollProvider from './shared/providers/SmoothScrollProvider';
+import { AuthProvider } from './features/auth/useAuth';
 import { BrowserRouter } from 'react-router-dom';
 import AppRoutes from './routes';
-import { useModeStore } from './stores/mode';
-import { initEasterEggs } from './lib/easterEggs';
+import { useModeStore } from './shared/stores/mode';
+import { initEasterEggs } from './features/effects/lib/easterEggs';
 
 /**
  * ModeBoot — runs once; subscribes to mode store and writes

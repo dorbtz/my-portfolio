@@ -24,19 +24,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AdminTopBar from '../../admin-dashboard/admin/AdminTopBar';
 import AdminPageIcon from '../../admin-dashboard/admin/AdminPageIcon';
-import { useMode } from '../../../stores/mode';
-import { useAuth } from '../../../hooks/useAuth.helpers';
-import { AdminField, AdminInput } from '../../../pages/admin/AdminField';
-import { DossierCard } from '../../../pages/admin/DossierCard';
+import { useMode } from '../../../shared/stores/mode';
+import { useAuth } from '../../auth/useAuth.helpers';
+import { AdminField, AdminInput } from '../../admin-dashboard/admin/AdminField';
+import { DossierCard } from '../../admin-dashboard/admin/DossierCard';
 import {
   getProfile,
   upsertProfile,
   isUsernameAvailable,
   changeOwnEmail,
   type Profile,
-} from '../../../services/profiles';
-import { setOwnPassword, MIN_PASSWORD_LENGTH } from '../../../services/auth';
-import { uploadAvatar } from '../../../services/storage';
+} from '../../auth/services/profiles';
+import { setOwnPassword, MIN_PASSWORD_LENGTH } from '../../auth/services/auth';
+import { uploadAvatar } from '../../projects/services/storage';
 import '../../admin-dashboard/styles/admin-dashboard.css';
 
 type SaveState = { kind: 'idle' } | { kind: 'saving' } | { kind: 'ok'; msg: string } | { kind: 'err'; msg: string };

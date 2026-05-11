@@ -15,7 +15,7 @@ import type { ReactNode } from 'react';
 import AdminTopBar from '../../admin-dashboard/admin/AdminTopBar';
 import AdminPageIcon from '../../admin-dashboard/admin/AdminPageIcon';
 import '../../admin-dashboard/styles/admin-dashboard.css';
-import { useMode } from '../../../stores/mode';
+import { useMode } from '../../../shared/stores/mode';
 
 /** Section names accepted by ContentAdminShell — these mirror the
     sub-page icon mappings exposed by AdminPageIcon (Round 28). */

@@ -4,7 +4,7 @@
  * Service layer for the contact-form inbox. All operations are RLS-gated
  * server-side via the public.is_admin() function from migration 0007.
  */
-import { supabase } from '../../../lib/supabase';
+import { supabase } from '../../../shared/lib/supabase';
 
 export type MessageMode = 'thor' | 'gear5';
 

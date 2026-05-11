@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import AdminTopBar from '../../admin-dashboard/admin/AdminTopBar';
 import AdminPageIcon from '../../admin-dashboard/admin/AdminPageIcon';
 import '../../admin-dashboard/styles/admin-dashboard.css';
-import { useMode } from '../../../stores/mode';
+import { useMode } from '../../../shared/stores/mode';
 import { useSiteContentStore } from '../stores/siteContentStore';
 
 const CARDS = [

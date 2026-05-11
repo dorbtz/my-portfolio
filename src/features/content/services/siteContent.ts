@@ -10,7 +10,7 @@
  * Vitest/rolldown's SSR transform on the test runtime).
  */
 
-import { supabase } from '../../../lib/supabase';
+import { supabase } from '../../../shared/lib/supabase';
 import type { SiteContentRow, SiteMode, SiteSection } from '../types';
 
 // Re-export the pure transforms from the isolated module.

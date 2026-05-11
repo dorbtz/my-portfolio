@@ -9,7 +9,7 @@
  * Performance: the count + last-edit fetch fans out as Promise.all so
  * the dashboard hydrates in a single round-trip wall-clock.
  */
-import { supabase } from '../../../lib/supabase';
+import { supabase } from '../../../shared/lib/supabase';
 
 // Round 74 — narrow row shapes so dashboardStats.ts is `any`-free. Each
 // shape mirrors the columns selected in the corresponding query above.

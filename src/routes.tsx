@@ -1,20 +1,20 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import Login from "./pages/admin/Login";
-import AdminRoute from "./components/AdminRoute";
-import Projects from "./components/Projects";
-import ProjectsPage from "./pages/Projects";
+import Login from "./features/auth/pages/Login";
+import AdminRoute from "./features/auth/AdminRoute";
+import Projects from "./features/projects/Projects";
+import ProjectsPage from "./features/projects/pages/ProjectsPage";
 
-import Hero from "./components/Hero";
-import About from "./components/About";
-import Skills from "./components/Skills";
-import Contact from "./components/Contact";
-import ProjectDetail from "./pages/projects/ProjectDetail";
-import SectionDivider from "./components/SectionDivider";
+import Hero from "./features/hero/Hero";
+import About from "./features/about/About";
+import Skills from "./features/skills/Skills";
+import Contact from "./features/contact/Contact";
+import ProjectDetail from "./features/projects/pages/ProjectDetail";
+import SectionDivider from "./features/effects/SectionDivider";
 // Round 20: mount once at the routes level so every cross-route jump
 // (admin card click, breadcrumb, sign-out redirect, etc.) starts at the
 // top of the destination page instead of mid-scroll.
-import ScrollToTop from "./components/ScrollToTop";
+import ScrollToTop from "./features/chrome/ScrollToTop";
 
 // Site-content CMS — lazy-loaded so it doesn't bloat the homepage bundle.
 // Each admin page is its own chunk; Suspense fallback is a tiny inline message.
@@ -29,7 +29,7 @@ const ContactContentAdmin  = lazy(() => import("./features/content/admin/Contact
 const AdminContentAdmin    = lazy(() => import("./features/content/admin/AdminContentAdmin"));
 
 // Round 14 admin hub + side panels — also lazy-loaded.
-const ProjectsAdmin        = lazy(() => import("./pages/admin/ProjectsAdmin"));
+const ProjectsAdmin        = lazy(() => import("./features/projects/admin/ProjectsAdmin"));
 const AdminDashboard       = lazy(() => import("./features/admin-dashboard/admin/AdminDashboard"));
 const MessagesAdmin        = lazy(() => import("./features/admin-messages/admin/MessagesAdmin"));
 const AllowlistAdmin       = lazy(() => import("./features/admin-allowlist/admin/AllowlistAdmin"));

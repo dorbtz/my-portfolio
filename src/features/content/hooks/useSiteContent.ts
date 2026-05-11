@@ -24,7 +24,7 @@
  */
 
 import { useEffect, useMemo, useRef } from 'react';
-import { useMode } from '../../../stores/mode';
+import { useMode } from '../../../shared/stores/mode';
 import { useSiteContentStore } from '../stores/siteContentStore';
 import { listSiteContent, getSiteContentMap, resolveSection } from '../services/siteContent';
 import { siteContentDefaults } from './siteContentDefaults';

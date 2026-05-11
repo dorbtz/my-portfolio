@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import AdminTopBar from '../../admin-dashboard/admin/AdminTopBar';
 import AdminPageIcon from '../../admin-dashboard/admin/AdminPageIcon';
-import { useMode } from '../../../stores/mode';
+import { useMode } from '../../../shared/stores/mode';
 import { formatRelative } from '../../admin-dashboard/services/dashboardStats';
 import {
   deleteMessage,

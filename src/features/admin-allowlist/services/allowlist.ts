@@ -13,8 +13,8 @@
  * src/services/adminAllowlist.ts so the magic-link gate sees the change
  * immediately.
  */
-import { supabase } from '../../../lib/supabase';
-import { clearAdminAllowlistCache } from '../../../services/adminAllowlist';
+import { supabase } from '../../../shared/lib/supabase';
+import { clearAdminAllowlistCache } from '../../auth/services/adminAllowlist';
 
 export type AdminEmailRow = { email: string; previous_emails?: string[] };
 

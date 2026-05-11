@@ -196,7 +196,7 @@ describe('SkillsMapEditor — island count contract', () => {
   });
 
   it('every editor island has a matching ISLAND_SHAPES entry', () => {
-    const shapesSrc = readSource('src/components/grandLineIslandShapes.ts');
+    const shapesSrc = readSource('src/features/skills/grandLineIslandShapes.ts');
     function slugify(name: string) {
       return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
     }
