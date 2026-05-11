@@ -1,72 +1,212 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Mjolnir hammer beneath Luffy's straw hat">
   <title>Thor x Luffy portfolio mark</title>
 
-  <!-- ============================================================
-       MJOLNIR (drawn first so the hat sits on top of it)
-       Dark Asgardian midnight + lighter bevels for legibility on
-       light browser-tab backgrounds. The hammer silhouette is the
-       primary anchor at 16x16; the lightning fork in the centre is
-       the "Thor" semantic and disappears gracefully at small sizes.
-       ============================================================ -->
+  <defs>
+    <!-- ============ STRAW HAT GRADIENTS ============ -->
+    <linearGradient id="strawCrown" x1="0.15" y1="0" x2="0.85" y2="1">
+      <stop offset="0%" stop-color="#fde29a"/>
+      <stop offset="35%" stop-color="#f0c668"/>
+      <stop offset="100%" stop-color="#a8843d"/>
+    </linearGradient>
+    <linearGradient id="strawBrim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ecc068"/>
+      <stop offset="55%" stop-color="#c89542"/>
+      <stop offset="100%" stop-color="#7e5a28"/>
+    </linearGradient>
+    <linearGradient id="strawBrimUnder" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6b4d22"/>
+      <stop offset="100%" stop-color="#2b1c0a"/>
+    </linearGradient>
 
-  <!-- Hammer head -->
-  <rect x="22" y="46" width="56" height="26" rx="2.5" fill="#1a1f33"/>
+    <!-- ============ RIBBON GRADIENT ============ -->
+    <linearGradient id="ribbon" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8a1418"/>
+      <stop offset="22%" stop-color="#d23036"/>
+      <stop offset="50%" stop-color="#ef5258"/>
+      <stop offset="78%" stop-color="#c3262b"/>
+      <stop offset="100%" stop-color="#4a0a0d"/>
+    </linearGradient>
 
-  <!-- Bevel — top inner highlight -->
-  <rect x="24" y="48" width="52" height="3" rx="1.2" fill="#4a5278" opacity="0.55"/>
-  <!-- Bevel — bottom inner shadow -->
-  <rect x="24" y="68" width="52" height="2.5" rx="1" fill="#000" opacity="0.35"/>
-  <!-- Vertical divider — splits the head into two engraved panels -->
-  <line x1="50" y1="48" x2="50" y2="70" stroke="#000" stroke-width="1.2" opacity="0.45"/>
+    <!-- ============ MJOLNIR GRADIENTS ============ -->
+    <linearGradient id="hammerHead" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5a6388"/>
+      <stop offset="14%" stop-color="#2b3252"/>
+      <stop offset="55%" stop-color="#13182a"/>
+      <stop offset="100%" stop-color="#070a14"/>
+    </linearGradient>
+    <linearGradient id="hammerFace" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#262d4a"/>
+      <stop offset="100%" stop-color="#0a0e1c"/>
+    </linearGradient>
+    <linearGradient id="handle" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0d1122"/>
+      <stop offset="45%" stop-color="#3d4564"/>
+      <stop offset="100%" stop-color="#0a0d1a"/>
+    </linearGradient>
+    <radialGradient id="pommel" cx="0.4" cy="0.3" r="0.75">
+      <stop offset="0%" stop-color="#7a83b8"/>
+      <stop offset="55%" stop-color="#2b3252"/>
+      <stop offset="100%" stop-color="#070a14"/>
+    </radialGradient>
 
-  <!-- Lightning fork engraved in the centre of the head -->
-  <path d="M 49 52 L 46 60 L 51 60 L 48 67"
-        stroke="#eed87a" stroke-width="2.4" stroke-linecap="round"
-        stroke-linejoin="round" fill="none"/>
+    <!-- Lightning bolt — gold core wrapped in white halo (no SVG filter; built from stacked paths so it rasterizes cleanly in favicon contexts) -->
+    <linearGradient id="boltCore" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff3b0"/>
+      <stop offset="60%" stop-color="#eed87a"/>
+      <stop offset="100%" stop-color="#b88a1a"/>
+    </linearGradient>
+  </defs>
 
-  <!-- Handle grip — narrow band where head meets shaft -->
-  <rect x="42" y="72" width="16" height="4" rx="1" fill="#1a1f33"/>
+  <!-- ====================================================================
+       MJOLNIR (drawn first so the hat overlaps it from above)
+       ==================================================================== -->
 
-  <!-- Handle shaft -->
-  <rect x="45" y="76" width="10" height="14" rx="1.5" fill="#2a3046"/>
-  <!-- Cross-wrap detail (omitted at small sizes — too fine) -->
-  <line x1="45" y1="80" x2="55" y2="80" stroke="#000" stroke-width="0.8" opacity="0.5"/>
-  <line x1="45" y1="84" x2="55" y2="84" stroke="#000" stroke-width="0.8" opacity="0.5"/>
+  <!-- Head — main block + chiseled bevels -->
+  <rect x="18" y="43" width="64" height="29" rx="3" fill="url(#hammerHead)"/>
 
-  <!-- Pommel -->
-  <ellipse cx="50" cy="91" rx="6" ry="2.5" fill="#1a1f33"/>
+  <!-- Engraved inset face panel -->
+  <rect x="22" y="47" width="56" height="21" rx="1.6" fill="url(#hammerFace)"/>
+  <!-- Inset top-edge shadow (carved-in look) -->
+  <rect x="22" y="47" width="56" height="1" fill="#000" opacity="0.6"/>
+  <!-- Inset bottom-edge highlight -->
+  <rect x="22" y="67" width="56" height="0.9" fill="#6a72a0" opacity="0.55"/>
+  <!-- Inset left-edge shadow -->
+  <rect x="22" y="47" width="1" height="21" fill="#000" opacity="0.45"/>
+  <!-- Inset right-edge highlight -->
+  <rect x="77" y="47" width="1" height="21" fill="#6a72a0" opacity="0.4"/>
+
+  <!-- Outer head top highlight (catches Asgardian sky-light) -->
+  <rect x="20" y="43" width="60" height="1.8" rx="0.9" fill="#7a83b8" opacity="0.7"/>
+  <!-- Outer head bottom shadow -->
+  <rect x="20" y="70.5" width="60" height="1.4" rx="0.7" fill="#000" opacity="0.55"/>
+
+  <!-- Central chiseled divider -->
+  <line x1="50" y1="47" x2="50" y2="68" stroke="#000" stroke-width="1.5" opacity="0.65"/>
+  <line x1="50.7" y1="47" x2="50.7" y2="68" stroke="#6a72a0" stroke-width="0.5" opacity="0.45"/>
+
+  <!-- Lightning bolt: 3-pass build (outer glow halo → mid halo → bright core) -->
+  <path d="M 49 49.5 L 44 60 L 50 60 L 46.5 68"
+        stroke="#eed87a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"
+        fill="none" opacity="0.22"/>
+  <path d="M 49 49.5 L 44 60 L 50 60 L 46.5 68"
+        stroke="#fff3b0" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"
+        fill="none" opacity="0.5"/>
+  <path d="M 49 49.5 L 44 60 L 50 60 L 46.5 68"
+        stroke="url(#boltCore)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"
+        fill="none"/>
+
+  <!-- Rune engravings on hammer head (Thurisaz, Raidho) -->
+  <text x="32" y="64.5" font-size="6.2" font-weight="900" font-family="serif"
+        fill="#6a72a0" opacity="0.55" text-anchor="middle">ᚦ</text>
+  <text x="68" y="64.5" font-size="6.2" font-weight="900" font-family="serif"
+        fill="#6a72a0" opacity="0.55" text-anchor="middle">ᚱ</text>
+
+  <!-- Handle grip band (collar where shaft meets head) -->
+  <rect x="40" y="72" width="20" height="4.5" rx="1.2" fill="#13182a"/>
+  <rect x="40" y="72" width="20" height="1.2" rx="0.6" fill="#5a6388" opacity="0.65"/>
+  <rect x="40" y="75.7" width="20" height="0.8" rx="0.4" fill="#000" opacity="0.5"/>
+
+  <!-- Handle shaft (leather-wrapped) -->
+  <rect x="44.5" y="76.5" width="11" height="14" rx="1.7" fill="url(#handle)"/>
+  <!-- Wrap binding lines (alternating shadow + highlight pairs) -->
+  <line x1="44.5" y1="79.5" x2="55.5" y2="79.5" stroke="#000" stroke-width="0.9" opacity="0.7"/>
+  <line x1="44.5" y1="80.1" x2="55.5" y2="80.1" stroke="#6a72a0" stroke-width="0.4" opacity="0.55"/>
+  <line x1="44.5" y1="82.7" x2="55.5" y2="82.7" stroke="#000" stroke-width="0.9" opacity="0.7"/>
+  <line x1="44.5" y1="83.3" x2="55.5" y2="83.3" stroke="#6a72a0" stroke-width="0.4" opacity="0.55"/>
+  <line x1="44.5" y1="86" x2="55.5" y2="86" stroke="#000" stroke-width="0.9" opacity="0.7"/>
+  <line x1="44.5" y1="86.6" x2="55.5" y2="86.6" stroke="#6a72a0" stroke-width="0.4" opacity="0.55"/>
+  <!-- Side highlight stripe (vertical) -->
+  <rect x="45.2" y="77" width="0.9" height="13" rx="0.45" fill="#6a72a0" opacity="0.4"/>
+
+  <!-- Pommel — metallic disc with off-axis radial highlight -->
+  <ellipse cx="50" cy="91.5" rx="7" ry="3.2" fill="url(#pommel)"/>
+  <ellipse cx="48.5" cy="90.4" rx="3" ry="0.9" fill="#a8b1e0" opacity="0.55"/>
+  <ellipse cx="50" cy="93.6" rx="6" ry="0.9" fill="#000" opacity="0.45"/>
 
 
-  <!-- ============================================================
-       STRAW HAT
-       Two parts: rounded dome (crown) + flat wide brim.
-       Warm tan with darker shading band along the brim's underside.
-       The red ribbon sits between crown and brim and gives the iconic
-       "Luffy" colour cue.
-       ============================================================ -->
+  <!-- ====================================================================
+       STRAW HAT (overlaps the hammer head)
+       ==================================================================== -->
 
-  <!-- Brim — wide flat ellipse-like shape sitting above the hammer head -->
-  <path d="M 6 36 Q 50 26 94 36 Q 88 44 50 44 Q 12 44 6 36 Z"
-        fill="#e6b95a"/>
-  <!-- Brim underside shadow -->
-  <path d="M 8 38 Q 50 33 92 38 Q 88 43 50 43.5 Q 12 43 8 38 Z"
-        fill="#a5803a" opacity="0.4"/>
-  <!-- Brim top highlight -->
-  <path d="M 10 35 Q 50 30 90 35"
-        stroke="#fae4a5" stroke-width="1.3" stroke-linecap="round" fill="none" opacity="0.85"/>
+  <!-- Cast shadow on the hammer head, under the brim -->
+  <ellipse cx="50" cy="45.5" rx="42" ry="2.8" fill="#000" opacity="0.45"/>
 
-  <!-- Red ribbon wrapping the crown's base -->
-  <rect x="30" y="29" width="40" height="6" fill="#c3262b"/>
-  <rect x="30" y="29" width="40" height="1.5" fill="#fff" opacity="0.25"/>
-  <rect x="30" y="33.5" width="40" height="1.5" fill="#000" opacity="0.25"/>
+  <!-- Brim — wide flat ellipse-like form -->
+  <path d="M 4 36 Q 50 23 96 36 Q 90 45 50 45.2 Q 10 45 4 36 Z" fill="url(#strawBrim)"/>
 
-  <!-- Crown — rounded dome sitting on top of the ribbon -->
-  <path d="M 30 30 Q 30 6 50 6 Q 70 6 70 30 Z"
-        fill="#f0c668"/>
-  <!-- Crown highlight (woven straw glint) -->
-  <path d="M 35 26 Q 38 14 50 11"
-        stroke="#fcdf94" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.8"/>
-  <!-- Crown shadow inside -->
-  <path d="M 60 26 Q 64 16 56 10"
-        stroke="#a5803a" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.55"/>
+  <!-- Brim underside — visible where it curves under -->
+  <path d="M 7 38 Q 50 32 93 38 Q 88 44.5 50 45 Q 12 44.5 7 38 Z"
+        fill="url(#strawBrimUnder)" opacity="0.55"/>
+
+  <!-- Brim top highlight rim — strong primary rim-light -->
+  <path d="M 9 34.2 Q 50 26.5 91 34.2"
+        stroke="#fdeab5" stroke-width="1.4" stroke-linecap="round" fill="none" opacity="0.95"/>
+  <!-- Brim top highlight rim — secondary thinner sheen -->
+  <path d="M 18 35.6 Q 50 30.5 82 35.6"
+        stroke="#fff5d0" stroke-width="0.55" stroke-linecap="round" fill="none" opacity="0.7"/>
+
+  <!-- Brim woven-straw texture: radiating arcs -->
+  <g stroke="#7e5a28" stroke-width="0.45" fill="none" opacity="0.4">
+    <path d="M 12 39 Q 22 36.5 30 39"/>
+    <path d="M 28 39.5 Q 38 37 46 39.5"/>
+    <path d="M 50 39.5 Q 58 37 66 39.5"/>
+    <path d="M 64 39.5 Q 74 36.5 84 39.5"/>
+    <path d="M 88 39 Q 92 38 96 39"/>
+  </g>
+  <g stroke="#7e5a28" stroke-width="0.35" fill="none" opacity="0.3">
+    <path d="M 14 41 Q 26 39.5 32 41"/>
+    <path d="M 66 41 Q 76 39.5 86 41"/>
+  </g>
+
+  <!-- Red ribbon (drawn between brim + crown, slight 3D fold) -->
+  <path d="M 28 30 L 72 30 L 72 35.6 Q 50 33.5 28 35.6 Z" fill="url(#ribbon)"/>
+  <!-- Ribbon top edge bright highlight -->
+  <line x1="29" y1="30" x2="71" y2="30" stroke="#ff7d85" stroke-width="0.55" opacity="0.75"/>
+  <!-- Ribbon bottom shadow trace -->
+  <path d="M 28 35.6 Q 50 33.7 72 35.6"
+        stroke="#3a080b" stroke-width="0.55" fill="none" opacity="0.8"/>
+  <!-- Subtle fold creases -->
+  <line x1="37" y1="30.2" x2="37" y2="35.2" stroke="#3a080b" stroke-width="0.4" opacity="0.4"/>
+  <line x1="63" y1="30.2" x2="63" y2="35.2" stroke="#3a080b" stroke-width="0.4" opacity="0.4"/>
+  <line x1="50" y1="30.2" x2="50" y2="34.8" stroke="#ff9398" stroke-width="0.3" opacity="0.35"/>
+
+  <!-- Hat crown — domed top -->
+  <path d="M 28 30 Q 28 4 50 4 Q 72 4 72 30 Z" fill="url(#strawCrown)"/>
+
+  <!-- Crown vertical straw lines (follow the dome curve) -->
+  <g stroke="#a8843d" stroke-width="0.5" fill="none" opacity="0.4">
+    <path d="M 33 28 Q 33 14 40 6.5"/>
+    <path d="M 38 28 Q 38 12 45 5"/>
+    <path d="M 50 28 Q 50 9 50 4"/>
+    <path d="M 62 28 Q 62 12 55 5"/>
+    <path d="M 67 28 Q 67 14 60 6.5"/>
+  </g>
+  <!-- Crown horizontal weave (very faint, breaks up flat fill) -->
+  <g stroke="#fde29a" stroke-width="0.32" fill="none" opacity="0.32">
+    <path d="M 31 14 Q 50 11.5 69 14"/>
+    <path d="M 29 21 Q 50 18 71 21"/>
+  </g>
+  <!-- Crown horizontal weave shadow companion -->
+  <g stroke="#7e5a28" stroke-width="0.32" fill="none" opacity="0.32">
+    <path d="M 31 15.4 Q 50 12.9 69 15.4"/>
+    <path d="M 29 22.4 Q 50 19.4 71 22.4"/>
+  </g>
+
+  <!-- Primary woven-straw highlight stroke (upper-left light catch) -->
+  <path d="M 33 26 Q 36 14 47 7"
+        stroke="#fff3b9" stroke-width="2.1" stroke-linecap="round" fill="none" opacity="0.85"/>
+  <!-- Secondary highlight (thinner, hotter) -->
+  <path d="M 34 23.5 Q 36 16 44 10"
+        stroke="#fff8d6" stroke-width="0.8" stroke-linecap="round" fill="none" opacity="0.7"/>
+
+  <!-- Crown right-side shadow stroke -->
+  <path d="M 64 28 Q 67 18 60 8"
+        stroke="#6b4d22" stroke-width="1.1" stroke-linecap="round" fill="none" opacity="0.55"/>
+  <!-- Crown right-side deeper shadow -->
+  <path d="M 67 26 Q 69 18 64 10"
+        stroke="#3d2a13" stroke-width="0.55" stroke-linecap="round" fill="none" opacity="0.4"/>
+
+  <!-- Apex specular -->
+  <ellipse cx="44" cy="9" rx="3.3" ry="1.6" fill="#fff8d6" opacity="0.65"/>
+  <ellipse cx="43" cy="8.5" rx="1.5" ry="0.7" fill="#ffffff" opacity="0.45"/>
 </svg>
