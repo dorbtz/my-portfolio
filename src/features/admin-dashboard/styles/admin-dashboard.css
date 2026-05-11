@@ -1,0 +1,1873 @@
+/*
+ * src/features/admin-dashboard/styles/admin-dashboard.css
+ *
+ * Styles unique to the new admin landing + side panels (dashboard,
+ * messages, allowlist, health). Imported only by these lazy chunks so
+ * they don't enter the main CSS bundle and we stay under the 37 KB gz cap.
+ *
+ * Theming is mode-aware through `.admin-shell--thor` / `.admin-shell--manga`
+ * scopes — same convention as the existing admin form primitives.
+ */
+
+/* ===========================================================================
+ * Stat tiles row
+ * ========================================================================= */
+.admin-stat-row{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:.85rem;
+  margin-bottom:1.5rem;
+}
+.admin-stat{
+  padding:.85rem 1rem;
+  border-radius:12px;
+  display:flex;
+  flex-direction:column;
+  gap:.2rem;
+}
+.admin-stat__label{
+  font-family:var(--font-display);
+  font-size:.7rem;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  opacity:.7;
+}
+.admin-stat__value{
+  font-size:1.65rem;
+  font-weight:700;
+  line-height:1.1;
+  font-family:var(--font-display);
+}
+.admin-stat__hint{
+  font-size:.72rem;
+  opacity:.65;
+}
+.admin-shell--thor .admin-stat{
+  background:rgba(7,16,30,.55);
+  border:1px solid rgba(118,207,255,.22);
+}
+.admin-shell--thor .admin-stat__value{ color:#f0d77a; }
+.admin-shell--manga .admin-stat{
+  background:#fffaef;
+  border:2.5px solid #1a0d05;
+  box-shadow:3px 3px 0 #1a0d05;
+}
+.admin-shell--manga .admin-stat__value{ color:#d11b1b; }
+
+/* ===========================================================================
+ * Dashboard layout — feature cards + activity sidebar
+ * ========================================================================= */
+.admin-dash-grid{
+  display:grid;
+  gap:1rem;
+  grid-template-columns:1fr;
+}
+@media (min-width:900px){
+  .admin-dash-grid{ grid-template-columns:2fr 1fr; }
+}
+
+.admin-dash-cards{
+  display:grid;
+  gap:.85rem;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+}
+.admin-dash-card{
+  padding:1rem;
+  border-radius:14px;
+  text-decoration:none;
+  display:flex;
+  flex-direction:column;
+  gap:.4rem;
+  transition:transform .15s ease, opacity .15s ease;
+}
+.admin-dash-card:hover{ transform:translateY(-2px); opacity:.95; }
+.admin-dash-card__icon{ font-size:1.6rem; line-height:1; }
+.admin-dash-card__title{
+  font-family:var(--font-display);
+  font-size:1rem;
+  margin:0;
+  letter-spacing:.04em;
+}
+.admin-dash-card__desc{
+  font-size:.85rem;
+  opacity:.75;
+  margin:0;
+  line-height:1.35;
+}
+.admin-dash-card__cta{
+  font-size:.72rem;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  opacity:.75;
+  margin-top:auto;
+}
+
+/* ===========================================================================
+ * Activity feed
+ * ========================================================================= */
+.admin-activity{
+  padding:1rem;
+  border-radius:14px;
+  display:flex;
+  flex-direction:column;
+  gap:.6rem;
+  max-height:420px;
+  overflow-y:auto;
+}
+.admin-activity__header{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:.5rem;
+}
+.admin-activity__title{
+  font-family:var(--font-display);
+  font-size:.95rem;
+  margin:0;
+  letter-spacing:.04em;
+}
+.admin-activity__list{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  gap:.5rem;
+}
+.admin-activity__item{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:.55rem;
+  align-items:start;
+  padding:.5rem .6rem;
+  border-radius:8px;
+}
+.admin-activity__icon{ font-size:1.05rem; line-height:1.2; }
+.admin-activity__main{ display:flex; flex-direction:column; gap:.1rem; min-width:0; }
+.admin-activity__main strong{ font-size:.85rem; font-weight:600; word-break:break-word; }
+.admin-activity__main span{ font-size:.72rem; opacity:.65; }
+.admin-activity__time{ font-size:.7rem; opacity:.7; white-space:nowrap; }
+.admin-activity__empty{ font-size:.85rem; opacity:.65; padding:1rem 0; text-align:center; }
+
+.admin-shell--thor .admin-dash-card,
+.admin-shell--thor .admin-activity{
+  background:rgba(7,16,30,.55);
+  border:1px solid rgba(118,207,255,.22);
+  color:rgba(230,238,255,.92);
+}
+.admin-shell--thor .admin-dash-card:hover{ border-color:rgba(118,207,255,.55); }
+.admin-shell--thor .admin-activity__item{ background:rgba(118,207,255,.06); }
+.admin-shell--thor .admin-dash-card__cta{ color:#76cfff; }
+
+.admin-shell--manga .admin-dash-card,
+.admin-shell--manga .admin-activity{
+  background:#fffaef;
+  border:2.5px solid #1a0d05;
+  box-shadow:3px 3px 0 #1a0d05;
+  color:#1a0d05;
+}
+.admin-shell--manga .admin-dash-card:hover{ background:#ffe9b2; }
+.admin-shell--manga .admin-activity__item{ border-bottom:1.5px dashed #1a0d05; padding-bottom:.55rem; }
+.admin-shell--manga .admin-activity__item:last-child{ border-bottom:none; }
+.admin-shell--manga .admin-dash-card__cta{ color:#d11b1b; }
+
+/* ===========================================================================
+ * Quick action bar
+ * ========================================================================= */
+.admin-quickbar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:.5rem;
+  margin-bottom:1.25rem;
+}
+.admin-quickbar .admin-btn{ font-size:.78rem; padding:.4rem .75rem; }
+
+/* ===========================================================================
+ * Messages inbox
+ * ========================================================================= */
+.admin-msg-toolbar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:.4rem;
+  align-items:center;
+  margin-bottom:.85rem;
+}
+.admin-msg-list{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  gap:.4rem;
+}
+.admin-msg-row{
+  display:grid;
+  grid-template-columns:auto 1fr auto auto;
+  gap:.55rem;
+  align-items:center;
+  padding:.55rem .75rem;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:.85rem;
+}
+.admin-msg-row__name{ font-weight:600; }
+.admin-msg-row__email{ opacity:.7; font-size:.78rem; }
+.admin-msg-row__snippet{
+  opacity:.78;
+  font-size:.78rem;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  min-width:0;
+}
+.admin-msg-row__meta{
+  display:flex;
+  gap:.4rem;
+  align-items:center;
+  font-size:.72rem;
+  opacity:.7;
+  white-space:nowrap;
+}
+.admin-msg-badge{
+  display:inline-block;
+  padding:.1rem .45rem;
+  border-radius:999px;
+  font-size:.65rem;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  font-family:var(--font-display);
+}
+.admin-msg-row--unread{ font-weight:600; }
+.admin-msg-row--unread .admin-msg-row__snippet{ opacity:.95; }
+.admin-msg-row__expanded{
+  margin-top:.5rem;
+  padding:.85rem 1rem;
+  border-radius:8px;
+  display:flex;
+  flex-direction:column;
+  gap:.6rem;
+}
+.admin-msg-row__expanded p{ margin:0; white-space:pre-wrap; line-height:1.5; }
+.admin-msg-actions{ display:flex; flex-wrap:wrap; gap:.4rem; }
+
+.admin-shell--thor .admin-msg-row{ background:rgba(7,16,30,.55); border:1px solid rgba(118,207,255,.18); }
+.admin-shell--thor .admin-msg-row--unread{ border-color:rgba(240,215,122,.55); background:rgba(240,215,122,.07); }
+.admin-shell--thor .admin-msg-row__expanded{ background:rgba(7,16,30,.7); border:1px solid rgba(118,207,255,.22); }
+.admin-shell--thor .admin-msg-badge{ background:rgba(118,207,255,.2); color:#c5e8ff; }
+
+.admin-shell--manga .admin-msg-row{ background:#fffaef; border:2px dashed #1a0d05; }
+.admin-shell--manga .admin-msg-row--unread{ background:#ffe9b2; border-style:solid; }
+.admin-shell--manga .admin-msg-row__expanded{ background:#fffaef; border:2.5px solid #1a0d05; box-shadow:3px 3px 0 #1a0d05; }
+.admin-shell--manga .admin-msg-badge{ background:#1a0d05; color:#fffaef; }
+
+/* ===========================================================================
+ * Allowlist
+ * ========================================================================= */
+.admin-allow-row{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:.5rem;
+  align-items:center;
+  padding:.5rem .75rem;
+  border-radius:8px;
+}
+.admin-allow-row__email{ font-family:var(--font-mono,monospace); font-size:.85rem; word-break:break-all; }
+
+.admin-shell--thor .admin-allow-row{ background:rgba(7,16,30,.55); border:1px solid rgba(118,207,255,.18); }
+.admin-shell--manga .admin-allow-row{ background:#fffaef; border:2px dashed #1a0d05; }
+
+/* ===========================================================================
+ * Health checks
+ * ========================================================================= */
+.admin-health-grid{
+  display:grid;
+  gap:.85rem;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+}
+.admin-health-card{
+  padding:1rem;
+  border-radius:12px;
+  display:flex;
+  flex-direction:column;
+  gap:.4rem;
+}
+.admin-health-card__title{
+  font-family:var(--font-display);
+  font-size:.85rem;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  margin:0;
+  display:flex;
+  align-items:center;
+  gap:.45rem;
+}
+.admin-health-dot{
+  display:inline-block;
+  width:.55rem;
+  height:.55rem;
+  border-radius:50%;
+  flex-shrink:0;
+}
+.admin-health-dot--green{ background:#4ade80; box-shadow:0 0 6px rgba(74,222,128,.6); }
+.admin-health-dot--yellow{ background:#facc15; box-shadow:0 0 6px rgba(250,204,21,.6); }
+.admin-health-dot--red{ background:#f87171; box-shadow:0 0 6px rgba(248,113,113,.6); }
+.admin-health-card__body{ font-size:.8rem; opacity:.85; }
+.admin-health-card__body ul{ margin:0; padding-left:1.1rem; display:flex; flex-direction:column; gap:.15rem; }
+
+.admin-shell--thor .admin-health-card{ background:rgba(7,16,30,.55); border:1px solid rgba(118,207,255,.22); }
+.admin-shell--manga .admin-health-card{ background:#fffaef; border:2.5px solid #1a0d05; box-shadow:3px 3px 0 #1a0d05; }
+
+/* ===========================================================================
+ * Top bar (Phase 6) — extra account dropdown + email pill
+ * ========================================================================= */
+.admin-topbar{
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+  flex-wrap:wrap;
+  /* Round 18: minimal bottom margin — hero card now sits right below the
+     section nav row. Combined with the new shell padding-top fix this
+     eliminates the "huge top gap" report. */
+  margin-bottom:.35rem;
+}
+.admin-topbar__nav{ display:flex; flex:1 1 auto; flex-wrap:wrap; gap:.4rem; min-width:0; }
+.admin-topbar__right{ display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; }
+.admin-topbar__email{
+  font-size:.72rem;
+  opacity:.7;
+  font-family:var(--font-mono,monospace);
+  padding:.3rem .55rem;
+  border-radius:999px;
+}
+.admin-shell--thor .admin-topbar__email{ background:rgba(118,207,255,.1); color:#c5e8ff; }
+.admin-shell--manga .admin-topbar__email{ background:#1a0d05; color:#fffaef; }
+
+/* Dashboard heading — Thor display font ascenders need extra leading
+   to avoid clipping against tight inherited line-height. Scoped via
+   `.admin-dashboard__heading` so global `.admin-card__title` (used on
+   ProjectsAdmin etc.) is untouched. */
+.admin-dashboard__heading{ line-height:1.2; padding-top:.05em; }
+
+/* ===========================================================================
+ * Set-up-password banner (Round 15)
+ * Always-visible call-to-action linking to /admin/account; dismissed via
+ * localStorage flag (Supabase doesn't expose password-set state to JS).
+ * ========================================================================= */
+.admin-pw-banner{
+  display:flex;
+  align-items:center;
+  gap:.75rem;
+  padding:.75rem 1rem;
+  border-radius:12px;
+  margin-bottom:1rem;
+  flex-wrap:wrap;
+}
+.admin-pw-banner__icon{ font-size:1.4rem; line-height:1; }
+.admin-pw-banner__body{ display:flex; flex-direction:column; flex:1 1 220px; min-width:0; }
+.admin-pw-banner__body strong{ font-size:.9rem; }
+.admin-pw-banner__body span{ font-size:.78rem; opacity:.75; }
+.admin-pw-banner__close{
+  background:transparent;
+  border:0;
+  font-size:1.2rem;
+  line-height:1;
+  cursor:pointer;
+  color:inherit;
+  opacity:.6;
+  padding:.2rem .45rem;
+}
+.admin-pw-banner__close:hover{ opacity:1; }
+.admin-shell--thor .admin-pw-banner{
+  background:rgba(240,215,122,.10);
+  border:1px solid rgba(240,215,122,.45);
+  color:#f0d77a;
+}
+.admin-shell--manga .admin-pw-banner{
+  background:#fff7d8;
+  border:2.5px dashed #1a0d05;
+  color:#1a0d05;
+}
+
+/* Back button — admin's history-back escape hatch.
+   Round 17: switched from <NavLink> to <button onClick={navigate(-1)}>;
+   styling stays the same but we now reset native button chrome. */
+.admin-topbar__back{
+  display:inline-flex;
+  align-items:center;
+  gap:.4rem;
+  padding:.45rem .85rem;
+  border-radius:999px;
+  font-size:.78rem;
+  font-weight:600;
+  text-decoration:none;
+  border:1px solid currentColor;
+  background:transparent;
+  transition:transform .15s ease,background .15s ease,color .15s ease;
+  flex:0 0 auto;
+  cursor:pointer;
+  font-family:inherit;
+  color:inherit;
+}
+.admin-topbar__back:hover{ transform:translateX(-2px); }
+.admin-shell--thor .admin-topbar__back{ color:#c5e8ff; border-color:rgba(118,207,255,.45); }
+.admin-shell--thor .admin-topbar__back:hover{ background:rgba(118,207,255,.15); color:#fff; }
+.admin-shell--manga .admin-topbar__back{ color:#1a0d05; border:2px dashed #1a0d05; background:#fffaef; font-family:"Noto Sans JP","Hiragino Mincho ProN",system-ui,sans-serif; font-weight:800; }
+.admin-shell--manga .admin-topbar__back:hover{ background:#ffd766; }
+
+/* ---------------------------------------------------------------------------
+ * Mobile (<768px): bespoke compact topbar — designed for one-row fit.
+ *   - Section nav (long pill list) is hidden; the dashboard cards already
+ *     expose the same navigation, and Back-to-Dashboard handles return.
+ *   - Layout: [← Back] [email pill, ellipsised] [Sign out]
+ *     All three sit in a single flex row, no wrapping. The container
+ *     padding is tightened and the back button collapses to icon + short
+ *     "Back" label so the email gets visual priority.
+ *   - On the dashboard itself (no back button), the email pill expands
+ *     to fill the freed space, keeping the bar visually balanced.
+ * ------------------------------------------------------------------------- */
+@media (max-width: 767px){
+  .admin-topbar__nav{ display:none; }
+
+  .admin-topbar{
+    flex-wrap:nowrap;
+    gap:.4rem;
+    padding:.35rem .45rem;
+    align-items:center;
+  }
+
+  /* Back button: shrink to icon + short "Back" label */
+  .admin-topbar__back{
+    flex:0 0 auto;
+    padding:.4rem .6rem;
+    font-size:.72rem;
+    gap:.3rem;
+  }
+  .admin-topbar__back > span{
+    /* Hide the longer "to Dashboard" — JS still renders the same node,
+       we just trim it visually using a content swap. */
+    font-size:0;
+  }
+  .admin-topbar__back > span::before{
+    content:"Back";
+    font-size:.72rem;
+    letter-spacing:.04em;
+  }
+
+  /* Right cluster: email + sign out, no wrap */
+  .admin-topbar__right{
+    flex:1 1 auto;
+    flex-wrap:nowrap;
+    justify-content:flex-end;
+    gap:.4rem;
+    min-width:0;
+  }
+
+  /* Email pill: truncate with ellipsis so long addresses don't push
+     the sign-out button off-screen. */
+  .admin-topbar__email{
+    flex:1 1 auto;
+    min-width:0;
+    max-width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:.7rem;
+    padding:.35rem .55rem;
+    text-align:center;
+  }
+
+  /* Sign out: keep compact but tappable */
+  .admin-topbar__right .admin-btn--danger{
+    flex:0 0 auto;
+    padding:.4rem .65rem !important;
+    font-size:.72rem !important;
+    white-space:nowrap;
+  }
+}
+
+/* ===========================================================================
+ * Image upload zone — Round 14 Luffy-mode visibility hot-fix
+ * Old inline white-on-transparent values were invisible against the cream
+ * parchment shell. Theming now lives here, scoped via the admin-shell parent.
+ * ========================================================================= */
+.image-upload-zone__label{ color:inherit; opacity:.85; }
+.image-upload-zone__sub{ color:inherit; opacity:.55; }
+.image-upload-zone__hint{ opacity:.55; }
+.image-upload-zone__icon{ opacity:.4; }
+.image-upload-zone__drop{
+  /* Defaults assume the dark Thor shell — overridden under .admin-shell--manga below. */
+  border-color:rgba(255,255,255,.18);
+  background:rgba(255,255,255,.03);
+  color:rgba(255,255,255,.85);
+}
+.image-upload-zone__drop[data-drag-over]{
+  border-color:rgba(118,207,255,.7);
+  background:rgba(118,207,255,.08);
+}
+.image-upload-zone__thumb{ border:1px solid rgba(255,255,255,.12); }
+
+/* Thor shell — explicit overrides (also catches the case where this lives
+   outside the shell wrapper somehow). */
+.admin-shell--thor .image-upload-zone__drop{
+  border-color:rgba(118,207,255,.25);
+  background:rgba(7,16,30,.4);
+  color:#e8f3ff;
+}
+.admin-shell--thor .image-upload-zone__drop[data-drag-over]{
+  border-color:rgba(118,207,255,.7);
+  background:rgba(118,207,255,.10);
+}
+.admin-shell--thor .image-upload-zone__thumb{ border:1px solid rgba(118,207,255,.25); }
+
+/* Manga / Luffy shell — DARK ink on cream parchment so things are visible. */
+.admin-shell--manga .image-upload-zone__drop{
+  border-color:#1a0d05;
+  border-style:dashed;
+  background:#fffaef;
+  color:#1a0d05;
+}
+.admin-shell--manga .image-upload-zone__drop[data-drag-over]{
+  border-color:#d11b1b;
+  background:#ffe9b2;
+}
+.admin-shell--manga .image-upload-zone__label{ color:#1a0d05; opacity:.95; font-weight:700; }
+.admin-shell--manga .image-upload-zone__sub{ color:#1a0d05; opacity:.7; }
+.admin-shell--manga .image-upload-zone__hint{ color:#1a0d05; opacity:.65; font-weight:600; }
+.admin-shell--manga .image-upload-zone__icon{ color:#1a0d05; opacity:.55; }
+.admin-shell--manga .image-upload-zone__thumb{ border:2px solid #1a0d05; box-shadow:2px 2px 0 #d11b1b; }
+
+/* ===========================================================================
+ * Project Dossier card layout (Phase 7)
+ * ========================================================================= */
+.dossier-cards{
+  display:grid;
+  /* Round 33 — bumped gap from 1rem so each dossier card breathes
+     visibly between its neighbours, matching the more generous spacing
+     of the public /projects grid. */
+  gap:1.75rem;
+}
+.dossier-card{
+  border-radius:14px;
+  overflow:hidden;
+}
+.dossier-card__header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:.5rem;
+  padding:.75rem 1rem;
+  cursor:pointer;
+  user-select:none;
+  background:transparent;
+  border:0;
+  width:100%;
+  text-align:left;
+  font:inherit;
+  color:inherit;
+}
+.dossier-card__title{
+  font-family:var(--font-display);
+  font-size:1rem;
+  margin:0;
+  letter-spacing:.04em;
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+}
+.dossier-card__chevron{
+  font-size:.9rem;
+  opacity:.65;
+  transition:transform .15s ease;
+}
+.dossier-card[data-open="false"] .dossier-card__chevron{ transform:rotate(-90deg); }
+.dossier-card__body{
+  padding:0 1rem 1rem;
+  display:flex;
+  flex-direction:column;
+  gap:.85rem;
+}
+.dossier-card[data-open="false"] .dossier-card__body{ display:none; }
+
+/* Round 36+1 — the save-bar used to render as a sticky chrome container
+   (border / background / shadow) which read as a duplicate container
+   below the dossier cards. Stripped to a bare flex row so the
+   Create / Save button stands on its own, with just enough top margin
+   to separate it from the last card. */
+.dossier-save-bar{
+  margin-top:1.25rem;
+  padding:0;
+  display:flex;
+  gap:.5rem;
+  justify-content:flex-end;
+  align-items:center;
+  background:transparent;
+  border:0;
+  box-shadow:none;
+  border-radius:0;
+}
+.admin-shell--thor .dossier-card{ background:rgba(7,16,30,.55); border:1px solid rgba(118,207,255,.22); }
+.admin-shell--manga .dossier-card{ background:#fffaef; border:3px solid #1a0d05; box-shadow:5px 5px 0 #1a0d05; }
+
+/* ===========================================================================
+ * Round 16 — Dashboard rebuild
+ * Mode-distinct hero, stat tiles, and feature cards. The shared structural
+ * primitives above stay intact; this section layers the new theming on top.
+ * ========================================================================= */
+
+/* Wrap-level: prevent horizontal scroll on narrow viewports */
+.admin-dash{ position:relative; min-width:0; max-width:100%; overflow-x:clip; }
+
+/* Decorative backdrop placed behind hero+stats (z-index:0). Per-mode below. */
+.admin-dash__backdrop{
+  position:absolute;
+  inset:0 0 auto 0;
+  height:340px;
+  pointer-events:none;
+  opacity:.45;
+  z-index:0;
+}
+/* Round 28 fix: exclude the backdrop from this rule.  Without :not(),
+   the universal selector matches the backdrop with equal specificity to
+   `.admin-dash__backdrop` AND wins because it's declared later — flipping
+   the backdrop from `position: absolute` (0px flow space) to
+   `position: relative` (its full 340px height in flow).  That shoved the
+   commander hero ~340px down, creating the huge gap the user reported. */
+.admin-dash > *:not(.admin-dash__backdrop) { position:relative; z-index:1; }
+
+/* Thor: subtle starfield + bifrost shimmer */
+.admin-shell--thor .admin-dash__backdrop{
+  background:
+    radial-gradient(1.5px 1.5px at 12% 24%, rgba(197,232,255,.55) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 78% 18%, rgba(240,215,122,.55) 50%, transparent 51%),
+    radial-gradient(1px 1px at 35% 60%, rgba(197,232,255,.4) 50%, transparent 51%),
+    radial-gradient(1px 1px at 88% 70%, rgba(240,215,122,.45) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 55% 38%, rgba(197,232,255,.5) 50%, transparent 51%),
+    radial-gradient(2px 2px at 22% 80%, rgba(118,207,255,.5) 50%, transparent 51%),
+    linear-gradient(180deg, rgba(118,207,255,.08), transparent 70%);
+}
+
+/* Luffy: tiled parchment with a hint of ink-splatter */
+.admin-shell--manga .admin-dash__backdrop{
+  background:
+    radial-gradient(circle at 18% 22%, rgba(26,13,5,.10) 0 2px, transparent 3px),
+    radial-gradient(circle at 80% 12%, rgba(209,27,27,.10) 0 3px, transparent 4px),
+    radial-gradient(circle at 60% 78%, rgba(26,13,5,.08) 0 2px, transparent 3px),
+    repeating-linear-gradient(
+      45deg,
+      rgba(26,13,5,.025) 0 2px,
+      transparent 2px 14px
+    ),
+    linear-gradient(180deg, rgba(255,235,178,.55), transparent 80%);
+  opacity:.7;
+}
+
+/* ===========================================================================
+ * Round 28 — COMMANDER HERO STRIP (replaces .admin-dash-hero-line)
+ * Top-of-page panel: leader stamp (Luffy/Mjolnir) + greeting + 5 stat tiles.
+ * Mode-aware via .admin-shell--thor / .admin-shell--manga.
+ * ========================================================================= */
+.admin-commander{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:.55rem;
+  padding:.85rem 1rem .9rem;
+  border-radius:14px;
+  margin:.25rem 0 .65rem;
+  overflow:hidden;
+  isolation:isolate;
+}
+.admin-commander__head{
+  display:flex;
+  align-items:center;
+  gap:.85rem;
+  position:relative;
+  z-index:1;
+}
+.admin-commander__stamp{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:64px;
+  height:64px;
+  border-radius:14px;
+  position:relative;
+}
+.admin-commander__stamp-img{
+  width:48px;
+  height:48px;
+  object-fit:contain;
+  display:block;
+}
+.admin-commander__copy{
+  display:flex;
+  flex-direction:column;
+  gap:.1rem;
+  min-width:0;
+  flex:1 1 auto;
+}
+.admin-commander__eyebrow{
+  font-family:var(--font-mono,ui-monospace,monospace);
+  font-size:.7rem;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  font-weight:700;
+  opacity:.85;
+}
+.admin-commander__title{
+  font-family:var(--font-display);
+  font-size:1.15rem;
+  margin:0;
+  line-height:1.15;
+  letter-spacing:.02em;
+}
+.admin-commander__sub{
+  margin:0;
+  font-size:.78rem;
+  opacity:.72;
+  line-height:1.35;
+}
+.admin-commander__pulse{
+  width:.55rem;
+  height:.55rem;
+  border-radius:50%;
+  align-self:flex-start;
+  margin-top:.4rem;
+  animation:admin-pulse 1.2s ease-in-out infinite;
+}
+.admin-commander__halftone{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  opacity:0;
+}
+@keyframes admin-pulse{
+  0%,100%{ opacity:.3; transform:scale(.85); }
+  50%    { opacity:1;   transform:scale(1.1);  }
+}
+
+/* Thor commander — dark navy panel, gold stamp ring, cyan eyebrow. */
+.admin-shell--thor .admin-commander{
+  background:linear-gradient(140deg, rgba(7,16,30,.78), rgba(11,24,46,.6));
+  border:1px solid rgba(118,207,255,.3);
+  box-shadow:0 0 18px rgba(118,207,255,.08) inset;
+}
+.admin-shell--thor .admin-commander__stamp{
+  background:rgba(240,215,122,.1);
+  border:1px solid rgba(240,215,122,.55);
+  box-shadow:0 0 14px rgba(240,215,122,.25), 0 0 22px rgba(118,207,255,.18) inset;
+}
+.admin-shell--thor .admin-commander__eyebrow{
+  color:#76cfff;
+  text-shadow:0 0 8px rgba(118,207,255,.35);
+}
+.admin-shell--thor .admin-commander__title{ color:#f0d77a; }
+.admin-shell--thor .admin-commander__sub{ color:rgba(230,238,255,.88); }
+.admin-shell--thor .admin-commander__pulse{
+  background:#76cfff;
+  box-shadow:0 0 10px rgba(118,207,255,.6);
+}
+
+/* Luffy commander — cream parchment, halftone overlay, ink stamp ring. */
+.admin-shell--manga .admin-commander{
+  background:#fffaef;
+  border:3px solid #1a0d05;
+  box-shadow:5px 5px 0 #1a0d05;
+  /* Manga panel-corner cuts (top-right + bottom-left clipped). */
+  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));
+}
+.admin-shell--manga .admin-commander__halftone{
+  /* Ben-Day dot overlay — fixed-size repeating dot pattern. */
+  background-image:radial-gradient(rgba(26,13,5,.18) 1px, transparent 1.5px);
+  background-size:8px 8px;
+  opacity:.45;
+}
+.admin-shell--manga .admin-commander__stamp{
+  background:#ffd766;
+  border:3px solid #1a0d05;
+  box-shadow:3px 3px 0 #d11b1b;
+  transform:rotate(-3deg);
+}
+.admin-shell--manga .admin-commander__eyebrow{
+  color:#d11b1b;
+  font-family:var(--font-display),system-ui,sans-serif;
+  letter-spacing:.18em;
+}
+.admin-shell--manga .admin-commander__title{
+  color:#1a0d05;
+  font-family:"Noto Sans JP",var(--font-display),system-ui,sans-serif;
+  font-weight:900;
+  letter-spacing:.04em;
+}
+.admin-shell--manga .admin-commander__sub{
+  color:#3a2418;
+  font-family:"Noto Sans JP",var(--font-body),system-ui,sans-serif;
+}
+.admin-shell--manga .admin-commander__pulse{
+  background:#d11b1b;
+  box-shadow:0 0 10px rgba(209,27,27,.6);
+}
+
+/* Round 28 — TIGHT VISUAL RHYTHM
+   The dashboard wrapper used to ship ~1rem+ of vertical breathing room
+   between every section. Manga panels live shoulder-to-shoulder, so we
+   collapse the rhythm to ~.5rem and let .admin-commander/.admin-deck-cards
+   own their own (smaller) margins for the manga-panel feel. */
+.admin-shell--dashboard .admin-dash > * + *{ margin-top:.5rem; }
+.admin-shell--dashboard .admin-dash > .admin-topbar{ margin-top:0; }
+.admin-shell--dashboard .admin-dash > .admin-dash__backdrop{ margin-top:0; }
+.admin-shell--dashboard .admin-pw-banner{ margin-top:.5rem; margin-bottom:.25rem; }
+
+/* ----- Stat tiles (themed v2) ----- */
+.admin-stat--thor{
+  background:linear-gradient(160deg, rgba(7,16,30,.7), rgba(11,24,46,.55));
+  border:1px solid rgba(118,207,255,.30);
+  box-shadow:0 0 16px rgba(118,207,255,.08) inset;
+  color:rgba(230,238,255,.92);
+}
+.admin-stat--thor .admin-stat__value{
+  color:#f0d77a;
+  text-shadow:0 0 10px rgba(240,215,122,.25);
+}
+.admin-stat--luffy{
+  background:#fffaef;
+  border:2.5px solid #1a0d05;
+  box-shadow:3px 3px 0 #1a0d05;
+  color:#1a0d05;
+}
+.admin-stat--luffy .admin-stat__label{
+  font-family:"Noto Sans JP",var(--font-display),system-ui,sans-serif;
+  color:#3a2418;
+}
+/* Round 17: stat value bounty stamp — white text on red was rendering
+   as "blank red rectangle" because .admin-stat__value sets a darker
+   color earlier in the cascade and this rule didn't override it with
+   enough specificity in some Luffy paths. Explicit color via the
+   parent--manga selector + a slightly bigger font + line-height that
+   prevents glyph clipping inside the rotated stamp. */
+.admin-shell--manga .admin-stat__value.admin-stat__value--stamp{
+  display:inline-block;
+  background:#d11b1b;
+  color:#fffaef !important;
+  padding:.25rem .7rem;
+  border:2.5px solid #1a0d05;
+  font-family:var(--font-display);
+  letter-spacing:.04em;
+  font-size:1.45rem;
+  line-height:1.2;
+  transform:rotate(-1.5deg);
+  align-self:flex-start;
+  box-shadow:2px 2px 0 #1a0d05;
+  text-shadow:1px 1px 0 #1a0d05;
+}
+
+/* Activity feed: ensure long titles don't blow out the column. Kept from
+   the legacy themed-feed implementation since the activity list selectors
+   themselves are still in use elsewhere. */
+.admin-activity--themed .admin-activity__main{ min-width:0; }
+.admin-activity--themed .admin-activity__main strong{ overflow-wrap:anywhere; }
+
+/* Round 28 — REMOVED orphaned legacy block (.admin-dash-cards--themed,
+   .admin-dash-card--thor/luffy, .admin-dash__greeting, .admin-dash-hero
+   media-queries). All references have been migrated to .admin-deck-card*
+   and the new .admin-commander* hero. Frees ~0.5 KB gz of CSS budget. */
+
+/* ===========================================================================
+ * Round 16 — Sub-page heading polish
+ * Applied via the AdminPageIcon helper. Ensures heading + icon align,
+ * line-heights breathe, and long titles wrap rather than overflow.
+ * ========================================================================= */
+.admin-page-header{ min-width:0; }
+.admin-page-header__title-row{
+  display:flex;
+  align-items:center;
+  gap:.65rem;
+  min-width:0;
+  flex-wrap:wrap;
+}
+.admin-page-header__title{
+  min-width:0;
+  flex:1 1 auto;
+  line-height:1.2;
+  padding-top:.05em;
+  word-break:break-word;
+}
+.admin-page-icon{
+  display:inline-block;
+  border-radius:6px;
+}
+.admin-shell--thor .admin-page-icon{
+  filter:drop-shadow(0 0 6px rgba(118,207,255,.3));
+}
+.admin-shell--manga .admin-page-icon{
+  border:1.5px solid #1a0d05;
+  background:#fffaef;
+  padding:2px;
+}
+
+/* Generic overflow guard for the admin shell — prevents any sub-page from
+   producing horizontal scroll on narrow viewports. */
+.admin-shell{ overflow-x:clip; }
+.admin-shell .admin-page{ min-width:0; }
+
+/* ===========================================================================
+ * Round 17 — Eyebrow clipping fix
+ * The Thor display font has tall ascenders ("/" "·" "C") that get clipped
+ * at the top of `.admin-card__eyebrow` on every admin sub-page when the
+ * ancestor has a tight overflow:hidden wrapper. Loosening line-height +
+ * adding a small top padding gives the glyphs the breathing room they need.
+ * Scoped under .admin-page-header so the login card eyebrow is untouched.
+ * ========================================================================= */
+.admin-page-header .admin-card__eyebrow{
+  line-height:1.5;
+  padding-top:.25rem;
+}
+
+/* ===========================================================================
+ * Round 17 — Mode-themed scrollbars
+ * Replace the default chrome with a per-mode look so scrollbars feel like
+ * part of the theme. Webkit (Chromium / Safari) + Firefox both covered.
+ * ========================================================================= */
+[data-mode="thor"] *{
+  scrollbar-color:#76cfff rgba(7,16,30,.6);
+  scrollbar-width:thin;
+}
+[data-mode="thor"] ::-webkit-scrollbar{ width:10px; height:10px; }
+[data-mode="thor"] ::-webkit-scrollbar-track{ background:rgba(7,16,30,.6); }
+[data-mode="thor"] ::-webkit-scrollbar-thumb{
+  background:linear-gradient(180deg,#76cfff,#ffd700);
+  border-radius:6px;
+}
+[data-mode="thor"] ::-webkit-scrollbar-thumb:hover{
+  background:linear-gradient(180deg,#9ee0ff,#ffe066);
+}
+
+[data-mode="gear5"] *{
+  scrollbar-color:#d11b1b #fff5dc;
+  scrollbar-width:thin;
+}
+[data-mode="gear5"] ::-webkit-scrollbar{ width:10px; height:10px; }
+[data-mode="gear5"] ::-webkit-scrollbar-track{ background:#fff5dc; }
+[data-mode="gear5"] ::-webkit-scrollbar-thumb{
+  background:#d11b1b;
+  border-radius:6px;
+  border:2px solid #1a0d05;
+}
+[data-mode="gear5"] ::-webkit-scrollbar-thumb:hover{
+  background:#b51616;
+}
+
+/* ===========================================================================
+ * Round 21 — ADMIN COMMAND DECK / CAPTAIN'S BRIDGE
+ *
+ * Slim 5-up stat strip + masonry feature card grid + collapsible activity
+ * drawer.  One JSX tree in AdminDashboard.tsx — all theming lives here
+ * via .admin-shell--thor / .admin-shell--manga.
+ * ========================================================================= */
+
+/* ---- Stat strip (5 slim tiles, scrolls on mobile) ---- */
+.admin-stat-strip{
+  display:grid;
+  grid-template-columns:repeat(5, 1fr);
+  gap:.55rem;
+  /* Round 28: zero margin — strip lives inside .admin-commander now,
+     which owns the surrounding rhythm. */
+  margin:0;
+  position:relative;
+  z-index:1;
+}
+.admin-stat-strip__tile{
+  padding:.7rem .85rem;
+  border-radius:10px;
+  display:flex;
+  flex-direction:column;
+  gap:.15rem;
+  min-width:0;
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+.admin-stat-strip__tile:hover{ transform:translateY(-2px); }
+.admin-stat-strip__label{
+  font-family:var(--font-display);
+  font-size:.62rem;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  opacity:.7;
+}
+.admin-stat-strip__value{
+  font-size:1.45rem;
+  font-weight:700;
+  line-height:1.05;
+  font-family:var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+.admin-stat-strip__hint{
+  font-size:.66rem;
+  opacity:.6;
+}
+.admin-shell--thor .admin-stat-strip__tile{
+  background:linear-gradient(160deg, rgba(7,16,30,.7), rgba(11,24,46,.55));
+  border:1px solid rgba(118,207,255,.25);
+  box-shadow:0 0 14px rgba(118,207,255,.06) inset;
+  color:rgba(230,238,255,.92);
+}
+.admin-shell--thor .admin-stat-strip__tile:hover{
+  border-color:rgba(240,215,122,.55);
+  box-shadow:0 0 16px rgba(240,215,122,.18);
+}
+.admin-shell--thor .admin-stat-strip__value{
+  color:#f0d77a;
+  text-shadow:0 0 10px rgba(240,215,122,.22);
+}
+.admin-shell--manga .admin-stat-strip__tile{
+  background:#fffaef;
+  border:2.5px solid #1a0d05;
+  box-shadow:3px 3px 0 #1a0d05;
+  color:#1a0d05;
+}
+.admin-shell--manga .admin-stat-strip__tile:hover{
+  background:#ffe9b2;
+  box-shadow:4px 4px 0 #d11b1b;
+}
+.admin-shell--manga .admin-stat-strip__label{
+  font-family:"Noto Sans JP",var(--font-display),system-ui,sans-serif;
+}
+.admin-shell--manga .admin-stat-strip__value{
+  color:#d11b1b;
+  font-family:var(--font-display);
+}
+
+/* ---- Feature card grid (the "deck") ---- */
+.admin-deck-cards{
+  display:grid;
+  gap:.65rem;
+  grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+  /* Round 28: tighter rhythm — was .25rem 0 1.4rem; bottom inflated the
+     gap before the activity drawer. */
+  margin:.25rem 0 .65rem;
+}
+.admin-deck-card{
+  position:relative;
+  padding:1rem 1rem .85rem;
+  border-radius:14px;
+  text-decoration:none;
+  display:flex;
+  flex-direction:column;
+  gap:.4rem;
+  min-width:0;
+  overflow:hidden;
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease, background 200ms ease;
+}
+.admin-deck-card:hover{
+  transform: translateY(-3px);
+}
+.admin-deck-card__iconbox{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:46px;
+  height:46px;
+  border-radius:10px;
+  flex:0 0 auto;
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease, background 200ms ease;
+}
+.admin-deck-card__icon-img{
+  width:32px;
+  height:32px;
+  object-fit:contain;
+  display:block;
+  image-rendering:auto;
+  transition: transform 200ms ease;
+}
+.admin-deck-card__title{
+  font-family:var(--font-display);
+  font-size:1.02rem;
+  margin:0;
+  letter-spacing:.04em;
+  word-break:break-word;
+  hyphens:auto;
+  line-height:1.2;
+}
+.admin-deck-card__desc{
+  font-size:.82rem;
+  opacity:.75;
+  margin:0;
+  line-height:1.4;
+  word-break:break-word;
+  flex:1 1 auto;
+}
+.admin-deck-card__cta{
+  font-size:.7rem;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  margin-top:.15rem;
+  align-self:flex-end;
+}
+
+/* Thor card — dark navy + cyan + gold-on-hover */
+.admin-shell--thor .admin-deck-card{
+  background:linear-gradient(150deg, rgba(7,16,30,.72), rgba(11,24,46,.55));
+  border:1px solid rgba(118,207,255,.28);
+  color:rgba(230,238,255,.93);
+}
+.admin-shell--thor .admin-deck-card .admin-deck-card__iconbox{
+  background:rgba(118,207,255,.08);
+  border:1px solid rgba(118,207,255,.28);
+  box-shadow:0 0 10px rgba(118,207,255,.18) inset;
+}
+.admin-shell--thor .admin-deck-card:hover{
+  border-color:rgba(240,215,122,.55);
+  box-shadow:0 4px 18px rgba(240,215,122,.22), 0 0 0 1px rgba(240,215,122,.18) inset;
+}
+.admin-shell--thor .admin-deck-card:hover .admin-deck-card__iconbox{
+  animation: admin-icon-thor-zap 600ms ease-out;
+  border-color:rgba(240,215,122,.7);
+  background:rgba(240,215,122,.12);
+  box-shadow:0 0 18px rgba(240,215,122,.45), 0 0 28px rgba(118,207,255,.25) inset;
+}
+.admin-shell--thor .admin-deck-card .admin-deck-card__title{ color:#f0d77a; }
+.admin-shell--thor .admin-deck-card .admin-deck-card__cta{ color:#76cfff; }
+
+/* Luffy card — cream parchment + ink + ink-splat hover.
+   Round 28: manga panel-corner cuts (top-right + bottom-left clipped). */
+.admin-shell--manga .admin-deck-card{
+  background:#fffaef;
+  border:2.5px solid #1a0d05;
+  box-shadow:3px 3px 0 #1a0d05;
+  color:#1a0d05;
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));
+}
+.admin-shell--manga .admin-deck-card .admin-deck-card__iconbox{
+  background:#ffe9b2;
+  border:2px solid #1a0d05;
+}
+.admin-shell--manga .admin-deck-card:hover{
+  background:#ffe9b2;
+  box-shadow:5px 5px 0 #d11b1b;
+}
+.admin-shell--manga .admin-deck-card:hover .admin-deck-card__iconbox{
+  animation: admin-icon-luffy-splat 500ms ease-out;
+  background:#fffaef;
+  border-color:#d11b1b;
+  box-shadow:2px 2px 0 #d11b1b;
+}
+.admin-shell--manga .admin-deck-card .admin-deck-card__title{
+  font-family:"Noto Sans JP",var(--font-display),system-ui,sans-serif;
+  color:#1a0d05;
+  font-weight:800;
+}
+.admin-shell--manga .admin-deck-card .admin-deck-card__desc{
+  font-family:"Noto Sans JP",var(--font-body),system-ui,sans-serif;
+  color:#3a2418;
+}
+.admin-shell--manga .admin-deck-card .admin-deck-card__cta{
+  color:#d11b1b;
+  font-weight:700;
+}
+
+/* Active route — permanent glow ring */
+.admin-deck-card--active{ pointer-events:auto; }
+.admin-shell--thor .admin-deck-card--active{
+  border-color:#f0d77a;
+  box-shadow:0 0 0 2px rgba(240,215,122,.6), 0 0 22px rgba(240,215,122,.35);
+}
+.admin-shell--thor .admin-deck-card--active::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  border-radius:14px;
+  pointer-events:none;
+  box-shadow:0 0 0 1px rgba(118,207,255,.4) inset;
+}
+.admin-shell--manga .admin-deck-card--active{
+  border-color:#d11b1b;
+  box-shadow:5px 5px 0 #d11b1b, 0 0 0 2px #d11b1b inset;
+  background:#ffe9b2;
+}
+
+/* Icon hover keyframes — Thor zap (gold lightning crackle) */
+@keyframes admin-icon-thor-zap{
+  0%   { transform: scale(1);    filter: brightness(1); }
+  18%  { transform: scale(1.08); filter: brightness(1.4) drop-shadow(0 0 6px rgba(240,215,122,.8)); }
+  36%  { transform: scale(0.98); filter: brightness(1.1); }
+  54%  { transform: scale(1.06); filter: brightness(1.3) drop-shadow(0 0 4px rgba(118,207,255,.7)); }
+  100% { transform: scale(1.04); filter: brightness(1.15); }
+}
+
+/* Icon hover keyframes — Luffy ink-splat (rotate + scale + red drop) */
+@keyframes admin-icon-luffy-splat{
+  0%   { transform: scale(1)    rotate(0deg);  filter: drop-shadow(0 0 0 rgba(209,27,27,0)); }
+  25%  { transform: scale(1.06) rotate(-2deg); filter: drop-shadow(2px 2px 0 rgba(209,27,27,.6)); }
+  55%  { transform: scale(1.02) rotate( 2deg); filter: drop-shadow(-2px 2px 0 rgba(26,13,5,.55)); }
+  100% { transform: scale(1.05) rotate(-1deg); filter: drop-shadow(2px 2px 0 rgba(209,27,27,.4)); }
+}
+
+/* Round 28 — Luffy mode comic-kana SFX burst on card hover.
+   The .admin-deck-card__sfx span sits in the corner of every Luffy card,
+   invisible at rest. On hover it animates from 0 → 1 → 0 over 600ms with
+   a -8deg rotation and slight scale-pop, mimicking a manga panel SFX. */
+.admin-deck-card__sfx{
+  position:absolute;
+  top:.4rem;
+  right:.55rem;
+  font-family:"Noto Sans JP",var(--font-display),system-ui,sans-serif;
+  font-size:1.2rem;
+  font-weight:900;
+  color:#d11b1b;
+  text-shadow:1.5px 1.5px 0 #1a0d05, -1px -1px 0 #fffaef;
+  pointer-events:none;
+  opacity:0;
+  transform:rotate(-4deg) scale(.6);
+  transition:opacity 180ms ease, transform 180ms ease;
+  letter-spacing:.02em;
+  z-index:2;
+}
+.admin-shell--manga .admin-deck-card:hover .admin-deck-card__sfx,
+.admin-shell--manga .admin-deck-card:focus-visible .admin-deck-card__sfx{
+  animation: admin-deck-sfx-burst 600ms ease-out;
+}
+@keyframes admin-deck-sfx-burst{
+  0%   { opacity:0; transform:rotate(-4deg) scale(.6); }
+  35%  { opacity:1; transform:rotate(-8deg) scale(1.18); }
+  70%  { opacity:1; transform:rotate(-6deg) scale(1.05); }
+  100% { opacity:0; transform:rotate(-4deg) scale(.95); }
+}
+/* Thor mode never shows the kana SFX; we hide explicitly in case the JSX
+   leaks into the wrong mode during a transition. */
+.admin-shell--thor .admin-deck-card__sfx{ display:none; }
+
+/* Round 28 — Luffy stat-tile bounty stamps ("WANTED"/"BOUNTY"/"NEW"...).
+   Tiny rotated label tucked into the bottom-right of each tile. Decorative
+   only — set `aria-hidden` in the JSX. Hidden in Thor mode entirely. */
+.admin-stat-strip__stamp{
+  position:absolute;
+  bottom:.35rem;
+  right:.4rem;
+  font-family:var(--font-display),system-ui,sans-serif;
+  font-size:.55rem;
+  letter-spacing:.12em;
+  font-weight:900;
+  padding:.05rem .35rem;
+  background:#d11b1b;
+  color:#fffaef;
+  border:1.5px solid #1a0d05;
+  transform:rotate(-6deg);
+  pointer-events:none;
+  text-shadow:1px 1px 0 #1a0d05;
+}
+.admin-stat-strip__tile{ position:relative; overflow:hidden; }
+.admin-shell--thor .admin-stat-strip__stamp{ display:none; }
+
+/* Reduced motion — respect user preference */
+@media (prefers-reduced-motion: reduce){
+  .admin-deck-card:hover{ transform:none; }
+  .admin-shell--thor .admin-deck-card:hover .admin-deck-card__iconbox,
+  .admin-shell--manga .admin-deck-card:hover .admin-deck-card__iconbox{
+    animation:none;
+  }
+  .admin-shell--manga .admin-deck-card:hover .admin-deck-card__sfx,
+  .admin-shell--manga .admin-deck-card:focus-visible .admin-deck-card__sfx{
+    animation:none;
+    opacity:0;
+  }
+  .admin-commander__pulse{ animation:none; }
+}
+
+/* ---- Activity drawer (collapsible; replaces permanent sidebar) ---- */
+.admin-activity-drawer{
+  margin-top:.5rem;
+  border-radius:12px;
+  overflow:hidden;
+  transition: box-shadow 200ms ease;
+}
+.admin-activity-drawer__toggle{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:.6rem;
+  padding:.7rem 1rem;
+  border:0;
+  cursor:pointer;
+  font:inherit;
+  text-align:left;
+  background:transparent;
+  color:inherit;
+  border-radius:12px;
+}
+.admin-activity-drawer__toggle-label{
+  font-family:var(--font-display);
+  font-size:.85rem;
+  letter-spacing:.05em;
+}
+.admin-activity-drawer__toggle-meta{
+  font-size:.72rem;
+  opacity:.7;
+  font-family:var(--font-mono,monospace);
+}
+.admin-activity-drawer__body{
+  padding:.5rem 1rem 1rem;
+  max-height:360px;
+  overflow-y:auto;
+}
+.admin-shell--thor .admin-activity-drawer{
+  background:rgba(7,16,30,.55);
+  border:1px solid rgba(118,207,255,.22);
+}
+.admin-shell--thor .admin-activity-drawer__toggle:hover{ background:rgba(118,207,255,.08); }
+.admin-shell--manga .admin-activity-drawer{
+  background:#fffaef;
+  border:2.5px solid #1a0d05;
+  box-shadow:3px 3px 0 #1a0d05;
+}
+.admin-shell--manga .admin-activity-drawer__toggle:hover{ background:#ffe9b2; }
+.admin-shell--manga .admin-activity-drawer__toggle-label{
+  font-family:"Noto Sans JP",var(--font-display),system-ui,sans-serif;
+  font-weight:800;
+}
+
+/* Wide screens — auto-open on first paint via [hidden] override.  Users can
+   still toggle.  We do this by pre-removing `hidden` only when the JS state
+   keeps it; the parent element holds data-open which we read here. */
+@media (min-width: 1100px){
+  .admin-activity-drawer[data-open="false"] .admin-activity-drawer__body{
+    /* On wide screens we still respect explicit collapse, but visually the
+       toggle row makes it obvious that more content is available. */
+  }
+}
+
+/* Mobile guard — stat strip becomes horizontally scrollable */
+@media (max-width: 720px){
+  .admin-stat-strip{
+    grid-template-columns: repeat(5, minmax(160px, 1fr));
+    overflow-x:auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom:.4rem;
+  }
+  .admin-stat-strip__tile{ scroll-snap-align: start; }
+}
+@media (max-width: 480px){
+  .admin-deck-cards{ grid-template-columns:1fr; }
+}
+
+/* ===========================================================================
+   Round 29 — Inline-edit primitive + Mode tabs.
+   Used by the rebuilt /admin/content/* pages so admins edit copy in the
+   live feature layout instead of via flat-list forms. Scoped here (admin
+   chunk) so the home/index CSS chunk doesn't grow.
+   =========================================================================== */
+.inline-edit{ position:relative; cursor:text; border-radius:4px; transition:background-color .15s, box-shadow .15s; }
+.inline-edit:hover, .inline-edit:focus-visible{
+  background:rgba(118,207,255,.08);
+  box-shadow:0 0 0 1px rgba(118,207,255,.45) inset;
+  outline:none;
+}
+.admin-shell--manga .inline-edit:hover, .admin-shell--manga .inline-edit:focus-visible{
+  background:#fff3c4; box-shadow:0 0 0 2px #1a0d05 inset;
+}
+.inline-edit__pencil{
+  position:absolute; top:-8px; right:-6px;
+  font-size:11px; line-height:1;
+  padding:2px 4px; border-radius:999px;
+  background:#76cfff; color:#07101e;
+  opacity:0; transform:scale(.8); transition:opacity .15s, transform .15s;
+  pointer-events:none;
+}
+.inline-edit:hover .inline-edit__pencil, .inline-edit:focus-visible .inline-edit__pencil{
+  opacity:1; transform:scale(1);
+}
+.admin-shell--manga .inline-edit__pencil{ background:#1a0d05; color:#ffe9b2; }
+.inline-edit--editing{
+  /* Round 33 — fill the parent container regardless of layout context.
+     `flex:1 1 100%` and `align-self:stretch` make the wrapper expand inside
+     flex rows; `width:100%` covers block / inline-block parents. The two
+     declarations don't conflict — `width:100%` is a layout-mode-agnostic
+     baseline, the flex pair only kicks in for flex parents. */
+  display:block; width:100%; max-width:100%;
+  flex:1 1 100%; align-self:stretch;
+  box-sizing:border-box;
+  cursor:default; box-shadow:none !important; background:none !important;
+}
+.inline-edit--editing:hover .inline-edit__pencil, .inline-edit--editing:focus-visible .inline-edit__pencil{ opacity:0; }
+.inline-edit__input{
+  font:inherit; color:inherit; line-height:inherit;
+  background:rgba(7,16,30,.85); color:#fff;
+  border:1.5px solid #76cfff; border-radius:4px;
+  padding:2px 6px; min-width:80px; width:100%;
+  /* Round 33 — match the parent box exactly (border doesn't shrink the
+     visible width) and prevent the input from collapsing to a single
+     pixel-line when the parent is short. */
+  box-sizing:border-box; min-height:2.2em;
+  resize:vertical;
+}
+.admin-shell--manga .inline-edit__input{
+  background:#fffaef; color:#1a0d05; border-color:#1a0d05;
+}
+.inline-edit__input:focus{ outline:none; box-shadow:0 0 0 2px rgba(118,207,255,.4); }
+.admin-shell--manga .inline-edit__input:focus{ box-shadow:3px 3px 0 #1a0d05; }
+.inline-edit__input:disabled{ opacity:.55; }
+.inline-edit__spinner{
+  position:absolute; top:4px; right:8px; font-size:14px; opacity:.7;
+  animation:inline-edit-pulse 1s ease-in-out infinite;
+}
+@keyframes inline-edit-pulse{ 0%,100%{ opacity:.3 } 50%{ opacity:.9 } }
+@media (prefers-reduced-motion: reduce){ .inline-edit__spinner{ animation:none } }
+
+/* Round 33 — admin-only container overrides so the InlineEdit input fills
+   its parent surface even when that parent is inline-block / shrink-to-fit
+   in the live feature CSS (kicker chips, caption strips, hero paragraphs,
+   contact field rows). The selector is scoped under .content-preview so
+   live-site rendering is not affected — only the admin live-preview
+   surface unlocks the full-width editing affordance. */
+.content-preview .comic-panel__kicker:has(.inline-edit--editing),
+.content-preview .comic-panel__caption:has(.inline-edit--editing),
+.content-preview .contact-preview__field:has(.inline-edit--editing),
+.content-preview .hero-preview__paragraph:has(.inline-edit--editing),
+.content-preview .hero-preview__title:has(.inline-edit--editing){
+  display:block; width:100%; box-sizing:border-box;
+}
+/* When an InlineEdit is the only child of a flex item, ensure the wrapper
+   stretches even without :has() support (older Safari) by allowing it to
+   grow within any flex container the live feature CSS uses. */
+.content-preview .inline-edit--editing{ width:100%; }
+
+/* Mode tabs — Thor / Gear 5 toggle that sits at the top of each content
+   page so the admin can flip between editing each mode. */
+.mode-tabs{ display:flex; gap:.5rem; margin-bottom:1rem; }
+.mode-tabs__btn{
+  flex:1; padding:.55rem 1rem; border-radius:8px;
+  font-size:.85rem; font-weight:600; letter-spacing:.04em;
+  background:transparent; border:1px solid rgba(255,255,255,.12); color:inherit;
+  cursor:pointer; transition:background-color .15s, border-color .15s;
+}
+.mode-tabs__btn:hover{ background:rgba(255,255,255,.04); }
+.mode-tabs__btn[aria-pressed="true"]{
+  background:rgba(118,207,255,.18); border-color:rgba(118,207,255,.55); color:#76cfff;
+}
+.admin-shell--manga .mode-tabs__btn{ border:2px dashed #1a0d05; color:#1a0d05; }
+.admin-shell--manga .mode-tabs__btn:hover{ background:#ffe9b2; }
+.admin-shell--manga .mode-tabs__btn[aria-pressed="true"]{
+  background:#1a0d05; color:#ffe9b2; border-style:solid;
+}
+
+/* Preview shell — wraps the live-feature clone with a subtle frame so the
+   admin sees clearly that this is the "preview" surface. */
+.content-preview{
+  position:relative; padding:1.25rem;
+  border-radius:14px;
+  background:rgba(7,16,30,.4);
+  border:1px solid rgba(118,207,255,.18);
+  margin-bottom:1rem;
+}
+.admin-shell--manga .content-preview{
+  background:#fffaef; border:2.5px solid #1a0d05; box-shadow:5px 5px 0 #1a0d05;
+}
+.content-preview__legend{
+  position:absolute; top:-10px; left:14px; padding:0 8px;
+  font-size:.65rem; letter-spacing:.18em; text-transform:uppercase;
+  background:rgb(7,16,30); color:#76cfff; border-radius:999px;
+}
+.admin-shell--manga .content-preview__legend{ background:#fffaef; color:#1a0d05; }
+
+/* ===========================================================================
+ * Round 31 — Skills map editor (Luffy mode). Live GrandLineMap clone with
+ * click-to-edit silhouettes. Reuses .glm-isle* classes (defined in index.css)
+ * for the silhouette stroke / hover lift / active ring; only adds editor
+ * chrome (panel, fields, leaf rows) here.
+ * ========================================================================= */
+.skills-map-editor{ display:flex; flex-direction:column; gap:1rem; }
+.skills-map-editor__toolbar{
+  display:flex; flex-wrap:wrap; gap:.6rem; align-items:center;
+  justify-content:space-between;
+}
+.skills-map-editor__add-btn{ font-size:.85rem; padding:.45rem .9rem; flex:0 0 auto; }
+.skills-map-editor__hint{
+  font-size:.78rem; opacity:.7; padding:.4rem .8rem;
+  border-radius:8px;
+  background:rgba(118,207,255,.07);
+  flex:1 1 240px;
+}
+.admin-shell--manga .skills-map-editor__hint{
+  background:#fffaef; border:2px solid #1a0d05; box-shadow:3px 3px 0 #1a0d05;
+}
+.skills-map-editor__map{
+  position:relative; width:100%; height:520px;
+  border-radius:14px; overflow:hidden;
+  background:#f5ead8; border:2px solid #1a0d05;
+  box-shadow:5px 5px 0 #1a0d05;
+}
+.admin-shell--thor .skills-map-editor__map{ box-shadow:0 6px 24px rgba(0,0,0,.45); }
+.skills-map-editor__bg{
+  position:absolute; inset:0; width:100%; height:100%;
+}
+.skills-map-editor__islands{
+  position:absolute; inset:0; pointer-events:none;
+}
+.skills-map-editor__islands > *{ pointer-events:auto; }
+/* Silhouettes inherit .glm-isle from index.css; just scale-down for editor. */
+.skills-map-editor__isle{ filter:drop-shadow(0 2px 4px rgba(0,0,0,.22)); }
+
+.skills-map-editor__empty{
+  padding:1rem 1.2rem; border-radius:10px; opacity:.7;
+  background:rgba(118,207,255,.05); font-size:.85rem;
+}
+.admin-shell--manga .skills-map-editor__empty{
+  background:#fffaef; border:2px dashed #1a0d05;
+}
+
+.skills-map-editor__panel{
+  border-radius:14px; padding:1.1rem 1.2rem;
+  background:rgba(7,16,30,.55); border:1px solid rgba(118,207,255,.22);
+}
+.admin-shell--manga .skills-map-editor__panel{
+  background:#fffaef; border:2.5px solid #1a0d05; box-shadow:5px 5px 0 #1a0d05;
+}
+.skills-map-editor__panel-head{
+  display:flex; align-items:baseline; gap:.6rem; margin-bottom:.85rem;
+}
+.skills-map-editor__panel-eyebrow{
+  font-size:.65rem; letter-spacing:.18em; text-transform:uppercase; opacity:.65;
+}
+.skills-map-editor__panel-title{
+  font-family:var(--font-display); font-size:1.2rem; font-weight:700; margin:0;
+}
+.admin-shell--manga .skills-map-editor__panel-title{ color:#d11b1b; }
+.skills-map-editor__close{
+  margin-left:auto; appearance:none; border:none; background:transparent;
+  font-size:1.4rem; line-height:1; cursor:pointer; padding:0 .4rem;
+  color:inherit; opacity:.7;
+}
+.skills-map-editor__close:hover{ opacity:1; }
+
+.skills-map-editor__grid{
+  display:grid; gap:.7rem .9rem;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+}
+.skills-map-editor__field{ display:flex; flex-direction:column; gap:.25rem; }
+.skills-map-editor__field--wide{ grid-column:1/-1; }
+.skills-map-editor__label{
+  font-size:.65rem; letter-spacing:.16em; text-transform:uppercase; opacity:.7;
+}
+.skills-map-editor__value{
+  display:inline-block; padding:.35rem .55rem;
+  border-radius:6px; min-height:1.5em;
+  background:rgba(255,255,255,.04);
+}
+.admin-shell--manga .skills-map-editor__value{
+  background:#fff7e1; border:1.5px solid #1a0d05;
+}
+.skills-map-editor__select{
+  padding:.4rem .55rem; border-radius:6px;
+  background:rgba(255,255,255,.04); color:inherit;
+  border:1px solid rgba(118,207,255,.2);
+}
+.admin-shell--manga .skills-map-editor__select{
+  background:#fff7e1; border:1.5px solid #1a0d05; box-shadow:2px 2px 0 #1a0d05;
+}
+
+.skills-map-editor__leaves{
+  margin-top:1rem; padding-top:.8rem;
+  border-top:1px dashed rgba(118,207,255,.2);
+}
+.admin-shell--manga .skills-map-editor__leaves{ border-top-color:#1a0d05; }
+.skills-map-editor__sub{
+  font-size:.85rem; font-weight:700; margin:0;
+  font-family:var(--font-display);
+}
+.skills-map-editor__sub-row{
+  display:flex; align-items:center; gap:.6rem;
+  justify-content:space-between; margin-bottom:.6rem;
+}
+.skills-map-editor__leaf-add{ font-size:.78rem; padding:.35rem .8rem; flex:0 0 auto; }
+.skills-map-editor__future-hint{
+  font-size:.78rem; opacity:.75; line-height:1.5; margin:.2rem 0 0;
+  padding:.55rem .7rem; border-radius:8px;
+  background:rgba(118,207,255,.06);
+}
+.admin-shell--manga .skills-map-editor__future-hint{
+  background:#fff7e1; border:1.5px dashed #1a0d05;
+}
+.skills-map-editor__leaf{
+  display:grid; gap:.4rem .8rem;
+  grid-template-columns:1.6fr 64px 3fr; align-items:start;
+  padding:.45rem 0;
+  border-bottom:1px dotted rgba(118,207,255,.12);
+}
+.admin-shell--manga .skills-map-editor__leaf{ border-bottom-color:rgba(26,13,5,.18); }
+.skills-map-editor__leaf:last-child{ border-bottom:none; }
+.skills-map-editor__leaf-name{ font-weight:600; }
+.skills-map-editor__leaf-prof{
+  font-family:var(--font-display); font-size:.8rem; opacity:.85;
+  text-align:right;
+}
+.skills-map-editor__leaf-desc{ font-size:.85rem; opacity:.85; }
+@media (max-width:640px){
+  .skills-map-editor__map{ height:380px; }
+  .skills-map-editor__leaf{ grid-template-columns:1fr; }
+}
+
+/* ===========================================================================
+ * Round 34 — Skills tree editor (Thor mode). Live YggdrasilTree clone with
+ * click-to-edit realm stars. Reuses .yggdrasil-tree* / .yggdrasil-star*
+ * classes (defined in index.css) for the PNG backdrop + star halos / cores;
+ * only adds editor chrome (toolbar, panel, fields, leaf rows) here. The
+ * panel layout intentionally mirrors .skills-map-editor__panel so admins
+ * see consistent UX between the two modes.
+ * ========================================================================= */
+.skills-tree-editor{ display:flex; flex-direction:column; gap:1rem; }
+.skills-tree-editor__toolbar{
+  display:flex; flex-wrap:wrap; gap:.6rem; align-items:center;
+  justify-content:space-between;
+}
+.skills-tree-editor__add-btn{ font-size:.85rem; padding:.45rem .9rem; flex:0 0 auto; }
+.skills-tree-editor__hint{
+  font-size:.78rem; opacity:.7; padding:.4rem .8rem;
+  border-radius:8px;
+  background:rgba(118,207,255,.07);
+  flex:1 1 240px;
+}
+.skills-tree-editor__tree{
+  /* Inherits .yggdrasil-tree positioning from index.css; nothing extra
+     needed beyond a subtle drop-shadow so the editor card visually nests. */
+  filter:drop-shadow(0 6px 16px rgba(0,0,0,.45));
+}
+/* Active-realm gold pulse — flags the currently-selected star in the editor.
+   Mirrors how SkillsMapEditor rings the active island silhouette. */
+.yggdrasil-star--active .yggdrasil-star__core{
+  box-shadow:0 0 0 3px #ffd700 inset, 0 0 22px var(--star-color, #76cfff);
+  animation:ygg-star-active-pulse 1.6s ease-in-out infinite;
+}
+.yggdrasil-star--active .yggdrasil-star__halo{ opacity:.9; }
+@keyframes ygg-star-active-pulse{
+  0%,100%{ box-shadow:0 0 0 3px #ffd700 inset, 0 0 22px var(--star-color, #76cfff); }
+  50%    { box-shadow:0 0 0 4px #ffe066 inset, 0 0 30px var(--star-color, #76cfff); }
+}
+@media (prefers-reduced-motion:reduce){
+  .yggdrasil-star--active .yggdrasil-star__core{ animation:none; }
+}
+
+.skills-tree-editor__empty{
+  padding:1rem 1.2rem; border-radius:10px; opacity:.7;
+  background:rgba(118,207,255,.05); font-size:.85rem;
+}
+.skills-tree-editor__panel{
+  border-radius:14px; padding:1.1rem 1.2rem;
+  background:rgba(7,16,30,.55); border:1px solid rgba(118,207,255,.22);
+}
+.skills-tree-editor__panel-head{
+  display:flex; align-items:baseline; gap:.6rem; margin-bottom:.85rem;
+}
+.skills-tree-editor__panel-eyebrow{
+  font-size:.65rem; letter-spacing:.18em; text-transform:uppercase; opacity:.65;
+}
+.skills-tree-editor__panel-title{
+  font-family:var(--font-display); font-size:1.2rem; font-weight:700; margin:0;
+  color:#f0d77a;
+}
+.skills-tree-editor__close{
+  margin-left:auto; appearance:none; border:none; background:transparent;
+  font-size:1.4rem; line-height:1; cursor:pointer; padding:0 .4rem;
+  color:inherit; opacity:.7;
+}
+.skills-tree-editor__close:hover{ opacity:1; }
+.skills-tree-editor__grid{
+  display:grid; gap:.7rem .9rem;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+}
+.skills-tree-editor__field{ display:flex; flex-direction:column; gap:.25rem; }
+.skills-tree-editor__field--wide{ grid-column:1/-1; }
+.skills-tree-editor__label{
+  font-size:.65rem; letter-spacing:.16em; text-transform:uppercase; opacity:.7;
+}
+.skills-tree-editor__value{
+  display:inline-block; padding:.35rem .55rem;
+  border-radius:6px; min-height:1.5em;
+  background:rgba(255,255,255,.04);
+}
+.skills-tree-editor__select{
+  padding:.4rem .55rem; border-radius:6px;
+  background:rgba(255,255,255,.04); color:inherit;
+  border:1px solid rgba(118,207,255,.2);
+}
+.skills-tree-editor__leaves{
+  margin-top:1rem; padding-top:.8rem;
+  border-top:1px dashed rgba(118,207,255,.2);
+}
+.skills-tree-editor__sub{
+  font-size:.85rem; font-weight:700; margin:0;
+  font-family:var(--font-display);
+}
+.skills-tree-editor__sub-row{
+  display:flex; align-items:center; gap:.6rem;
+  justify-content:space-between; margin-bottom:.6rem;
+}
+.skills-tree-editor__leaf-add{ font-size:.78rem; padding:.35rem .8rem; flex:0 0 auto; }
+.skills-tree-editor__future-hint{
+  font-size:.78rem; opacity:.75; line-height:1.5; margin:.2rem 0 0;
+  padding:.55rem .7rem; border-radius:8px;
+  background:rgba(118,207,255,.06);
+}
+.skills-tree-editor__leaf{
+  display:grid; gap:.4rem .8rem;
+  grid-template-columns:1.6fr 64px 3fr; align-items:start;
+  padding:.45rem 0;
+  border-bottom:1px dotted rgba(118,207,255,.12);
+}
+.skills-tree-editor__leaf:last-child{ border-bottom:none; }
+.skills-tree-editor__leaf-name{ font-weight:600; }
+.skills-tree-editor__leaf-prof{
+  font-family:var(--font-display); font-size:.8rem; opacity:.85;
+  text-align:right;
+}
+.skills-tree-editor__leaf-desc{ font-size:.85rem; opacity:.85; }
+@media (max-width:640px){
+  .skills-tree-editor__leaf{ grid-template-columns:1fr; }
+}
+
+/* ===========================================================================
+ * Round 35 — Skills editor controls: reorder + delete + drop + custom-add.
+ * Lives in admin-dashboard.css (lazy admin chunk) so the main bundle stays
+ * under the CSS cap.
+ * ===========================================================================*/
+.admin-cta--danger{
+  background:linear-gradient(180deg, #d11b1b 0%, #962020 100%);
+  color:#fff;
+  border-color:#5d0e0e;
+}
+.admin-cta--danger:hover{ filter:brightness(1.08); }
+.admin-cta--danger:focus-visible{ outline:2px solid #ffb4b4; outline-offset:2px; }
+
+/* Reorder ↑/↓ button group inside the panel head. */
+.skills-map-editor__reorder,
+.skills-tree-editor__reorder{
+  display:inline-flex; gap:.25rem; margin-left:auto; margin-right:.5rem;
+}
+.skills-map-editor__reorder-btn,
+.skills-tree-editor__reorder-btn{
+  width:2rem; height:2rem;
+  display:inline-flex; align-items:center; justify-content:center;
+  border:1px solid currentColor; border-radius:.4rem;
+  background:transparent; color:inherit;
+  font-size:1rem; line-height:1; cursor:pointer; opacity:.85;
+}
+.skills-map-editor__reorder-btn:hover:not(:disabled),
+.skills-tree-editor__reorder-btn:hover:not(:disabled){ opacity:1; background:rgba(0,0,0,.06); }
+.skills-map-editor__reorder-btn:disabled,
+.skills-tree-editor__reorder-btn:disabled{ opacity:.35; cursor:not-allowed; }
+
+/* Danger zone wrapping the delete / drop button. */
+.skills-map-editor__danger,
+.skills-tree-editor__danger{
+  margin-top:1rem; padding-top:.75rem;
+  border-top:1px dashed rgba(0,0,0,.15);
+  display:flex; justify-content:flex-end;
+}
+.admin-shell--thor .skills-map-editor__danger,
+.admin-shell--thor .skills-tree-editor__danger{ border-top-color:rgba(255,255,255,.12); }
+.skills-map-editor__delete,
+.skills-tree-editor__delete{ font-size:.85rem; padding:.45rem .9rem; }
+
+/* Custom-add inline modal — same panel chrome as the visited/future panels
+ * but with a subtle accent so it reads as transient. */
+.skills-map-editor__panel--custom,
+.skills-tree-editor__panel--custom{
+  border-style:dashed;
+  background-image:linear-gradient(180deg, rgba(95,166,200,.06) 0%, transparent 100%);
+}
+.skills-map-editor__input,
+.skills-map-editor__textarea,
+.skills-tree-editor__input,
+.skills-tree-editor__textarea{
+  font:inherit; padding:.4rem .55rem;
+  border:1px solid rgba(0,0,0,.18); border-radius:.35rem;
+  background:rgba(255,255,255,.7); color:inherit; width:100%;
+}
+.admin-shell--thor .skills-map-editor__input,
+.admin-shell--thor .skills-map-editor__textarea,
+.admin-shell--thor .skills-tree-editor__input,
+.admin-shell--thor .skills-tree-editor__textarea{
+  background:rgba(0,0,0,.35); border-color:rgba(255,255,255,.18);
+}
+.skills-map-editor__textarea,
+.skills-tree-editor__textarea{ resize:vertical; min-height:4.5rem; }
+.skills-map-editor__custom-actions,
+.skills-tree-editor__custom-actions{
+  display:flex; gap:.5rem; justify-content:flex-end; margin-top:.75rem;
+}
+
+/* === Round 64 — admin secret-entry wordmark picker ====================
+   Used by `AdminContentAdmin.tsx` to render the "DOR BEN TZUR" wordmark
+   as a row of toggleable letter buttons.  Selected letters get a
+   coloured outline + ordinal badge so the admin can see the click order
+   at a glance. */
+.admin-secret-wordmark{
+  display:flex; flex-wrap:wrap; align-items:center;
+  gap:.4rem;
+  font-family:var(--font-display, "Bangers", "Bebas Neue", system-ui, sans-serif);
+  font-size:clamp(1.6rem, 3.5vw, 2.2rem);
+  letter-spacing:.06em;
+  user-select:none;
+}
+.admin-secret-wordmark__space{
+  display:inline-block; width:.7em;
+}
+.admin-secret-wordmark__letter{
+  position:relative;
+  appearance:none;
+  background:transparent;
+  color:inherit;
+  border:2px solid transparent;
+  border-radius:6px;
+  padding:.2rem .55rem .15rem;
+  cursor:pointer;
+  line-height:1;
+  transition:background .15s ease, border-color .15s ease, transform .12s ease;
+}
+.admin-secret-wordmark__letter:hover{
+  background:rgba(255,255,255,.06);
+  border-color:rgba(255,255,255,.18);
+}
+.admin-secret-wordmark__letter:focus-visible{
+  outline:3px solid rgb(var(--color-highlight));
+  outline-offset:2px;
+}
+.admin-secret-wordmark__letter--on{
+  border-color:rgb(var(--color-highlight));
+  background:rgb(var(--color-highlight) / .12);
+}
+.admin-secret-wordmark__letter--on:hover{
+  background:rgb(var(--color-highlight) / .2);
+}
+.admin-secret-wordmark__letter-char{ display:inline-block; }
+.admin-secret-wordmark__letter-badge{
+  position:absolute; top:-.55rem; right:-.55rem;
+  min-width:1.35rem; height:1.35rem;
+  padding:0 .35rem;
+  display:inline-flex; align-items:center; justify-content:center;
+  border-radius:99px;
+  background:rgb(var(--color-highlight));
+  color:#0a0d18;
+  font-family:system-ui, sans-serif;
+  font-size:.7rem;
+  font-weight:800;
+  line-height:1;
+  letter-spacing:0;
+  box-shadow:0 0 0 2px rgb(var(--color-bg) / .9);
+}
+.admin-secret-gap-input{
+  appearance:textfield;
+  width:6.5rem;
+  padding:.4rem .6rem;
+  background:rgb(255 255 255 / .04);
+  color:inherit;
+  border:1px solid rgb(255 255 255 / .14);
+  border-radius:6px;
+  font:inherit;
+  font-variant-numeric:tabular-nums;
+}
+.admin-secret-gap-input:focus-visible{
+  outline:3px solid rgb(var(--color-highlight) / .55);
+  outline-offset:2px;
+  border-color:rgb(var(--color-highlight));
+}

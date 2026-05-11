@@ -5,8 +5,11 @@ import ProjectsHero from "../components/projects/ProjectsHero";
 import ProjectsFilters from "../components/projects/ProjectsFilters";
 import ProjectsGrid from "../components/projects/ProjectsGrid";
 import ProjectsLoadMore from "../components/projects/ProjectsLoadMore";
-import { projectFixtures } from "../data/projects";
+import { filterProjectsByMode, getFixturesForMode } from "../data/project-fixtures";
 import { listProjects } from "../services/projects";
+import { useMode } from "../stores/mode";
+// useAuth import removed (Round 38) — placeholder toggle is now public.
+// import { useAuth } from "../hooks/useAuth.helpers";
 import type { Project } from "../types/project";
 
 const DEFAULT_VISIBLE_COUNT = 6;
@@ -22,7 +25,9 @@ export async function projectsLoader() {
   } catch (error) {
     console.warn("[projectsLoader] Falling back to fixtures", error);
   }
-  return { projects: projectFixtures };
+  // Loader runs outside React, before mode is known — return Thor as a safe
+  // default. The page component re-derives the visible list per active mode.
+  return { projects: getFixturesForMode("thor") };
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -80,8 +85,17 @@ export function useProjectsSearchParams() {
 }
 
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState<Project[]>(() => projectFixtures.map((project) => ({ ...project })));
-  const [isLoading, setIsLoading] = useState(projectFixtures.length === 0);
+  const mode = useMode();
+  // Raw rows from Supabase (or fixture fallback). Mode filtering happens
+  // downstream so toggling Thor↔Luffy re-renders the visible list instantly.
+  const [rawProjects, setRawProjects] = useState<Project[]>(() =>
+    getFixturesForMode(mode).map((project) => ({ ...project })),
+  );
+  const [hasSupabaseData, setHasSupabaseData] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  // user / isAdmin removed (Round 38).
+  // Round 75: admin-only toggle that mirrors the home Projects section.
+  const [showPlaceholders, setShowPlaceholders] = useState(false);
   const { query, selectedTechnologies, setQuery, toggleTechnology, clear } =
     useProjectsSearchParams();
 
@@ -89,10 +103,13 @@ export default function ProjectsPage() {
     let cancelled = false;
     (async () => {
       try {
-        const { projects: initialProjects } = await projectsLoader();
-        if (!cancelled) {
-          setProjects(initialProjects.map((project) => ({ ...project })));
+        const result = await listProjects();
+        if (!cancelled && result.length) {
+          setRawProjects(result);
+          setHasSupabaseData(true);
         }
+      } catch (error) {
+        console.warn("[ProjectsPage] Falling back to fixtures", error);
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -101,6 +118,31 @@ export default function ProjectsPage() {
       cancelled = true;
     };
   }, []);
+
+  // Re-seed mode-aware fixtures whenever the user toggles modes — but only
+  // when we don't have real Supabase rows (don't clobber actual portfolio data).
+  useEffect(() => {
+    if (!hasSupabaseData) {
+      setRawProjects(getFixturesForMode(mode).map((p) => ({ ...p })));
+    }
+  }, [mode, hasSupabaseData]);
+
+  // Round 76: strict placeholder visibility — placeholders are hidden by
+  // default for everyone; admin opts in via the toggle.  No "fall back
+  // to fixtures when DB empty" — empty DB renders empty grid (which is
+  // exactly what visitors should see until real projects exist).
+  const projects = useMemo(() => {
+    const base = filterProjectsByMode(rawProjects, mode);
+    const realOnly = base.filter((p) => p.placeholder !== true);
+    // Round 38 — see Projects component: toggle is now visible to all.
+    if (showPlaceholders) {
+      const fixtureRows = getFixturesForMode(mode).map((p) => ({ ...p }));
+      const seen = new Set(realOnly.flatMap((p) => [p.id, p.slug].filter(Boolean) as string[]));
+      const extras = fixtureRows.filter((p) => !(p.id && seen.has(p.id)) && !(p.slug && seen.has(p.slug)));
+      return [...realOnly, ...extras];
+    }
+    return realOnly;
+  }, [rawProjects, mode, showPlaceholders]);
 
   const technologies = useMemo(() => {
     const set = new Set<string>();
@@ -164,6 +206,19 @@ export default function ProjectsPage() {
           onToggleTechnology={toggleTechnology}
           onClear={clear}
         />
+
+        <label className="projects-admin-toggle projects-admin-toggle--page">
+          <input
+            type="checkbox"
+            checked={showPlaceholders}
+            onChange={(e) => setShowPlaceholders(e.target.checked)}
+          />
+          <span>
+            {mode === 'thor'
+              ? '⚡ Summon Asgardian dossiers'
+              : '☀ Hoist the Straw Hat archives'}
+          </span>
+        </label>
 
         <ProjectsGrid projects={visibleProjects} isLoading={isLoading} />
 

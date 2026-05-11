@@ -8,5 +8,8 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: "./src/setupTests.ts",
+    // Use vmThreads pool to avoid rolldown-vite SSR transform injecting
+    // __vite_ssr_exportName__ helpers that aren't available in jsdom runtime.
+    pool: "vmThreads",
   },
 });

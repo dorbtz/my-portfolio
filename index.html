@@ -4,7 +4,35 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>my-project</title>
+    <title>%VITE_PORTFOLIO_NAME% — %VITE_PORTFOLIO_TITLE%</title>
+    <meta name="description" content="%VITE_PORTFOLIO_TAGLINE%" />
+    <meta name="theme-color" content="#0d0d1a" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="%VITE_PORTFOLIO_NAME% — %VITE_PORTFOLIO_TITLE%" />
+    <meta property="og:description" content="%VITE_PORTFOLIO_TAGLINE%" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="%VITE_PORTFOLIO_NAME% — %VITE_PORTFOLIO_TITLE%" />
+    <meta name="twitter:description" content="%VITE_PORTFOLIO_TAGLINE%" />
+    <!--
+      Comic + manga font loading via Google Fonts.
+      font-display=swap is handled by the ?display=swap param.
+      Preconnect cuts DNS + TLS overhead on first request.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bangers&family=Bebas+Neue&family=Special+Elite&family=Noto+Sans+JP:wght@400;700;900&display=swap"
+    />
+    <!-- Speculation Rules: prerender /projects/* pages when user shows moderate intent (hover/pointer-over). -->
+    <!-- Supported in Chrome 121+; ignored silently by other browsers. -->
+    <script type="speculationrules">
+      {
+        "prerender": [
+          { "where": { "href_matches": "/projects/*" }, "eagerness": "moderate" }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

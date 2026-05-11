@@ -1,11 +1,18 @@
-import type { Project, ProjectStatus } from "../types/project";
+import type { Project, ProjectMode, ProjectStatus } from "../types/project";
 
-type Primitive = string | number | boolean | null | undefined;
 type ProjectRecord = Record<string, unknown>;
 
 const DEFAULT_STATUS: ProjectStatus = "draft";
 
-function toNumber(value: Primitive, fallback: number): number {
+/** Coerce an unknown value into `ProjectMode | null`. Anything unrecognised → null. */
+function sanitizeMode(value: unknown): ProjectMode | null {
+  if (typeof value !== "string") return null;
+  const normalised = value.trim().toLowerCase();
+  if (normalised === "thor" || normalised === "gear5") return normalised;
+  return null;
+}
+
+function toNumber(value: unknown, fallback: number): number {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   if (typeof value === "string") {
     const parsed = Number(value);
@@ -14,7 +21,7 @@ function toNumber(value: Primitive, fallback: number): number {
   return fallback;
 }
 
-function sanitizeString(value: Primitive): string | undefined {
+function sanitizeString(value: unknown): string | undefined {
   if (typeof value === "string") {
     const trimmed = value.trim();
     return trimmed.length ? trimmed : undefined;
@@ -22,7 +29,7 @@ function sanitizeString(value: Primitive): string | undefined {
   return undefined;
 }
 
-function sanitizeNullableString(value: Primitive): string | null {
+function sanitizeNullableString(value: unknown): string | null {
   const sanitized = sanitizeString(value);
   return sanitized ?? null;
 }
@@ -52,22 +59,23 @@ function toJsonOrNull<T>(value: T[] | null | undefined): T[] | null {
 
 export function mapProjectRow(record: ProjectRecord | Project): Project {
   const nowIso = new Date().toISOString();
-  const rawId = record?.id ?? record?.slug ?? sanitizeString(record?.title) ?? undefined;
-  const slug = sanitizeString(record?.slug) ?? sanitizeString(record?.id) ?? (typeof rawId === "string" ? rawId : "");
-  const title = sanitizeString(record?.title) ?? "Untitled project";
-  const summary = sanitizeString(record?.summary) ?? sanitizeString(record?.description) ?? "";
-  const description = sanitizeString(record?.description) ?? summary;
-  const tags = toStringArray(record?.tags);
-  const stackCandidates = toStringArray(record?.stack);
-  const techCandidates = toStringArray(record?.tech);
+  const r = record as Record<string, unknown>;
+  const rawId = r?.id ?? r?.slug ?? sanitizeString(r?.title) ?? undefined;
+  const slug = sanitizeString(r?.slug) ?? sanitizeString(r?.id) ?? (typeof rawId === "string" ? rawId : "");
+  const title = sanitizeString(r?.title) ?? "Untitled project";
+  const summary = sanitizeString(r?.summary) ?? sanitizeString(r?.description) ?? "";
+  const description = sanitizeString(r?.description) ?? summary;
+  const tags = toStringArray(r?.tags);
+  const stackCandidates = toStringArray(r?.stack);
+  const techCandidates = toStringArray(r?.tech);
   const stack = stackCandidates.length ? stackCandidates : techCandidates;
   const tech = techCandidates.length ? techCandidates : stack;
-  const gallery = toStringArray(record?.gallery);
-  const responsibilities = toStringArray(record?.responsibilities);
-  const outcomes = toStringArray(record?.outcomes);
-  const statusValue = sanitizeString(record?.status) as ProjectStatus | undefined;
-  const priority = toNumber(record?.priority, 0);
-  const sortOrder = record?.sort_order ?? record?.sortOrder ?? record?.priority;
+  const gallery = toStringArray(r?.gallery);
+  const responsibilities = toStringArray(r?.responsibilities);
+  const outcomes = toStringArray(r?.outcomes);
+  const statusValue = sanitizeString(r?.status) as ProjectStatus | undefined;
+  const priority = toNumber(r?.priority, 0);
+  const sortOrder = r?.sort_order ?? r?.sortOrder ?? r?.priority;
 
   const ownerProfile = (record as ProjectRecord & { owner_profile?: ProjectRecord; ownerProfile?: ProjectRecord })?.owner_profile
     ?? (record as ProjectRecord & { ownerProfile?: ProjectRecord })?.ownerProfile
@@ -83,36 +91,40 @@ export function mapProjectRow(record: ProjectRecord | Project): Project {
     id: typeof rawId === "string" ? rawId : undefined,
     slug,
     title,
-    subtitle: sanitizeString(record?.subtitle) ?? sanitizeString(record?.tagline),
+    subtitle: sanitizeString(r?.subtitle) ?? sanitizeString(r?.tagline),
     summary,
     description,
     tags,
     stack,
     tech,
-    role: sanitizeString(record?.role),
+    role: sanitizeString(r?.role),
     status: statusValue && ["draft", "in-progress", "shipped", "archived"].includes(statusValue)
       ? statusValue
       : DEFAULT_STATUS,
+    mode: sanitizeMode(r?.mode),
     priority,
     sortOrder: typeof sortOrder === "number" && Number.isFinite(sortOrder)
       ? sortOrder
       : toNumber(sortOrder, priority || 9999),
-    featured: Boolean(record?.featured ?? record?.highlight ?? false),
-    liveUrl: sanitizeString(record?.live_url) ?? sanitizeString(record?.liveUrl),
-    repoUrl: sanitizeString(record?.repo_url) ?? sanitizeString(record?.repoUrl),
-    coverUrl: sanitizeString(record?.cover_url) ?? sanitizeString(record?.coverUrl),
-    heroImageAlt: sanitizeString(record?.hero_image_alt) ?? sanitizeString(record?.heroImageAlt),
-    heroVideoUrl: sanitizeString(record?.hero_video_url) ?? sanitizeString(record?.heroVideoUrl),
+    featured: Boolean(r?.featured ?? r?.highlight ?? false),
+    liveUrl: sanitizeString(r?.live_url) ?? sanitizeString(r?.liveUrl),
+    repoUrl: sanitizeString(r?.repo_url) ?? sanitizeString(r?.repoUrl),
+    coverUrl: sanitizeString(r?.cover_url) ?? sanitizeString(r?.coverUrl),
+    heroImageAlt: sanitizeString(r?.hero_image_alt) ?? sanitizeString(r?.heroImageAlt),
+    heroVideoUrl: sanitizeString(r?.hero_video_url) ?? sanitizeString(r?.heroVideoUrl),
     gallery: gallery.length ? gallery : undefined,
-    links: Array.isArray(record?.links) ? record.links : undefined,
-    metrics: Array.isArray(record?.metrics) ? record.metrics : undefined,
+    links: Array.isArray(r?.links) ? (r.links as Project["links"]) : undefined,
+    metrics: Array.isArray(r?.metrics) ? (r.metrics as Project["metrics"]) : undefined,
     responsibilities: responsibilities.length ? responsibilities : undefined,
     outcomes: outcomes.length ? outcomes : undefined,
-    createdAt: sanitizeString(record?.created_at) ?? sanitizeString(record?.createdAt) ?? nowIso,
-    updatedAt: sanitizeString(record?.updated_at) ?? sanitizeString(record?.updatedAt),
-    owner: typeof record?.owner === "string" ? record.owner : record?.owner ?? null,
+    createdAt: sanitizeString(r?.created_at) ?? sanitizeString(r?.createdAt) ?? nowIso,
+    updatedAt: sanitizeString(r?.updated_at) ?? sanitizeString(r?.updatedAt),
+    owner: typeof r?.owner === "string" ? r.owner : null,
     ownerUsername: ownerUsername ?? null,
     ownerDisplayName: ownerDisplayName ?? null,
+    // Round 75: preserve placeholder flag from input.  Real Supabase rows
+    // never carry this — only the bundled fixtures.
+    placeholder: r?.placeholder === true ? true : undefined,
   };
 }
 
@@ -144,6 +156,7 @@ export function projectToInsert(project: Omit<Project, "id"> & { id?: string }):
     tech,
     role: sanitizeNullableString(project.role),
     status: project.status ?? DEFAULT_STATUS,
+    mode: sanitizeMode(project.mode),
     priority: toNumber(project.priority, 0),
     sort_order: typeof project.sortOrder === "number" ? project.sortOrder : toNumber(project.priority, 0),
     featured: Boolean(project.featured),
@@ -169,7 +182,7 @@ export function projectToUpdate(patch: Partial<Project>): ProjectRecord {
     updated_at: sanitizeString(patch.updatedAt) ?? nowIso,
   };
 
-  const assign = (key: string, value: unknown, transform?: (value: unknown) => unknown) => {
+  const assign = <T,>(key: string, value: T, transform?: (value: T) => unknown) => {
     if (value === undefined) return;
     row[key] = transform ? transform(value) : value;
   };
@@ -190,6 +203,7 @@ export function projectToUpdate(patch: Partial<Project>): ProjectRecord {
 
   assign("role", patch.role, sanitizeNullableString);
   assign("status", patch.status);
+  if (patch.mode !== undefined) row.mode = sanitizeMode(patch.mode);
   if (patch.priority !== undefined) assign("priority", toNumber(patch.priority, 0));
   if (patch.sortOrder !== undefined) assign("sort_order", toNumber(patch.sortOrder, 0));
   if (patch.featured !== undefined) assign("featured", Boolean(patch.featured));

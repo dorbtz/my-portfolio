@@ -41,10 +41,10 @@ export default function Section({ id, className = "", label, children }: Props) 
   }, []);
 
   return (
-    <section ref={ref} id={id} className={`section ${className}`}>
+    <section ref={ref} id={id} className={`section ${className}`} data-section>
       <div className="wrap section-inner">
         {label ? (
-          <p className="section-label" data-section-label>
+          <p className="section-label sr-only" data-section-label>
             {label}
           </p>
         ) : null}

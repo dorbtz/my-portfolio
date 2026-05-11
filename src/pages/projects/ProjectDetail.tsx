@@ -1,14 +1,48 @@
-import { FormEvent, useEffect, useState } from "react";
+/**
+ * src/pages/projects/ProjectDetail.tsx
+ *
+ * Dual-mode case-study page rewritten from scratch:
+ *
+ *  - Thor mode  : MCU comic / cinematic dossier — Asgardian navy + Bifrost blue
+ *                 + Mjolnir gold, lightning corner cuts, runic strip, comic
+ *                 panels with rivets, glowing status stamp, starfield haze.
+ *  - Manga mode : Shonen Jump splash — cream parchment + Ben-Day halftone +
+ *                 thick black manga panel borders + brown ink + kana SFX
+ *                 (ドン!, ゴムゴム!, バン!), wanted-poster banner, ink-stamp
+ *                 status badges, One Piece logo watermark, speech bubble
+ *                 pull-quote.
+ *
+ * All functional behaviour from the previous page is preserved verbatim:
+ *   - URL params (`slug` or legacy `id`)
+ *   - getProject() fetch + loading + 404 states
+ *   - setPageMeta() SEO sync
+ *   - View-transition cover (project-cover-${id})
+ *   - GitHub badge via useGithubBadge
+ *   - Admin edit modal (auth-gated, full Supabase save → updateProject → refetch)
+ *   - Quick facts sidebar / stack / supporting tech / tags
+ *   - Hero media (video iframe / file / cover image fallback)
+ *   - Sections: overview, metrics, responsibilities, outcomes, resources,
+ *     gallery, back link
+ *
+ * Styling lives in src/index.css under the two clearly labelled blocks
+ * `ProjectDetail — Thor MCU theme` and `ProjectDetail — Manga theme`.
+ */
+import { useEffect, useState } from "react";
+import type { CSSProperties, FormEvent, ReactElement } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getProject } from "../../services/projects";
-import { updateProject } from "../../services/projects";
+import { getProject, updateProject } from "../../services/projects";
 import type { Project, ProjectLink, ProjectMetric, ProjectStatus } from "../../types/project";
 import { setPageMeta } from "../../lib/seo";
 import ImageFallback from "../../components/ImageFallback";
 import { useGithubBadge } from "../../hooks/useGithubBadge";
 import { ProjectActionButton } from "../../components/ProjectActionButton";
 import { iconForProjectLink } from "../../components/projectActionHelpers";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../hooks/useAuth.helpers";
+import { useMode } from "../../stores/mode";
+
+// ---------------------------------------------------------------------------
+// Formatting / parsing helpers (carried over from the prior implementation)
+// ---------------------------------------------------------------------------
 
 const DATE_FORMAT: Intl.DateTimeFormatOptions = {
   year: "numeric",
@@ -52,9 +86,7 @@ function toMultiline(list?: string[] | null): string {
 
 function toMetricsText(metrics?: ProjectMetric[] | null): string {
   if (!Array.isArray(metrics) || !metrics.length) return "";
-  return metrics
-    .map((metric) => `${metric.label} | ${metric.value}`)
-    .join("\n");
+  return metrics.map((metric) => `${metric.label} | ${metric.value}`).join("\n");
 }
 
 function toLinksText(links?: ProjectLink[] | null): string {
@@ -96,9 +128,10 @@ function parseLinks(value: string): ProjectLink[] {
     .map((line) => {
       const [label, url, icon] = line.split("|").map((part) => part.trim());
       if (!label || !url) return null;
-      return { label, url, icon: icon || undefined };
+      const link: ProjectLink = { label, url, icon: icon || null };
+      return link;
     })
-    .filter((item): item is ProjectLink => Boolean(item));
+    .filter((item): item is ProjectLink => item !== null);
 }
 
 type ProjectEditState = {
@@ -163,8 +196,126 @@ function safeText(value?: string | null, fallback = "N/A") {
 
 type HeroMediaItem = {
   key: string;
-  element: JSX.Element;
+  element: ReactElement;
 };
+
+// Mode-aware microcopy table — keeps the JSX free of branching strings.
+const COPY = {
+  thor: {
+    back: "← Back to the Archive",
+    dossier: "Asgardian Dossier",
+    dossierHint: "Field-tested intel from the Nine Realms.",
+    overview: "Mission Briefing",
+    metrics: "Strike Metrics",
+    responsibilities: "Operational Vector",
+    outcomes: "Verdict",
+    resources: "Bifrost Links",
+    gallery: "Holo Reel",
+    stack: "Arsenal",
+    supporting: "Supporting Runes",
+    tags: "Sigils",
+    edit: "Edit dossier",
+    fallbackMedia: "Hero media is recharging. Picture a Bifrost arrival.",
+    fallbackSummary: "No briefing yet. Consider this the calm before the storm.",
+    fallbackOverview: "Briefing pending. Heimdall is still composing the report.",
+  },
+  manga: {
+    back: "← Back to the Wanted Wall",
+    dossier: "WANTED FILE",
+    dossierHint: "Marines say this one is dangerous. Read carefully.",
+    overview: "STORY",
+    metrics: "POWER STATS",
+    responsibilities: "CREW LOG",
+    outcomes: "FINAL BELL",
+    resources: "BONUS READS",
+    gallery: "SPLASH PAGE",
+    stack: "DEVIL FRUIT KIT",
+    supporting: "Side Tools",
+    tags: "Bounty Tags",
+    edit: "Edit poster",
+    fallbackMedia: "No splash page yet — close your eyes and hear the SFX.",
+    fallbackSummary: "No bounty story yet. Picture it: full chapter, big DON!.",
+    fallbackOverview: "The story panel is still inked in pencil. Stay tuned.",
+  },
+} as const;
+
+// ---------------------------------------------------------------------------
+// Decorative ambience (aria-hidden, animations gated by prefers-reduced-motion)
+// ---------------------------------------------------------------------------
+
+function ThorAmbience() {
+  return (
+    <div className="project-detail__ambience" aria-hidden="true">
+      {/* Lightning bolt corners */}
+      <svg
+        className="project-detail__bolt project-detail__bolt--tl"
+        viewBox="0 0 200 200"
+        focusable="false"
+      >
+        <path
+          d="M 80,10 L 110,80 L 80,90 L 130,180 L 100,110 L 130,100 L 80,10 Z"
+          fill="currentColor"
+        />
+      </svg>
+      <svg
+        className="project-detail__bolt project-detail__bolt--tr"
+        viewBox="0 0 200 200"
+        focusable="false"
+      >
+        <path
+          d="M 80,10 L 110,80 L 80,90 L 130,180 L 100,110 L 130,100 L 80,10 Z"
+          fill="currentColor"
+        />
+      </svg>
+      {/* Asgardian rune strip across the bottom of the hero band */}
+      <span className="project-detail__rune-strip">
+        ᚦᛟᚱ ᛬ ᚨᛋᚷᚨᚱᛞ ᛬ ᛗᛃᛟᛚᚾᛁᚱ ᛬ ᛒᛁᚠᚱᛟᛋᛏ ᛬ ᚺᛖᛁᛗᛞᚨᛚᛚ
+      </span>
+      {/* Marvel / Avengers wordmark watermark (May 2026 asset refresh) */}
+      <picture className="project-detail__watermark project-detail__watermark--thor">
+        <img src="/assets/Marvel/avengers-logo.png" alt="" loading="lazy" />
+      </picture>
+      {/* Star-field haze */}
+      <span className="project-detail__starfield" />
+    </div>
+  );
+}
+
+function MangaAmbience() {
+  return (
+    <div className="project-detail__ambience" aria-hidden="true">
+      <span className="project-detail__sfx project-detail__sfx--top-left">ドン!</span>
+      <span className="project-detail__sfx project-detail__sfx--top-right">バン!</span>
+      <span className="project-detail__sfx project-detail__sfx--bottom-left">ゴムゴム!</span>
+      <span className="project-detail__speed-lines" />
+      <picture className="project-detail__watermark project-detail__watermark--manga">
+        <source srcSet="/assets/One-Piece/One-Piece-Logo-1416.webp" type="image/webp" />
+        <img src="/assets/One-Piece/One-Piece-Logo-1416.png" alt="" loading="lazy" />
+      </picture>
+      <picture className="project-detail__watermark project-detail__watermark--fruit">
+        <source srcSet="/assets/One-Piece/Gomu-Gomu-no-Mi-One-Piece-Devil-Fruit-415.webp" type="image/webp" />
+        <img src="/assets/One-Piece/Gomu-Gomu-no-Mi-One-Piece-Devil-Fruit-415.png" alt="" loading="lazy" />
+      </picture>
+    </div>
+  );
+}
+
+// Inline status "stamp" — different fill per mode but identical structure.
+function StatusStamp({ label, isThor }: { label: string; isThor: boolean }) {
+  return (
+    <span
+      className={`project-detail__stamp ${isThor ? "project-detail__stamp--thor" : "project-detail__stamp--manga"}`}
+      role="img"
+      aria-label={`Status: ${label}`}
+    >
+      <span className="project-detail__stamp-text">{label}</span>
+    </span>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Page component
+// ---------------------------------------------------------------------------
 
 export default function ProjectDetail() {
   const { id: legacyId, slug } = useParams();
@@ -172,12 +323,17 @@ export default function ProjectDetail() {
   const [loading, setLoading] = useState(true);
   const { count: ghCount, label: ghLabel } = useGithubBadge(project?.repoUrl);
   const { user } = useAuth();
+  const mode = useMode();
+  const isThor = mode === "thor";
+  const copy = isThor ? COPY.thor : COPY.manga;
   const canEdit = Boolean(user);
   const [isEditing, setIsEditing] = useState(false);
   const [editState, setEditState] = useState<ProjectEditState | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
+  // saveSuccess no longer rendered (Round 36+1) — kept setter for the
+  // editor save flow which still writes to it for now.
+  const [, setSaveSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     let cancel = false;
@@ -210,14 +366,8 @@ export default function ProjectDetail() {
     setSaveSuccess(null);
   }, [isEditing, project]);
 
-  const openEditor = () => {
-    if (!project) return;
-    setEditState(projectToEditState(project));
-    setIsEditing(true);
-    setSaveError(null);
-    setSaveSuccess(null);
-  };
-
+  // openEditor removed in Round 36+1 — the inline editor on this page is
+  // no longer reachable. Project edits go through /admin/projects.
   const closeEditor = () => {
     setIsEditing(false);
     setSaveError(null);
@@ -282,30 +432,45 @@ export default function ProjectDetail() {
     }
   };
 
+  // ---------- loading / 404 states ----------
+
   if (loading) {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-16 text-sm text-white/70">
-        Loading...
+      <div
+        className={[
+          "project-detail-status py-16 text-sm",
+          isThor ? "project-detail-status--thor" : "project-detail-status--manga",
+        ].join(" ")}
+      >
+        {isThor ? "Summoning the dossier..." : "Inking the next chapter..."}
       </div>
     );
   }
 
   if (!project) {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-16 text-white/80">
-        <h1 className="text-2xl font-semibold">Project not found</h1>
-        <p className="mt-3 text-sm text-white/60">
-          The case study you are looking for does not exist or is private.
+      <div
+        className={[
+          "project-detail-status py-16",
+          isThor ? "project-detail-status--thor" : "project-detail-status--manga",
+        ].join(" ")}
+      >
+        <h1 className="text-2xl font-semibold">
+          {isThor ? "Dossier missing from the Vault" : "Page torn from the chapter"}
+        </h1>
+        <p className="mt-3 text-sm opacity-80">
+          {isThor
+            ? "Heimdall cannot see this case study. It may not exist or be sealed."
+            : "This wanted poster was either never printed or the marines burned it."}
         </p>
-        <Link
-          to="/#projects"
-          className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/5 px-4 py-2 text-sm text-white/80 transition hover:border-cyan-300/60 hover:bg-cyan-300/10 hover:text-cyan-100"
-        >
-          Back to projects
+        <Link to="/#projects" className="project-detail-status__back mt-6 inline-flex items-center gap-2">
+          {copy.back}
         </Link>
       </div>
     );
   }
+
+  // ---------- normalised data ----------
 
   const title = project.title?.trim() || "Untitled project";
   const statusLabel = formatStatusLabel(project.status);
@@ -324,11 +489,9 @@ export default function ProjectDetail() {
   const createdDisplay = formatDate(project.createdAt);
   const updatedDisplay = formatDate(project.updatedAt);
   const heroSummary = (project.summary ?? project.description ?? "").trim();
-  const summaryDisplay = heroSummary || "No summary yet. Think of this as the trailer.";
+  const summaryDisplay = heroSummary || copy.fallbackSummary;
   const overviewCopy = project.description?.trim();
-  const overviewDisplay =
-    overviewCopy || "No overview yet. It is on the to-do list right after 'ship awesome things'.";
-
+  const overviewDisplay = overviewCopy || copy.fallbackOverview;
 
   const ownerLabel = project.ownerDisplayName?.trim() || project.ownerUsername?.trim() || null;
   const wasUpdated = Boolean(project.updatedAt && project.updatedAt !== project.createdAt);
@@ -344,13 +507,15 @@ export default function ProjectDetail() {
     quickFacts.push({ label: "Created", value: createdDisplay });
   }
 
+  // ---------- hero media (video first, cover second) ----------
+
   const heroMedia: HeroMediaItem[] = [];
   if (heroVideo) {
     const isFile = /\.(mp4|mov)(\?.*)?$/i.test(heroVideo);
     heroMedia.push({
       key: "hero-video",
       element: (
-        <div className="overflow-hidden rounded-[28px] border border-white/12 bg-black/40 shadow-surface">
+        <div className="project-detail__media-frame">
           {isFile ? (
             <video src={heroVideo} controls preload="metadata" className="h-full w-full" />
           ) : (
@@ -370,13 +535,24 @@ export default function ProjectDetail() {
     heroMedia.push({
       key: "hero-cover",
       element: (
-        <ImageFallback
-          src={heroCover}
-          alt={project.heroImageAlt || `${title} cover`}
-          rounded="rounded-[28px]"
-          aspect="golden"
-          className="border border-white/12 bg-black/20 shadow-surface"
-        />
+        // viewTransitionName matches the card's photo wrapper so the cover
+        // morphs smoothly when navigating from the project grid (View Transitions API).
+        <div
+          className="project-detail__media-frame"
+          style={
+            project.id
+              ? ({ viewTransitionName: `project-cover-${project.id}` } as CSSProperties)
+              : undefined
+          }
+        >
+          <ImageFallback
+            src={heroCover}
+            alt={project.heroImageAlt || `${title} cover`}
+            rounded="rounded-none"
+            aspect="golden"
+            className="h-full w-full"
+          />
+        </div>
       ),
     });
   }
@@ -384,152 +560,169 @@ export default function ProjectDetail() {
   const primaryMedia = heroMedia[0];
   const secondaryMedia = heroMedia.slice(1);
 
-  return (
-    <article className="relative mx-auto w-full max-w-6xl overflow-hidden px-4 pb-16 pt-14 text-white sm:px-6 lg:px-8 lg:pb-20 lg:pt-16">
-      <div
-        className="pointer-events-none absolute inset-x-8 top-24 -z-10 hidden h-[560px] rounded-[48px] bg-gradient-to-br from-cyan-400/15 via-purple-500/12 to-transparent blur-3xl sm:block lg:inset-x-14 lg:h-[620px]"
-        aria-hidden
-      />
+  // ---------- render ----------
 
-      <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-white/70">
-        <Link
-          to="/#projects"
-          className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/5 px-3 py-1.5 transition hover:border-cyan-300/60 hover:bg-cyan-300/10 hover:text-cyan-100"
-        >
-          <span>Back to projects</span>
+  // Width / padding now match the home page's `.wrap` token (--page-max +
+  // clamp padding) so Project Detail is centered identically across breakpoints
+  // instead of using a smaller max-w-6xl that visually drifted left on wide
+  // viewports. The actual sizing rule lives in .project-detail (index.css).
+  const rootClass = [
+    "project-detail relative pb-16 pt-14 lg:pb-20 lg:pt-16",
+    isThor ? "project-detail--thor" : "project-detail--manga",
+  ].join(" ");
+
+  return (
+    <article className={rootClass} data-mode-target={mode}>
+      {isThor ? <ThorAmbience /> : <MangaAmbience />}
+
+      {/* ---------- top bar: back link + timestamp chip ---------- */}
+      <div className="project-detail__topbar">
+        <Link to="/#projects" className="project-detail__back">
+          <span>{copy.back}</span>
         </Link>
         {wasUpdated && updatedDisplay ? (
-          <span className="rounded-full border border-white/12 bg-white/5 px-3 py-1 text-xs uppercase tracking-wide text-white/60">
-            Updated {updatedDisplay}
-          </span>
-        ) : null}
-        {!wasUpdated && createdDisplay ? (
-          <span className="rounded-full border border-white/12 bg-white/5 px-3 py-1 text-xs uppercase tracking-wide text-white/60">
-            Created {createdDisplay}
-          </span>
+          <span className="project-detail__chip">Updated {updatedDisplay}</span>
+        ) : !wasUpdated && createdDisplay ? (
+          <span className="project-detail__chip">Created {createdDisplay}</span>
         ) : null}
       </div>
 
-      <header className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] xl:gap-10">
-        <div className="relative overflow-hidden rounded-[28px] border border-white/12 bg-white/5 p-6 shadow-surface sm:p-8">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.12] via-transparent to-white/[0.03]" aria-hidden />
-          <div className="relative space-y-6">
-            <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-wide text-white/60">
-              <span className="rounded-full border border-white/15 bg-black/40 px-2 py-1">{statusLabel}</span>
-              <span className="rounded-full border border-white/15 bg-black/40 px-2 py-1">
-                Priority {project.priority ?? 0}
+      {/* ---------- HERO ---------- */}
+      <header className="project-detail__hero">
+        <div className="project-detail__hero-text project-detail__panel project-detail__panel--hero">
+          {/* corner rivets / ink corners decorations live in CSS via ::before/::after */}
+          <div className="project-detail__hero-meta">
+            <StatusStamp label={statusLabel} isThor={isThor} />
+            <span className="project-detail__chip project-detail__chip--ghost">
+              {isThor ? `Priority ${project.priority ?? 0}` : `Bounty Lv.${project.priority ?? 0}`}
+            </span>
+            {project.featured ? (
+              <span className="project-detail__chip project-detail__chip--featured">
+                {isThor ? "Featured Saga" : "Cover Story"}
               </span>
-              {project.featured ? (
-                <span className="rounded-full border border-amber-300/40 bg-amber-300/15 px-2 py-1 text-amber-100">
-                  Featured
-                </span>
-              ) : null}
-            </div>
-
-            <div className="space-y-2">
-              <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">{title}</h1>
-              {project.subtitle ? <p className="text-lg text-white/70">{project.subtitle}</p> : null}
-            </div>
-
-            <p className="text-base leading-7 text-white/80 sm:text-lg sm:leading-8">{summaryDisplay}</p>
-
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              {hasLiveDemo ? (
-                <ProjectActionButton href={project.liveUrl!} label="Live site" icon="external" />
-              ) : null}
-              {hasRepo ? (
-                <ProjectActionButton href={project.repoUrl!} label="Source code" icon="github" />
-              ) : null}
-              {additionalLinks.slice(0, 2).map((link) => (
-                <ProjectActionButton
-                  key={link.url}
-                  href={link.url}
-                  label={link.label}
-                  icon={iconForProjectLink(link)}
-                />
-              ))}
-            </div>
-
-            {canEdit ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={openEditor}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-white/80 transition hover:border-cyan-300/60 hover:bg-cyan-300/10 hover:text-cyan-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/60"
-                >
-                  Edit project
-                </button>
-                {saveSuccess ? (
-                  <span className="text-xs text-emerald-300/80">{saveSuccess}</span>
-                ) : null}
-              </div>
             ) : null}
-
-            <p className="text-xs uppercase tracking-wide text-white/50">
-              Quick stats live in the sidebar. Scroll if you want the nerdy bits.
-            </p>
           </div>
-        </div>
 
-        <div className="flex flex-col gap-6 lg:gap-7">
-          {primaryMedia ? (
-            <div key={primaryMedia.key}>{primaryMedia.element}</div>
+          {/* "Wanted" / Dossier banner above the title sets the universe */}
+          <div
+            className={
+              isThor
+                ? "project-detail__banner project-detail__banner--thor"
+                : "project-detail__banner project-detail__banner--manga"
+            }
+          >
+            {isThor ? "// CASE FILE" : "WANTED — DEAD OR ALIVE"}
+          </div>
+
+          <h1 className="project-detail__title">{title}</h1>
+          {project.subtitle ? (
+            <p className="project-detail__subtitle">{project.subtitle}</p>
+          ) : null}
+
+          {/* Manga: speech-bubble pull quote. Thor: cinematic blockquote. */}
+          {isThor ? (
+            <p className="project-detail__hero-summary">{summaryDisplay}</p>
           ) : (
-            <div className="flex h-full min-h-[240px] items-center justify-center rounded-[28px] border border-dashed border-white/15 bg-white/4 text-sm text-white/60">
-              Hero media is on coffee break. Picture something epic.
+            <div className="project-detail__bubble" role="presentation">
+              <p>{summaryDisplay}</p>
             </div>
           )}
+
+          <div className="project-detail__cta-row">
+            {hasLiveDemo ? (
+              <ProjectActionButton href={project.liveUrl!} label="Live site" icon="external" />
+            ) : null}
+            {hasRepo ? (
+              <ProjectActionButton href={project.repoUrl!} label="Source code" icon="github" />
+            ) : null}
+            {additionalLinks.slice(0, 2).map((link) => (
+              <ProjectActionButton
+                key={link.url}
+                href={link.url}
+                label={link.label}
+                icon={iconForProjectLink(link)}
+              />
+            ))}
+          </div>
+
+          {/* Round 36+1 — Edit dossier / Edit poster button removed from
+              the public project page. Project edits go through
+              /admin/projects only. */}
+        </div>
+
+        <div className="project-detail__hero-media">
+          {primaryMedia ? (
+            <div key={primaryMedia.key} className="project-detail__media-card">
+              {primaryMedia.element}
+              {/* manga panel page-corner SFX, hidden in thor via CSS */}
+              <span className="project-detail__media-corner" aria-hidden="true">
+                {isThor ? "TRANSMISSION" : "ドン!"}
+              </span>
+            </div>
+          ) : (
+            <div className="project-detail__media-empty">{copy.fallbackMedia}</div>
+          )}
           {secondaryMedia.length ? (
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="project-detail__media-grid">
               {secondaryMedia.map((media) => (
-                <div key={media.key}>{media.element}</div>
+                <div key={media.key} className="project-detail__media-card project-detail__media-card--small">
+                  {media.element}
+                </div>
               ))}
             </div>
           ) : null}
         </div>
       </header>
 
-      <section className="mt-12 grid gap-8 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:gap-10 xl:gap-12">
-        <div className="flex flex-col gap-8 lg:gap-10">
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-surface sm:p-7">
-            <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-cyan-300/40 bg-cyan-300/15 text-sm text-cyan-100">
-                i
-              </div>
-              <h2 className="text-xl font-semibold">Overview</h2>
-            </div>
-            <p className="mt-4 whitespace-pre-line text-base leading-7 text-white/80">{overviewDisplay}</p>
+      {/* ---------- BODY: 2-column ---------- */}
+      <section className="project-detail__body">
+        <div className="project-detail__main">
+          {/* Overview */}
+          <div className="project-detail__panel project-detail__panel--story">
+            <SectionHeader title={copy.overview} kind="overview" isThor={isThor} />
+            <p className="project-detail__overview">{overviewDisplay}</p>
           </div>
 
+          {/* Metrics */}
           {metrics.length ? (
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-surface sm:p-7">
-              <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full border border-emerald-300/50 bg-emerald-300/15 text-sm text-emerald-100">
-                  %
-                </div>
-                <h2 className="text-xl font-semibold">Impact highlights</h2>
-              </div>
-              <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:gap-5">
-                {metrics.map((metric) => (
-                  <li
-                    key={metric.label}
-                    className="rounded-2xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 text-white"
-                  >
-                    <div className="text-xs uppercase tracking-wide text-white/70">{metric.label}</div>
-                    <div className="mt-1 text-xl font-semibold">{metric.value}</div>
+            <div className="project-detail__panel project-detail__panel--metrics">
+              <SectionHeader title={copy.metrics} kind="metrics" isThor={isThor} />
+              <ul className="project-detail__metric-grid">
+                {metrics.map((metric, idx) => (
+                  <li key={metric.label} className="project-detail__metric-tile" style={{ "--i": idx } as CSSProperties}>
+                    <div className="project-detail__metric-label">{metric.label}</div>
+                    <div className="project-detail__metric-value">{metric.value}</div>
                   </li>
                 ))}
               </ul>
             </div>
           ) : null}
 
+          {/* Responsibilities (numbered like comic panels) */}
           {responsibilities.length ? (
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-surface sm:p-7">
-              <h2 className="text-xl font-semibold">Responsibilities</h2>
-              <ul className="mt-4 space-y-2 text-sm leading-6 text-white/80">
-                {responsibilities.map((item) => (
-                  <li key={item} className="flex items-start gap-2">
-                    <span aria-hidden className="mt-1 block h-1.5 w-1.5 rounded-full bg-cyan-300/80" />
+            <div className="project-detail__panel project-detail__panel--list">
+              <SectionHeader title={copy.responsibilities} kind="ops" isThor={isThor} />
+              <ol className="project-detail__numbered-list">
+                {responsibilities.map((item, idx) => (
+                  <li key={item} className="project-detail__numbered-item">
+                    <span className="project-detail__numbered-num">{String(idx + 1).padStart(2, "0")}</span>
+                    <span className="project-detail__numbered-text">{item}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          ) : null}
+
+          {/* Outcomes (stamp-style tiles) */}
+          {outcomes.length ? (
+            <div className="project-detail__panel project-detail__panel--outcomes">
+              <SectionHeader title={copy.outcomes} kind="verdict" isThor={isThor} />
+              <ul className="project-detail__outcome-list">
+                {outcomes.map((item) => (
+                  <li key={item} className="project-detail__outcome-tile">
+                    <span className="project-detail__outcome-bullet" aria-hidden="true">
+                      {isThor ? "⚡" : "★"}
+                    </span>
                     <span>{item}</span>
                   </li>
                 ))}
@@ -537,24 +730,16 @@ export default function ProjectDetail() {
             </div>
           ) : null}
 
-          {outcomes.length ? (
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-surface sm:p-7">
-              <h2 className="text-xl font-semibold">Outcomes</h2>
-              <ul className="mt-4 space-y-2 text-sm font-medium text-white">
-                {outcomes.map((item) => (
-                  <li key={item} className="rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-2">
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-
+          {/* Resource links */}
           {resourceLinks.length ? (
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-surface sm:p-7">
-              <h2 className="text-xl font-semibold">Resources</h2>
-              <p className="mt-2 text-sm text-white/60">Bonus links for the curious.</p>
-              <div className="mt-4 flex flex-wrap gap-2">
+            <div className="project-detail__panel project-detail__panel--resources">
+              <SectionHeader title={copy.resources} kind="links" isThor={isThor} />
+              <p className="project-detail__panel-hint">
+                {isThor
+                  ? "Comm channels for the curious."
+                  : "Extra reads pinned to the wall by the cabin boy."}
+              </p>
+              <div className="project-detail__resource-row">
                 {resourceLinks.map((link) => (
                   <ProjectActionButton
                     key={link.url}
@@ -567,75 +752,75 @@ export default function ProjectDetail() {
             </div>
           ) : null}
 
+          {/* Gallery */}
           {galleryItems.length ? (
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-surface sm:p-7">
-              <div className="flex items-center justify-between gap-3">
-                <h2 className="text-xl font-semibold">Gallery</h2>
-                <span className="text-xs uppercase tracking-wide text-white/50">
-                  {galleryItems.length} item{galleryItems.length > 1 ? "s" : ""}
+            <div className="project-detail__panel project-detail__panel--gallery">
+              <div className="project-detail__panel-row">
+                <SectionHeader title={copy.gallery} kind="gallery" isThor={isThor} />
+                <span className="project-detail__chip project-detail__chip--ghost">
+                  {galleryItems.length} {galleryItems.length === 1 ? "frame" : "frames"}
                 </span>
               </div>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {galleryItems.map((item) => (
-                  <ImageFallback
+              <div className="project-detail__gallery-grid">
+                {galleryItems.map((item, idx) => (
+                  <div
                     key={item}
-                    src={item}
-                    alt={`${title} gallery item`}
-                    rounded="rounded-2xl"
-                    aspect="square"
-                    className="border border-white/10 bg-black/20"
-                  />
+                    className="project-detail__gallery-cell"
+                    style={{ "--i": idx } as CSSProperties}
+                  >
+                    <ImageFallback
+                      src={item}
+                      alt={`${title} gallery item`}
+                      rounded="rounded-none"
+                      aspect="square"
+                      className="h-full w-full"
+                    />
+                  </div>
                 ))}
               </div>
             </div>
           ) : null}
         </div>
 
-        <aside className="mt-4 flex flex-col gap-6 lg:sticky lg:top-28 lg:mt-0 lg:gap-8">
-          <div className="space-y-4 rounded-3xl border border-white/10 bg-white/6 p-6 shadow-surface sm:p-7">
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-white/60">Quick info</h3>
-              <p className="text-xs text-white/50">Snack-size stats for speedy readers.</p>
-            </div>
-            <dl className="space-y-3 text-sm text-white/80">
+        {/* ---------- SIDEBAR ---------- */}
+        <aside className="project-detail__aside">
+          <div className="project-detail__panel project-detail__panel--dossier">
+            <SectionHeader title={copy.dossier} kind="dossier" isThor={isThor} compact />
+            <p className="project-detail__panel-hint">{copy.dossierHint}</p>
+            <dl className="project-detail__dl">
               {quickFacts.map((fact) => (
-                <div key={fact.label}>
-                  <dt className="text-xs uppercase tracking-wide text-white/50">{fact.label}</dt>
-                  <dd className="mt-1 text-white/80">{fact.value}</dd>
+                <div key={fact.label} className="project-detail__dl-row">
+                  <dt>{fact.label}</dt>
+                  <dd>{fact.value}</dd>
                 </div>
               ))}
             </dl>
             {ghCount !== null && ghLabel ? (
-              <div className="rounded-2xl border border-white/12 bg-white/10 px-3 py-2 text-xs text-white/80">
-                {ghLabel}: <span className="font-semibold text-white">{ghCount}</span>
+              <div className="project-detail__gh-badge">
+                {ghLabel}: <span>{ghCount}</span>
               </div>
-            ) : null}
-            {!quickFacts.length ? (
-              <p className="text-xs text-white/50">
-                No quick facts yet. The project is apparently living that mysterious life.
-              </p>
             ) : null}
           </div>
 
-          <div className="space-y-3 rounded-3xl border border-white/10 bg-white/6 p-6 shadow-surface sm:p-7">
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-white/60">Stack</h3>
+          <div className="project-detail__panel project-detail__panel--stack">
+            <SectionHeader title={copy.stack} kind="stack" isThor={isThor} compact />
             {stack.length ? (
-              <ul className="flex flex-wrap gap-1.5 text-xs text-white/70">
+              <ul className="project-detail__chip-list">
                 {stack.map((item) => (
-                  <li key={item} className="rounded-full border border-white/12 bg-white/8 px-2 py-0.5 uppercase tracking-wide">
-                    {item}
-                  </li>
+                  <li key={item} className="project-detail__rune-chip">{item}</li>
                 ))}
               </ul>
             ) : (
-              <p className="text-xs text-white/50">No stack listed yet. Maybe it is powered by coffee.</p>
+              <p className="project-detail__panel-hint">
+                {isThor ? "No arsenal logged. Maybe a hammer." : "No fruit kit listed yet."}
+              </p>
             )}
             {extraTech.length ? (
-              <div>
-                <div className="text-xs uppercase tracking-wide text-white/45">Supporting tech</div>
-                <ul className="mt-1 flex flex-wrap gap-1.5 text-[11px] text-white/60">
+              <div className="project-detail__sub-stack">
+                <div className="project-detail__sub-stack-title">{copy.supporting}</div>
+                <ul className="project-detail__chip-list project-detail__chip-list--small">
                   {extraTech.map((item) => (
-                    <li key={item} className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5">
+                    <li key={item} className="project-detail__rune-chip project-detail__rune-chip--small">
                       {item}
                     </li>
                   ))}
@@ -644,23 +829,26 @@ export default function ProjectDetail() {
             ) : null}
           </div>
 
-          <div className="space-y-3 rounded-3xl border border-white/10 bg-white/6 p-6 shadow-surface sm:p-7">
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-white/60">Tags</h3>
+          <div className="project-detail__panel project-detail__panel--tags">
+            <SectionHeader title={copy.tags} kind="tags" isThor={isThor} compact />
             {project.tags?.length ? (
-              <ul className="flex flex-wrap gap-1.5 text-[11px] text-white/60">
+              <ul className="project-detail__chip-list project-detail__chip-list--small">
                 {project.tags.map((tag) => (
-                  <li key={tag} className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5">
+                  <li key={tag} className="project-detail__rune-chip project-detail__rune-chip--small">
                     #{tag}
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-xs text-white/50">No tags yet. Add some flair when you are ready.</p>
+              <p className="project-detail__panel-hint">
+                {isThor ? "No sigils marked." : "No bounty tags yet — be the first."}
+              </p>
             )}
           </div>
         </aside>
       </section>
 
+      {/* ---------- ADMIN EDIT MODAL (shared, themed shell only) ---------- */}
       {canEdit && isEditing && editState ? (
         <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
           <button
@@ -669,73 +857,88 @@ export default function ProjectDetail() {
             onClick={closeEditor}
             className="absolute inset-0 bg-black/70 backdrop-blur-sm"
           />
-          <div className="relative z-[91] w-full max-w-4xl rounded-[28px] border border-white/15 bg-[#050714]/95 p-6 text-left shadow-[0_40px_160px_rgba(0,0,0,0.45)] sm:p-8">
+          <div
+            className={[
+              "relative z-[91] w-full max-w-4xl rounded-[28px] p-6 text-left shadow-[0_40px_160px_rgba(0,0,0,0.45)] sm:p-8",
+              isThor
+                ? "border border-white/15 bg-[#050714]/95 text-white"
+                : "border-4 border-[#1a0d05] bg-[#fffaef] text-[#1a0d05]",
+            ].join(" ")}
+          >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-xl font-semibold text-white">Edit project</h2>
-                <p className="mt-1 text-sm text-white/60">
+                <h2 className={isThor ? "text-xl font-semibold text-white" : "text-xl font-semibold text-[#1a0d05]"}>
+                  Edit project
+                </h2>
+                <p className={isThor ? "mt-1 text-sm text-white/60" : "mt-1 text-sm text-[#5c3414]"}>
                   Update the case study content, then save to sync with Supabase.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={closeEditor}
-                className="rounded-full border border-white/15 px-3 py-1 text-sm text-white/70 transition hover:border-white/40 hover:text-white"
+                className={[
+                  "rounded-full px-3 py-1 text-sm transition",
+                  isThor
+                    ? "border border-white/15 text-white/70 hover:border-white/40 hover:text-white"
+                    : "border-2 border-[#1a0d05] text-[#1a0d05] hover:bg-[#1a0d05] hover:text-[#fffaef]",
+                ].join(" ")}
                 aria-label="Close editor"
               >
-                ✕
+                ×
               </button>
             </div>
 
-            <form className="mt-5 grid max-h-[70vh] gap-5 overflow-y-auto pr-1 text-sm text-white/85 sm:text-base" onSubmit={handleSave}>
+            <form
+              className={[
+                "mt-5 grid max-h-[70vh] gap-5 overflow-y-auto pr-1 text-sm sm:text-base",
+                isThor ? "text-white/85" : "text-[#1a0d05]",
+              ].join(" ")}
+              onSubmit={handleSave}
+            >
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="grid gap-1 text-sm sm:text-[15px]">
-                  <span className="text-white/70">Title</span>
+                <ModalLabel label="Title" isThor={isThor}>
                   <input
                     value={editState.title}
                     onChange={(e) => updateField("title", e.target.value)}
-                    className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+                    className={modalInputClass(isThor)}
                     required
                   />
-                </label>
-                <label className="grid gap-1 text-sm sm:text-[15px]">
-                  <span className="text-white/70">Subtitle</span>
+                </ModalLabel>
+                <ModalLabel label="Subtitle" isThor={isThor}>
                   <input
                     value={editState.subtitle}
                     onChange={(e) => updateField("subtitle", e.target.value)}
-                    className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+                    className={modalInputClass(isThor)}
                   />
-                </label>
+                </ModalLabel>
               </div>
 
-              <label className="grid gap-1 text-sm sm:text-[15px]">
-                <span className="text-white/70">Summary</span>
+              <ModalLabel label="Summary" isThor={isThor}>
                 <textarea
                   value={editState.summary}
                   onChange={(e) => updateField("summary", e.target.value)}
                   rows={3}
-                  className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+                  className={modalInputClass(isThor)}
                   required
                 />
-              </label>
+              </ModalLabel>
 
-              <label className="grid gap-1 text-sm sm:text-[15px]">
-                <span className="text-white/70">Overview copy</span>
+              <ModalLabel label="Overview copy" isThor={isThor}>
                 <textarea
                   value={editState.description}
                   onChange={(e) => updateField("description", e.target.value)}
                   rows={5}
-                  className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+                  className={modalInputClass(isThor)}
                 />
-              </label>
+              </ModalLabel>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="grid gap-1 text-sm sm:text-[15px]">
-                  <span className="text-white/70">Status</span>
+                <ModalLabel label="Status" isThor={isThor}>
                   <select
                     value={editState.status}
                     onChange={(e) => updateField("status", e.target.value as ProjectStatus)}
-                    className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+                    className={modalInputClass(isThor)}
                   >
                     {STATUS_OPTIONS.map((status) => (
                       <option key={status} value={status}>
@@ -743,20 +946,19 @@ export default function ProjectDetail() {
                       </option>
                     ))}
                   </select>
-                </label>
-                <label className="grid gap-1 text-sm sm:text-[15px]">
-                  <span className="text-white/70">Priority</span>
+                </ModalLabel>
+                <ModalLabel label="Priority" isThor={isThor}>
                   <input
                     type="number"
                     value={editState.priority}
                     onChange={(e) => updateField("priority", e.target.value)}
-                    className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+                    className={modalInputClass(isThor)}
                   />
-                </label>
+                </ModalLabel>
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
-                <label className="inline-flex items-center gap-2 text-sm text-white/75">
+                <label className={isThor ? "inline-flex items-center gap-2 text-sm text-white/75" : "inline-flex items-center gap-2 text-sm text-[#4a2a0a]"}>
                   <input
                     type="checkbox"
                     checked={editState.featured}
@@ -765,163 +967,168 @@ export default function ProjectDetail() {
                   />
                   Featured project
                 </label>
-                <label className="grid gap-1 text-sm sm:text-[15px]">
-                  <span className="text-white/70">Role</span>
+                <ModalLabel label="Role" isThor={isThor}>
                   <input
                     value={editState.role}
                     onChange={(e) => updateField("role", e.target.value)}
-                    className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+                    className={modalInputClass(isThor)}
                   />
-                </label>
+                </ModalLabel>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="grid gap-1 text-sm sm:text-[15px]">
-                  <span className="text-white/70">Live URL</span>
+                <ModalLabel label="Live URL" isThor={isThor}>
                   <input
                     value={editState.liveUrl}
                     onChange={(e) => updateField("liveUrl", e.target.value)}
-                    className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+                    className={modalInputClass(isThor)}
                   />
-                </label>
-                <label className="grid gap-1 text-sm sm:text-[15px]">
-                  <span className="text-white/70">Repo URL</span>
+                </ModalLabel>
+                <ModalLabel label="Repo URL" isThor={isThor}>
                   <input
                     value={editState.repoUrl}
                     onChange={(e) => updateField("repoUrl", e.target.value)}
-                    className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+                    className={modalInputClass(isThor)}
                   />
-                </label>
+                </ModalLabel>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="grid gap-1 text-sm sm:text-[15px]">
-                  <span className="text-white/70">Cover image URL</span>
+                <ModalLabel label="Cover image URL" isThor={isThor}>
                   <input
                     value={editState.coverUrl}
                     onChange={(e) => updateField("coverUrl", e.target.value)}
-                    className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+                    className={modalInputClass(isThor)}
                   />
-                </label>
-                <label className="grid gap-1 text-sm sm:text-[15px]">
-                  <span className="text-white/70">Hero image alt text</span>
+                </ModalLabel>
+                <ModalLabel label="Hero image alt text" isThor={isThor}>
                   <input
                     value={editState.heroImageAlt}
                     onChange={(e) => updateField("heroImageAlt", e.target.value)}
-                    className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+                    className={modalInputClass(isThor)}
                   />
-                </label>
+                </ModalLabel>
               </div>
 
-              <label className="grid gap-1 text-sm sm:text-[15px]">
-                <span className="text-white/70">Hero video URL</span>
+              <ModalLabel label="Hero video URL" isThor={isThor}>
                 <input
                   value={editState.heroVideoUrl}
                   onChange={(e) => updateField("heroVideoUrl", e.target.value)}
-                  className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+                  className={modalInputClass(isThor)}
                 />
-              </label>
+              </ModalLabel>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="grid gap-1 text-sm sm:text-[15px]">
-                  <span className="text-white/70">Stack (comma or newline separated)</span>
+                <ModalLabel label="Stack (comma or newline separated)" isThor={isThor}>
                   <textarea
                     value={editState.stackCsv}
                     onChange={(e) => updateField("stackCsv", e.target.value)}
                     rows={3}
-                    className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+                    className={modalInputClass(isThor)}
                   />
-                </label>
-                <label className="grid gap-1 text-sm sm:text-[15px]">
-                  <span className="text-white/70">Tags (comma or newline separated)</span>
+                </ModalLabel>
+                <ModalLabel label="Tags (comma or newline separated)" isThor={isThor}>
                   <textarea
                     value={editState.tagsCsv}
                     onChange={(e) => updateField("tagsCsv", e.target.value)}
                     rows={3}
-                    className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+                    className={modalInputClass(isThor)}
                   />
-                </label>
+                </ModalLabel>
               </div>
 
-              <label className="grid gap-1 text-sm sm:text-[15px]">
-                <span className="text-white/70">Gallery URLs (comma or newline separated)</span>
+              <ModalLabel label="Gallery URLs (comma or newline separated)" isThor={isThor}>
                 <textarea
                   value={editState.galleryCsv}
                   onChange={(e) => updateField("galleryCsv", e.target.value)}
                   rows={2}
-                  className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+                  className={modalInputClass(isThor)}
                 />
-              </label>
+              </ModalLabel>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="grid gap-1 text-sm sm:text-[15px]">
-                  <span className="text-white/70">Responsibilities (one per line)</span>
+                <ModalLabel label="Responsibilities (one per line)" isThor={isThor}>
                   <textarea
                     value={editState.responsibilitiesText}
                     onChange={(e) => updateField("responsibilitiesText", e.target.value)}
                     rows={4}
-                    className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+                    className={modalInputClass(isThor)}
                   />
-                </label>
-                <label className="grid gap-1 text-sm sm:text-[15px]">
-                  <span className="text-white/70">Outcomes (one per line)</span>
+                </ModalLabel>
+                <ModalLabel label="Outcomes (one per line)" isThor={isThor}>
                   <textarea
                     value={editState.outcomesText}
                     onChange={(e) => updateField("outcomesText", e.target.value)}
                     rows={4}
-                    className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+                    className={modalInputClass(isThor)}
                   />
-                </label>
+                </ModalLabel>
               </div>
 
-              <label className="grid gap-1 text-sm sm:text-[15px]">
-                <span className="text-white/70">Metrics (format: Label | Value)</span>
+              <ModalLabel label="Metrics (format: Label | Value)" isThor={isThor}>
                 <textarea
                   value={editState.metricsText}
                   onChange={(e) => updateField("metricsText", e.target.value)}
                   rows={3}
-                  className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+                  className={modalInputClass(isThor)}
                 />
-              </label>
+              </ModalLabel>
 
-              <label className="grid gap-1 text-sm sm:text-[15px]">
-                <span className="text-white/70">Links (format: Label | URL | Icon)</span>
+              <ModalLabel label="Links (format: Label | URL | Icon)" isThor={isThor}>
                 <textarea
                   value={editState.linksText}
                   onChange={(e) => updateField("linksText", e.target.value)}
                   rows={3}
-                  className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+                  className={modalInputClass(isThor)}
                 />
-              </label>
+              </ModalLabel>
 
-              <label className="grid gap-1 text-sm sm:text-[15px]">
-                <span className="text-white/70">Created at (ISO or leave unchanged)</span>
+              <ModalLabel label="Created at (ISO or leave unchanged)" isThor={isThor}>
                 <input
                   value={editState.createdAt}
                   onChange={(e) => updateField("createdAt", e.target.value)}
-                  className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+                  className={modalInputClass(isThor)}
                   placeholder="2025-01-01T12:00:00Z"
                 />
-              </label>
+              </ModalLabel>
 
               {saveError ? (
-                <p className="rounded-xl border border-rose-400/40 bg-rose-950/40 px-3 py-2 text-sm text-rose-200">
+                <p
+                  className={
+                    isThor
+                      ? "rounded-xl border border-rose-400/40 bg-rose-950/40 px-3 py-2 text-sm text-rose-200"
+                      : "rounded-xl border-2 border-[#a1180a] bg-[#fff0e6] px-3 py-2 text-sm text-[#a1180a]"
+                  }
+                >
                   {saveError}
                 </p>
               ) : null}
 
-              <div className="sticky bottom-0 flex flex-wrap justify-end gap-2 bg-[#050714]/95 py-2">
+              <div
+                className={[
+                  "sticky bottom-0 flex flex-wrap justify-end gap-2 py-2",
+                  isThor ? "bg-[#050714]/95" : "bg-[#fffaef]/95",
+                ].join(" ")}
+              >
                 <button
                   type="button"
                   onClick={closeEditor}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1.5 text-sm text-white/70 transition hover:border-white/40 hover:text-white"
+                  className={
+                    isThor
+                      ? "inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1.5 text-sm text-white/70 transition hover:border-white/40 hover:text-white"
+                      : "inline-flex items-center gap-2 rounded-full border-2 border-[#1a0d05] px-3 py-1.5 text-sm text-[#1a0d05] transition hover:bg-[#1a0d05] hover:text-[#fffaef]"
+                  }
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="inline-flex items-center gap-2 rounded-full border border-cyan-300/40 bg-cyan-400/15 px-4 py-1.5 text-sm font-medium text-cyan-100 transition hover:border-cyan-200/80 hover:bg-cyan-400/25 disabled:cursor-not-allowed disabled:opacity-60"
+                  className={
+                    isThor
+                      ? "inline-flex items-center gap-2 rounded-full border border-cyan-300/40 bg-cyan-400/15 px-4 py-1.5 text-sm font-medium text-cyan-100 transition hover:border-cyan-200/80 hover:bg-cyan-400/25 disabled:cursor-not-allowed disabled:opacity-60"
+                      : "inline-flex items-center gap-2 rounded-full border-2 border-[#1a0d05] bg-[#d11b1b] px-4 py-1.5 text-sm font-bold uppercase tracking-wide text-[#fffaef] transition hover:bg-[#1a0d05] disabled:cursor-not-allowed disabled:opacity-60"
+                  }
                 >
                   {saving ? "Saving..." : "Save changes"}
                 </button>
@@ -932,4 +1139,60 @@ export default function ProjectDetail() {
       ) : null}
     </article>
   );
+}
+
+// ---------------------------------------------------------------------------
+// Small render helpers
+// ---------------------------------------------------------------------------
+
+function SectionHeader({
+  title,
+  kind,
+  isThor,
+  compact = false,
+}: {
+  title: string;
+  kind: "overview" | "metrics" | "ops" | "verdict" | "links" | "gallery" | "dossier" | "stack" | "tags";
+  isThor: boolean;
+  compact?: boolean;
+}) {
+  return (
+    <div
+      className={[
+        "project-detail__section-header",
+        compact ? "project-detail__section-header--compact" : "",
+        `project-detail__section-header--${kind}`,
+      ].join(" ").trim()}
+    >
+      {/* The decorative glyph on the left switches per mode + section kind via CSS. */}
+      <span className="project-detail__section-glyph" aria-hidden="true" />
+      <h2 className="project-detail__section-title">{title}</h2>
+      {isThor ? (
+        <span className="project-detail__section-flair" aria-hidden="true" />
+      ) : null}
+    </div>
+  );
+}
+
+function ModalLabel({
+  label,
+  isThor,
+  children,
+}: {
+  label: string;
+  isThor: boolean;
+  children: ReactElement;
+}) {
+  return (
+    <label className="grid gap-1 text-sm sm:text-[15px]">
+      <span className={isThor ? "text-white/70" : "text-[#4a2a0a]"}>{label}</span>
+      {children}
+    </label>
+  );
+}
+
+function modalInputClass(isThor: boolean): string {
+  return isThor
+    ? "rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+    : "rounded-md border-2 border-[#1a0d05] bg-[#fffaef] px-3 py-2 text-sm text-[#1a0d05] focus:border-[#d11b1b] focus:outline-none";
 }

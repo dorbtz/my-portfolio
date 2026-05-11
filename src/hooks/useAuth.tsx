@@ -1,14 +1,15 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { User } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
+import { AuthCtx } from "./useAuth.helpers";
 
-type AuthState = {
-  user: import("@supabase/supabase-js").User | null;
-  loading: boolean;
-};
-const AuthCtx = createContext<AuthState>({ user: null, loading: true });
+// Round 74 — This file ONLY exports the AuthProvider component so the
+// react-refresh/only-export-components lint rule passes. The `useAuth`
+// hook + AuthState type live in `useAuth.helpers.ts`; consumers now
+// import the hook from there directly.
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<import("@supabase/supabase-js").User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,8 +32,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo(() => ({ user, loading }), [user, loading]);
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
-}
-
-export function useAuth() {
-  return useContext(AuthCtx);
 }

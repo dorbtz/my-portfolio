@@ -26,4 +26,11 @@ dist-ssr
 # Environment files
 .env
 .env.*
-!.env.example
+
+# Claude Code local working dir + MCP server config
+.claude/
+.mcp.json
+
+# Test coverage (vitest --coverage output, if ever enabled)
+coverage/
+.nyc_output/

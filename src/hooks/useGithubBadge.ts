@@ -38,7 +38,10 @@ function cacheGet(key: string) {
 function cacheSet(key: string, value: number) {
   try {
     localStorage.setItem(key, JSON.stringify({ value, ts: Date.now() }));
-  } catch {}
+  } catch {
+    // localStorage write may throw (quota / private browsing) — caching is
+    // best-effort, the badge will simply re-fetch on the next page load.
+  }
 }
 
 export function useGithubBadge(repoUrl?: string) {
