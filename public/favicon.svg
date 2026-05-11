@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Mjolnir hammer beneath Luffy's straw hat">
+  <title>Thor x Luffy portfolio mark</title>
+
+  <!-- ============================================================
+       MJOLNIR (drawn first so the hat sits on top of it)
+       Dark Asgardian midnight + lighter bevels for legibility on
+       light browser-tab backgrounds. The hammer silhouette is the
+       primary anchor at 16x16; the lightning fork in the centre is
+       the "Thor" semantic and disappears gracefully at small sizes.
+       ============================================================ -->
+
+  <!-- Hammer head -->
+  <rect x="22" y="46" width="56" height="26" rx="2.5" fill="#1a1f33"/>
+
+  <!-- Bevel — top inner highlight -->
+  <rect x="24" y="48" width="52" height="3" rx="1.2" fill="#4a5278" opacity="0.55"/>
+  <!-- Bevel — bottom inner shadow -->
+  <rect x="24" y="68" width="52" height="2.5" rx="1" fill="#000" opacity="0.35"/>
+  <!-- Vertical divider — splits the head into two engraved panels -->
+  <line x1="50" y1="48" x2="50" y2="70" stroke="#000" stroke-width="1.2" opacity="0.45"/>
+
+  <!-- Lightning fork engraved in the centre of the head -->
+  <path d="M 49 52 L 46 60 L 51 60 L 48 67"
+        stroke="#eed87a" stroke-width="2.4" stroke-linecap="round"
+        stroke-linejoin="round" fill="none"/>
+
+  <!-- Handle grip — narrow band where head meets shaft -->
+  <rect x="42" y="72" width="16" height="4" rx="1" fill="#1a1f33"/>
+
+  <!-- Handle shaft -->
+  <rect x="45" y="76" width="10" height="14" rx="1.5" fill="#2a3046"/>
+  <!-- Cross-wrap detail (omitted at small sizes — too fine) -->
+  <line x1="45" y1="80" x2="55" y2="80" stroke="#000" stroke-width="0.8" opacity="0.5"/>
+  <line x1="45" y1="84" x2="55" y2="84" stroke="#000" stroke-width="0.8" opacity="0.5"/>
+
+  <!-- Pommel -->
+  <ellipse cx="50" cy="91" rx="6" ry="2.5" fill="#1a1f33"/>
+
+
+  <!-- ============================================================
+       STRAW HAT
+       Two parts: rounded dome (crown) + flat wide brim.
+       Warm tan with darker shading band along the brim's underside.
+       The red ribbon sits between crown and brim and gives the iconic
+       "Luffy" colour cue.
+       ============================================================ -->
+
+  <!-- Brim — wide flat ellipse-like shape sitting above the hammer head -->
+  <path d="M 6 36 Q 50 26 94 36 Q 88 44 50 44 Q 12 44 6 36 Z"
+        fill="#e6b95a"/>
+  <!-- Brim underside shadow -->
+  <path d="M 8 38 Q 50 33 92 38 Q 88 43 50 43.5 Q 12 43 8 38 Z"
+        fill="#a5803a" opacity="0.4"/>
+  <!-- Brim top highlight -->
+  <path d="M 10 35 Q 50 30 90 35"
+        stroke="#fae4a5" stroke-width="1.3" stroke-linecap="round" fill="none" opacity="0.85"/>
+
+  <!-- Red ribbon wrapping the crown's base -->
+  <rect x="30" y="29" width="40" height="6" fill="#c3262b"/>
+  <rect x="30" y="29" width="40" height="1.5" fill="#fff" opacity="0.25"/>
+  <rect x="30" y="33.5" width="40" height="1.5" fill="#000" opacity="0.25"/>
+
+  <!-- Crown — rounded dome sitting on top of the ribbon -->
+  <path d="M 30 30 Q 30 6 50 6 Q 70 6 70 30 Z"
+        fill="#f0c668"/>
+  <!-- Crown highlight (woven straw glint) -->
+  <path d="M 35 26 Q 38 14 50 11"
+        stroke="#fcdf94" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.8"/>
+  <!-- Crown shadow inside -->
+  <path d="M 60 26 Q 64 16 56 10"
+        stroke="#a5803a" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.55"/>
+</svg>
