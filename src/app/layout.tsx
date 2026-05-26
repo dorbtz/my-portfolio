@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { readThemeState } from "@/shared/lib/theme/ssr";
 import { FloatingControls } from "@/shared/ui/FloatingControls";
+import { Header } from "@/features/chrome/Header";
+import { Footer } from "@/features/chrome/Footer";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://dorbtz.com"),
@@ -35,7 +37,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={locale} dir={dir} data-theme={theme} data-scheme={schemeAttr} suppressHydrationWarning>
       <body>
+        <Header />
         {children}
+        <Footer />
         <FloatingControls initialTheme={theme} initialScheme={scheme} initialLocale={locale} />
       </body>
     </html>

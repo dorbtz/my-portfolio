@@ -8,6 +8,9 @@
 html {
   background: var(--color-bg);
   color-scheme: light dark;
+  /* Keeps anchor targets clear of the sticky header (h-14 mobile, h-16 desktop) */
+  scroll-padding-top: 5rem;
+  scroll-behavior: smooth;
 }
 
 body {
