@@ -1,13 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import { useState, type ReactNode } from "react";
 import { applyScheme, applyTheme } from "../lib/theme/client";
 import { THEME_VALUES, type ColorScheme, type Theme } from "../lib/theme/types";
 
 type ThemeGlyph =
   | { kind: "emoji"; value: string }
-  | { kind: "image"; src: string; alt: string };
+  | { kind: "mask"; src: string; alt: string };
 
 const LABELS: Record<Theme, { label: string; glyph: ThemeGlyph; aria: string }> = {
   hightech: {
@@ -17,12 +16,12 @@ const LABELS: Record<Theme, { label: string; glyph: ThemeGlyph; aria: string }> 
   },
   thor: {
     label: "Thor",
-    glyph: { kind: "image", src: "/assets/Marvel/mjolnir.png", alt: "Mjolnir" },
+    glyph: { kind: "mask", src: "/assets/Marvel/mjolnir.png", alt: "Mjolnir" },
     aria: "Switch to Thor theme",
   },
   luffy: {
     label: "Luffy",
-    glyph: { kind: "image", src: "/assets/One-Piece/nika-symbol.png", alt: "Nika sun symbol" },
+    glyph: { kind: "mask", src: "/assets/One-Piece/nika-symbol.png", alt: "Nika sun symbol" },
     aria: "Switch to Luffy theme",
   },
 };
@@ -33,19 +32,35 @@ const SCHEME_LABELS: Record<ColorScheme, { glyph: string; aria: string }> = {
   dark: { glyph: "☽", aria: "Switch to dark mode" },
 };
 
+/**
+ * Glyph renderer.
+ *  - emoji: short Unicode glyph (used for High-Tech ✨ since there's no brand icon)
+ *  - mask : the PNG's alpha channel becomes a mask; the fill is currentColor.
+ *           Result: the icon picks up the button's text color — dark in light
+ *           mode, white in dark mode, accent-contrast when the button is active.
+ *           Works perfectly for monochrome / silhouette PNGs.
+ */
 function renderGlyph(g: ThemeGlyph): ReactNode {
   if (g.kind === "emoji") return <span aria-hidden>{g.value}</span>;
-  // 20×20 image; next/image auto-converts the .png to AVIF/WebP at request time.
   return (
-    <Image
-      src={g.src}
-      alt=""
-      width={20}
-      height={20}
-      aria-hidden
-      className="select-none pointer-events-none"
-      // Hint to next/image: this is a tiny icon, fetch eagerly with the header
-      priority
+    <span
+      aria-label={g.alt}
+      role="img"
+      className="theme-glyph"
+      style={{
+        WebkitMaskImage: `url(${g.src})`,
+        maskImage: `url(${g.src})`,
+        WebkitMaskSize: "contain",
+        maskSize: "contain",
+        WebkitMaskRepeat: "no-repeat",
+        maskRepeat: "no-repeat",
+        WebkitMaskPosition: "center",
+        maskPosition: "center",
+        backgroundColor: "currentColor",
+        width: 20,
+        height: 20,
+        display: "inline-block",
+      }}
     />
   );
 }

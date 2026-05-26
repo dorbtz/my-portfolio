@@ -23,14 +23,17 @@ export async function Header() {
       dir="ltr"
       className="w-full sticky top-0 z-30 backdrop-blur-md bg-[color-mix(in_oklab,var(--color-bg)_75%,transparent)] border-b border-line"
     >
-      <div className="max-w-[min(1200px,calc(100%-2rem))] mx-auto flex items-center justify-between h-14 sm:h-16">
+      <div className="max-w-[min(1200px,calc(100%-2rem))] mx-auto h-14 sm:h-16 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
         <Link
           href="/"
-          className="font-semibold tracking-tight text-fg hover:text-accent transition-colors duration-snap"
+          className="font-semibold tracking-tight text-fg hover:text-accent transition-colors duration-snap justify-self-start"
         >
           dor<span className="text-accent">b</span>tz
         </Link>
-        <nav aria-label={t.a11y.primaryNav} className="flex items-center gap-1 sm:gap-2">
+        <nav
+          aria-label={t.a11y.primaryNav}
+          className="flex items-center gap-1 sm:gap-2 justify-self-center"
+        >
           {nav.map((item) => (
             <Link
               key={item.href}
@@ -41,6 +44,10 @@ export async function Header() {
             </Link>
           ))}
         </nav>
+        {/* Right-side spacer keeps the centered nav truly centered; the
+            floating ThemeSwitcher / LangSwitcher cluster lives at the
+            viewport corner, not inside the header flow. */}
+        <div aria-hidden className="justify-self-end" />
       </div>
     </header>
   );
