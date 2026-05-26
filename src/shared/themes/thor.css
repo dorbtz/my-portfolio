@@ -1,0 +1,59 @@
+/**
+ * Thor theme — Asgardian dossier vibe.
+ * Light: pale Asgard blue + Bifrost blue accent.
+ * Dark:  deep navy + Mjolnir gold accent.
+ */
+
+[data-theme="thor"],
+[data-theme="thor"][data-scheme="light"] {
+  --color-bg: #eef1f8;
+  --color-bg-elevated: #ffffff;
+  --color-text: #0a0f1e;
+  --color-text-muted: #4a5168;
+  --color-accent: #0a4dff;
+  --color-accent-contrast: #ffffff;
+  --color-border: rgba(10, 15, 30, 0.1);
+
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 24px 64px -16px rgba(10, 15, 30, 0.2);
+  --glass-vibrancy: rgba(10, 77, 255, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="thor"]:not([data-scheme="light"]) {
+    --color-bg: #0a0f1e;
+    --color-bg-elevated: #131a30;
+    --color-text: #f5f7ff;
+    --color-text-muted: #9aa3c2;
+    --color-accent: #f5c518;
+    --color-accent-contrast: #0a0f1e;
+    --color-border: rgba(245, 247, 255, 0.08);
+
+    --glass-bg: rgba(15, 21, 42, 0.6);
+    --glass-border: rgba(245, 197, 24, 0.16);
+    --glass-shadow:
+      inset 0 1px 0 rgba(245, 197, 24, 0.1),
+      0 24px 64px -16px rgba(0, 0, 0, 0.7);
+    --glass-vibrancy: rgba(245, 197, 24, 0.1);
+  }
+}
+
+[data-theme="thor"][data-scheme="dark"] {
+  --color-bg: #0a0f1e;
+  --color-bg-elevated: #131a30;
+  --color-text: #f5f7ff;
+  --color-text-muted: #9aa3c2;
+  --color-accent: #f5c518;
+  --color-accent-contrast: #0a0f1e;
+  --color-border: rgba(245, 247, 255, 0.08);
+
+  --glass-bg: rgba(15, 21, 42, 0.6);
+  --glass-border: rgba(245, 197, 24, 0.16);
+  --glass-shadow:
+    inset 0 1px 0 rgba(245, 197, 24, 0.1),
+    0 24px 64px -16px rgba(0, 0, 0, 0.7);
+  --glass-vibrancy: rgba(245, 197, 24, 0.1);
+}

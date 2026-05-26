@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { readThemeState } from "@/shared/lib/theme/ssr";
+import { FloatingControls } from "@/shared/ui/FloatingControls";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://dorbtz.com"),
@@ -10,11 +12,7 @@ export const metadata: Metadata = {
   description:
     "Portfolio of Dor Ben Tzur. Modern web architecture, 3D interactive applications, AI-driven solutions. Next.js, Supabase, Vercel AI Gateway.",
   authors: [{ name: "Dor Ben Tzur", url: "https://dorbtz.com" }],
-  openGraph: {
-    type: "website",
-    siteName: "Dor Ben Tzur",
-    locale: "en_US",
-  },
+  openGraph: { type: "website", siteName: "Dor Ben Tzur", locale: "en_US" },
   twitter: { card: "summary_large_image" },
   robots: { index: true, follow: true },
 };
@@ -29,10 +27,17 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const { theme, scheme, locale } = await readThemeState();
+  const schemeAttr = scheme === "auto" ? undefined : scheme;
+  const dir = locale === "he" ? "rtl" : "ltr";
+
   return (
-    <html lang="en" data-theme="hightech" suppressHydrationWarning>
-      <body>{children}</body>
+    <html lang={locale} dir={dir} data-theme={theme} data-scheme={schemeAttr} suppressHydrationWarning>
+      <body>
+        {children}
+        <FloatingControls initialTheme={theme} initialScheme={scheme} initialLocale={locale} />
+      </body>
     </html>
   );
 }

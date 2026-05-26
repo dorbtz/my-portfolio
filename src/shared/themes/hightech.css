@@ -1,0 +1,60 @@
+/**
+ * High-Tech theme (default) — Apple iOS Liquid Glass.
+ * Light: airy white glass + deep violet accent.
+ * Dark:  deep slate glass + electric cyan accent.
+ * Auto:  follows prefers-color-scheme unless data-scheme overrides.
+ */
+
+[data-theme="hightech"],
+[data-theme="hightech"][data-scheme="light"] {
+  --color-bg: #f7f8fa;
+  --color-bg-elevated: #ffffff;
+  --color-text: #0b0d12;
+  --color-text-muted: #5b6172;
+  --color-accent: #7c3aed;
+  --color-accent-contrast: #ffffff;
+  --color-border: rgba(11, 13, 18, 0.08);
+
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 24px 64px -16px rgba(11, 13, 18, 0.18);
+  --glass-vibrancy: rgba(124, 58, 237, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="hightech"]:not([data-scheme="light"]) {
+    --color-bg: #0b0d12;
+    --color-bg-elevated: #14171f;
+    --color-text: #f7f8fa;
+    --color-text-muted: #a1a6b3;
+    --color-accent: #00d4ff;
+    --color-accent-contrast: #0b0d12;
+    --color-border: rgba(247, 248, 250, 0.08);
+
+    --glass-bg: rgba(20, 22, 28, 0.55);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 24px 64px -16px rgba(0, 0, 0, 0.6);
+    --glass-vibrancy: rgba(0, 212, 255, 0.08);
+  }
+}
+
+[data-theme="hightech"][data-scheme="dark"] {
+  --color-bg: #0b0d12;
+  --color-bg-elevated: #14171f;
+  --color-text: #f7f8fa;
+  --color-text-muted: #a1a6b3;
+  --color-accent: #00d4ff;
+  --color-accent-contrast: #0b0d12;
+  --color-border: rgba(247, 248, 250, 0.08);
+
+  --glass-bg: rgba(20, 22, 28, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 24px 64px -16px rgba(0, 0, 0, 0.6);
+  --glass-vibrancy: rgba(0, 212, 255, 0.08);
+}
