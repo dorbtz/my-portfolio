@@ -27,6 +27,11 @@ export function ContactForm() {
       return;
     }
     setStatus("submitting");
+    // Tell ThemeContactMedia to play the Heimdall / Den-Den-Mushi overlay
+    // animation. The wrapper listens for this custom event.
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("pf-contact-submit"));
+    }
     // Stub: M6 replaces this with a Server Action that persists to Supabase
     // messages + runs the AI classifier in the background.
     setTimeout(() => setStatus("sent"), 600);

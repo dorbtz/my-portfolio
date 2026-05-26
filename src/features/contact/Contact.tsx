@@ -6,6 +6,7 @@ import { PROFILE } from "@/shared/data/profile";
 import { ContactForm } from "./ContactForm";
 import { readThemeState } from "@/shared/lib/theme/ssr";
 import { localize } from "@/shared/lib/i18n/localize";
+import { ContactWithMedia } from "./ContactWithMedia";
 
 export async function Contact() {
   const { locale } = await readThemeState();
@@ -32,7 +33,12 @@ export async function Contact() {
         </AppleSpring>
         <AppleSpring kind="fade-up" delay={120} className="lg:col-span-3">
           <GlassCard padding={6}>
-            <ContactForm />
+            {/* ContactWithMedia is a client wrapper: shares `playing` state
+                between the form (sets true on submit) and the per-theme
+                media widget (Heimdall for Thor, Den-Den-Mushi for Luffy). */}
+            <ContactWithMedia>
+              <ContactForm />
+            </ContactWithMedia>
           </GlassCard>
         </AppleSpring>
       </div>
