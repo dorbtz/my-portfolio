@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { GlassCard } from "@/shared/ui/GlassCard";
 import { GlassButton } from "@/shared/ui/GlassButton";
+import { useClientStrings } from "@/shared/lib/i18n/client-strings";
 
 /**
  * Smart project recommender. Lives at the top of /projects.
@@ -16,6 +17,7 @@ import { GlassButton } from "@/shared/ui/GlassButton";
 type Pick = { slug: string; why: string };
 
 export function Recommender() {
+  const t = useClientStrings().recommender;
   const [role, setRole] = useState("");
   const [picks, setPicks] = useState<Pick[] | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
@@ -45,26 +47,24 @@ export function Recommender() {
       setDegraded(Boolean(data.degraded));
       setStatus("idle");
     } catch {
-      setError("Network error — please try again.");
+      setError(t.networkError);
       setStatus("error");
     }
   }
 
   return (
     <GlassCard padding={6} className="mb-8">
-      <p className="text-caption uppercase tracking-wider text-accent">Hiring? Try the recommender.</p>
-      <h2 className="text-h2 font-semibold mt-1">
-        Tell me what you&apos;re building and I&apos;ll point you at the matching work.
-      </h2>
+      <p className="text-caption uppercase tracking-wider text-accent">{t.eyebrow}</p>
+      <h2 className="text-h2 font-semibold mt-1">{t.title}</h2>
       <form onSubmit={onSubmit} className="mt-4 flex flex-col sm:flex-row gap-2">
         <input
           type="text"
           value={role}
           onChange={(e) => setRole(e.target.value)}
-          placeholder='e.g. "Senior Next.js + AI engineer for an LLM-powered SaaS"'
+          placeholder={t.placeholder}
           maxLength={600}
           className="flex-1 h-11 px-4 rounded-pill bg-[color-mix(in_oklab,var(--color-text)_4%,transparent)] border border-line text-fg placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent"
-          aria-label="Role description"
+          aria-label={t.inputAria}
           disabled={status === "loading"}
         />
         <GlassButton
@@ -72,7 +72,7 @@ export function Recommender() {
           variant="primary"
           disabled={!role.trim() || status === "loading"}
         >
-          {status === "loading" ? "Picking…" : "Recommend"}
+          {status === "loading" ? t.picking : t.recommend}
         </GlassButton>
       </form>
 
@@ -85,7 +85,7 @@ export function Recommender() {
       {picks && picks.length > 0 && (
         <div className="mt-6">
           <p className="text-caption uppercase tracking-wider text-muted">
-            {degraded ? "Top picks (AI offline — showing newest)" : "Top picks"}
+            {degraded ? t.topPicksDegraded : t.topPicks}
           </p>
           <ul className="grid gap-3 mt-3">
             {picks.map((p, i) => (
@@ -109,9 +109,7 @@ export function Recommender() {
       )}
 
       {picks && picks.length === 0 && (
-        <p className="mt-4 text-body-sm text-muted">
-          No strong matches in the current portfolio. Email Dor directly.
-        </p>
+        <p className="mt-4 text-body-sm text-muted">{t.none}</p>
       )}
     </GlassCard>
   );

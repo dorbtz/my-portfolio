@@ -2,6 +2,7 @@
 
 import { useState, useTransition, type FormEvent } from "react";
 import { GlassButton } from "@/shared/ui/GlassButton";
+import { useClientStrings } from "@/shared/lib/i18n/client-strings";
 import { submitMessage } from "./actions";
 
 /**
@@ -11,6 +12,7 @@ import { submitMessage } from "./actions";
  *   3. Kicks off the AI classifier in the background (M6) — not awaited
  */
 export function ContactForm() {
+  const t = useClientStrings().contact;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [body, setBody] = useState("");
@@ -22,11 +24,11 @@ export function ContactForm() {
     e.preventDefault();
     setError(null);
     if (!name.trim() || !email.trim() || !body.trim()) {
-      setError("Please fill in all fields.");
+      setError(t.fillAll);
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError("That email doesn't look right.");
+      setError(t.badEmail);
       return;
     }
     // Trigger the per-theme media animation immediately for snappy feedback.
@@ -49,10 +51,8 @@ export function ContactForm() {
   if (status === "sent") {
     return (
       <div role="status" aria-live="polite" className="text-center py-6">
-        <p className="text-h3 font-semibold">Got it. ✨</p>
-        <p className="text-body text-muted mt-2">
-          Your message is in the inbox. I&apos;ll reply within a couple of days.
-        </p>
+        <p className="text-h3 font-semibold">{t.sentTitle}</p>
+        <p className="text-body text-muted mt-2">{t.sentBody}</p>
       </div>
     );
   }
@@ -63,7 +63,7 @@ export function ContactForm() {
   return (
     <form onSubmit={onSubmit} noValidate className="grid gap-4">
       <label className="grid gap-1.5">
-        <span className="text-caption uppercase tracking-wider text-muted">Name</span>
+        <span className="text-caption uppercase tracking-wider text-muted">{t.nameLabel}</span>
         <input
           type="text"
           autoComplete="name"
@@ -74,7 +74,7 @@ export function ContactForm() {
         />
       </label>
       <label className="grid gap-1.5">
-        <span className="text-caption uppercase tracking-wider text-muted">Email</span>
+        <span className="text-caption uppercase tracking-wider text-muted">{t.emailLabel}</span>
         <input
           type="email"
           inputMode="email"
@@ -86,7 +86,7 @@ export function ContactForm() {
         />
       </label>
       <label className="grid gap-1.5">
-        <span className="text-caption uppercase tracking-wider text-muted">Message</span>
+        <span className="text-caption uppercase tracking-wider text-muted">{t.messageLabel}</span>
         <textarea
           rows={5}
           value={body}
@@ -106,7 +106,7 @@ export function ContactForm() {
           variant="primary"
           disabled={status === "submitting"}
         >
-          {status === "submitting" ? "Sending…" : "Send"}
+          {status === "submitting" ? t.sending : t.send}
         </GlassButton>
       </div>
     </form>

@@ -5,6 +5,7 @@ import { DefaultChatTransport, type UIMessage } from "ai";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { GlassCard } from "@/shared/ui/GlassCard";
 import { GlassButton } from "@/shared/ui/GlassButton";
+import { useClientStrings } from "@/shared/lib/i18n/client-strings";
 
 /**
  * Floating Chatbot widget. Bottom-right glass surface (mirrors the
@@ -18,6 +19,7 @@ export function Chatbot() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const t = useClientStrings().chatbot;
 
   // useChat() in AI SDK v6 defaults to POST /api/chat. Our route lives at
   // /api/ai/chat (namespaced under /api/ai/*) so we provide the URL explicitly.
@@ -47,7 +49,7 @@ export function Chatbot() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Open AI chat"
+        aria-label={t.triggerAria}
         className={[
           "fixed z-50 right-[max(env(safe-area-inset-right),0.75rem)]",
           "bottom-[max(env(safe-area-inset-bottom),0.75rem)]",
@@ -58,7 +60,7 @@ export function Chatbot() {
         ].join(" ")}
       >
         <span aria-hidden>✨</span>
-        <span>Ask my portfolio</span>
+        <span>{t.triggerLabel}</span>
       </button>
     );
   }
@@ -79,13 +81,13 @@ export function Chatbot() {
       <GlassCard padding={4} className="flex flex-col gap-3 h-full overflow-hidden">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <p className="text-caption uppercase tracking-wider text-accent">AI co-pilot</p>
-            <p className="text-body-sm font-semibold">Ask my portfolio</p>
+            <p className="text-caption uppercase tracking-wider text-accent">{t.eyebrow}</p>
+            <p className="text-body-sm font-semibold">{t.title}</p>
           </div>
           <button
             type="button"
             onClick={() => setOpen(false)}
-            aria-label="Close chat"
+            aria-label={t.closeAria}
             className="w-9 h-9 grid place-items-center rounded-pill text-fg hover:bg-[color-mix(in_oklab,var(--color-text)_8%,transparent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
           >
             <span aria-hidden>×</span>
@@ -97,10 +99,7 @@ export function Chatbot() {
           className="flex-1 overflow-y-auto rounded-md p-2 border border-line bg-[color-mix(in_oklab,var(--color-text)_3%,transparent)] min-h-[180px]"
         >
           {messages.length === 0 ? (
-            <p className="text-body-sm text-muted p-3">
-              Hi — ask about Dor&apos;s work, stack, or any project. I can also
-              recommend projects that match a role you&apos;re hiring for.
-            </p>
+            <p className="text-body-sm text-muted p-3">{t.emptyState}</p>
           ) : (
             <ul className="flex flex-col gap-2 p-1">
               {(messages as UIMessage[]).map((m) => {
@@ -125,7 +124,7 @@ export function Chatbot() {
                 );
               })}
               {status === "submitted" && (
-                <li className="self-start text-caption text-muted px-3 py-2">Thinking…</li>
+                <li className="self-start text-caption text-muted px-3 py-2">{t.thinking}</li>
               )}
             </ul>
           )}
@@ -133,7 +132,7 @@ export function Chatbot() {
 
         {error && (
           <p role="alert" className="text-caption text-[var(--color-accent)]">
-            {error.message ?? "Something went wrong."}
+            {error.message ?? t.fallbackError}
           </p>
         )}
 
@@ -142,9 +141,9 @@ export function Chatbot() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask anything about Dor's work…"
+            placeholder={t.placeholder}
             className="flex-1 h-11 px-4 rounded-pill bg-[color-mix(in_oklab,var(--color-text)_4%,transparent)] border border-line text-fg placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent"
-            aria-label="Your message"
+            aria-label={t.inputAria}
             disabled={status === "submitted" || status === "streaming"}
           />
           <GlassButton
@@ -153,7 +152,7 @@ export function Chatbot() {
             size="sm"
             disabled={!input.trim() || status === "submitted" || status === "streaming"}
           >
-            Send
+            {t.send}
           </GlassButton>
         </form>
       </GlassCard>
