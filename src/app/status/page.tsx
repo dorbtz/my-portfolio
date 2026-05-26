@@ -78,7 +78,7 @@ export default async function StatusPage() {
   ]);
 
   return (
-    <main className="min-h-dvh">
+    <main id="main-content" className="min-h-dvh">
       <Section padding={9} ariaLabel="Status">
         <p className="text-caption uppercase tracking-[0.18em] text-accent">{t(EYEBROW)}</p>
         <h1 className="text-display font-bold tracking-tight mt-2">{t(TITLE)}</h1>

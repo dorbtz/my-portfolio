@@ -9,6 +9,7 @@ import { Chatbot } from "@/features/ai-chat/Chatbot";
 import { ConditionalChrome } from "@/shared/ui/ConditionalChrome";
 import { EasterEggs } from "@/shared/ui/EasterEggs";
 import { EasterEggEffects } from "@/shared/ui/EasterEggEffects";
+import { SkipToContent } from "@/shared/ui/SkipToContent";
 
 // Per-theme display fonts. Each theme's CSS sets --font-display to one of
 // these variables; the body class string just makes the variables available.
@@ -78,6 +79,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       suppressHydrationWarning
     >
       <body>
+        <SkipToContent />
         <ConditionalChrome>
           <Header />
         </ConditionalChrome>

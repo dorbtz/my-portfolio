@@ -32,7 +32,7 @@ export default async function ProjectPage({ params }: { params: Promise<RoutePar
   const project = await getProjectBySlug(slug);
   if (!project) notFound();
   return (
-    <main className="min-h-dvh">
+    <main id="main-content" className="min-h-dvh">
       <ProjectDetail project={project} />
     </main>
   );

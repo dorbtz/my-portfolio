@@ -25,7 +25,7 @@ export default async function ProjectsIndex() {
     { en: BODY, contentType: "projects-index.body" },
   ]);
   return (
-    <main className="min-h-dvh">
+    <main id="main-content" className="min-h-dvh">
       <Section padding={9} ariaLabel="All projects">
         <AppleSpring kind="fade-up" trigger="mount">
           <p className="text-caption uppercase tracking-[0.18em] text-accent">{t(EYEBROW)}</p>

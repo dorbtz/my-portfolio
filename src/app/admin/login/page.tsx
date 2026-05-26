@@ -25,7 +25,7 @@ export default async function AdminLoginPage({
   const noticeText = reason ? REASON_MESSAGE[reason] ?? null : null;
 
   return (
-    <main className="min-h-dvh">
+    <main id="main-content" className="min-h-dvh">
       <Section padding={9} ariaLabel="Admin sign-in">
         <div className="max-w-md mx-auto">
           <p className="text-caption uppercase tracking-[0.18em] text-accent text-center">

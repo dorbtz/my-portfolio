@@ -5,7 +5,7 @@ import { GlassButton } from "@/shared/ui/GlassButton";
 
 export default function ProjectNotFound() {
   return (
-    <main className="min-h-dvh">
+    <main id="main-content" className="min-h-dvh">
       <Section padding={9} ariaLabel="Not found">
         <GlassCard padding={7} className="max-w-xl mx-auto text-center">
           <p className="text-caption uppercase tracking-[0.18em] text-accent">404</p>

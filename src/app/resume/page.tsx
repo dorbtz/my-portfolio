@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function ResumePage() {
   return (
-    <main className="min-h-dvh">
+    <main id="main-content" className="min-h-dvh">
       <Resume />
       <ResumeJsonLd />
     </main>

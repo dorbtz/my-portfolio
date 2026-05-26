@@ -6,7 +6,7 @@ import { Contact } from "@/features/contact/Contact";
 
 export default function Home() {
   return (
-    <main className="min-h-dvh">
+    <main id="main-content" className="min-h-dvh">
       <Hero />
       <About />
       <ProjectsSection />
