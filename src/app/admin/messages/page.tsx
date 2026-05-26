@@ -60,7 +60,7 @@ export default async function AdminMessagesPage() {
       </p>
 
       {rows.length === 0 && (
-        <GlassCard padding={6} className="mt-6">
+        <GlassCard padding={6} className="admin-card mt-6">
           <p className="text-body text-muted">No messages yet.</p>
         </GlassCard>
       )}
@@ -71,7 +71,7 @@ export default async function AdminMessagesPage() {
           const tint = m.classification ? CLASS_TINT[m.classification] ?? CLASS_TINT.other : null;
           return (
             <li key={m.id}>
-              <GlassCard padding={5} className={m.archived ? "opacity-60" : ""}>
+              <GlassCard padding={5} className={["admin-card", m.archived ? "opacity-60" : ""].filter(Boolean).join(" ")}>
                 <div className="flex items-start justify-between gap-3 flex-wrap">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">

@@ -63,7 +63,7 @@ export default async function AdminContentPage() {
                 href={`/admin/content/projects/${p.slug}`}
                 className="block focus-visible:outline-none rounded-md"
               >
-                <GlassCard padding={5} className="transition-transform duration-snap hover:-translate-y-0.5">
+                <GlassCard padding={5} className="admin-card transition-transform duration-snap hover:-translate-y-0.5">
                   <div className="flex items-center justify-between gap-3 flex-wrap">
                     <div className="min-w-0">
                       <p className="text-h3 font-semibold truncate">

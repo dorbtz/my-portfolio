@@ -78,7 +78,7 @@ export default async function ProjectEditPage({
       </p>
       <h1 className="text-h1 font-bold mt-2">{isNew ? "Create project" : initial.title || initial.slug}</h1>
 
-      <GlassCard padding={6} className="mt-6">
+      <GlassCard padding={6} className="admin-card mt-6">
         <ProjectEditor
           initial={initial}
           isNew={isNew}

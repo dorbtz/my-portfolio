@@ -45,7 +45,7 @@ export default async function AdminLoginPage({
               {noticeText}
             </p>
           )}
-          <GlassCard padding={6} className="mt-6">
+          <GlassCard padding={6} className="admin-card mt-6">
             <LoginForms />
           </GlassCard>
         </div>

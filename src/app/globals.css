@@ -123,6 +123,74 @@ h1, h2, h3, .text-display, .text-h1, .text-h2 {
 }
 
 /* ============================================================
+ * Per-theme ADMIN cards (.admin-nav)
+ * Reuses the per-theme card treatment (Asgardian / Wanted-poster) on the
+ * admin sidebar so the admin still feels like the active theme.
+ * ============================================================ */
+
+[data-theme="thor"] .admin-nav {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--color-bg-elevated) 100%, transparent),
+    color-mix(in oklab, var(--color-bg) 100%, transparent)
+  );
+  border: 1px solid color-mix(in oklab, var(--color-accent) 30%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--color-accent) 18%, transparent),
+    inset 0 -1px 0 color-mix(in oklab, var(--color-accent) 18%, transparent),
+    0 12px 32px -16px rgba(0, 0, 0, 0.5);
+}
+[data-theme="thor"] .admin-nav__item {
+  font-family: var(--font-thor, "Bebas Neue"), Impact, sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+[data-theme="luffy"] .admin-nav {
+  background: var(--color-bg-elevated);
+  border: 3px solid color-mix(in oklab, var(--color-text) 88%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: var(--radius-md);
+  box-shadow: 4px 4px 0 0 color-mix(in oklab, var(--color-text) 92%, transparent);
+}
+[data-theme="luffy"] .admin-nav__item {
+  font-family: var(--font-luffy, "Bangers"), "Comic Sans MS", cursive;
+  letter-spacing: 0.02em;
+}
+
+/* Reuse .project-card per-theme treatment on admin GlassCards too —
+   give admin cards the same Asgardian / Wanted-poster vibe so the
+   admin doesn't feel like a different site under each theme. */
+[data-theme="thor"] .admin-card,
+[data-theme="luffy"] .admin-card { overflow: hidden; }
+[data-theme="thor"] .admin-card {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--color-bg-elevated) 100%, transparent),
+    color-mix(in oklab, var(--color-bg) 100%, transparent)
+  );
+  border: 1px solid color-mix(in oklab, var(--color-accent) 35%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: var(--radius-md);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--color-accent) 18%, transparent),
+    inset 0 -1px 0 color-mix(in oklab, var(--color-accent) 18%, transparent),
+    0 16px 48px -16px rgba(0, 0, 0, 0.45);
+}
+[data-theme="luffy"] .admin-card {
+  background: var(--color-bg-elevated);
+  border: 3px solid color-mix(in oklab, var(--color-text) 88%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: var(--radius-md);
+  box-shadow: 5px 5px 0 0 color-mix(in oklab, var(--color-text) 92%, transparent);
+}
+
+/* ============================================================
  * Per-theme SKILLS BACKDROP (.skills-section)
  * Thor: Yggdrasil tree silhouette + golden constellation glow
  * Luffy: Grand Line ocean tint + One-Piece logo watermark

@@ -46,7 +46,7 @@ function StatCard({
   hint?: string;
 }) {
   const inner = (
-    <GlassCard padding={5} className="h-full transition-transform duration-snap ease-snap hover:-translate-y-0.5">
+    <GlassCard padding={5} className="admin-card h-full transition-transform duration-snap ease-snap hover:-translate-y-0.5">
       <p className="text-caption uppercase tracking-wider text-muted">{label}</p>
       <p className="text-display font-bold mt-1 leading-none">{value}</p>
       {hint && <p className="text-caption text-muted mt-2">{hint}</p>}

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { applyLocale } from "../lib/theme/client";
 import { LOCALE_VALUES, type Locale } from "../lib/theme/types";
 
@@ -14,12 +15,32 @@ type Props = {
 };
 
 /**
- * Lang switcher. Only flips <html lang> + <html dir> + cookie for now.
- * Translation pipeline is wired in M6 — the cookie is the same so when M6
- * lands the cached AI translations will start rendering automatically.
+ * Lang switcher.
+ *
+ *  1. applyLocale flips <html lang> + <html dir> + cookie instantly (no flash).
+ *  2. router.refresh() then re-fetches the current page from the server,
+ *     which re-runs the Server Components — they read the new cookie and
+ *     pass content through localize(), which hits the Supabase
+ *     translations_cache (or calls Gemini on cache miss, persisting the
+ *     result for everyone).
+ *
+ * First HE click on a page is slow (~3-10s for the AI calls); subsequent
+ * visits hit cache and are instant. A "Translating…" indicator covers
+ * the delay so the user knows something is happening.
  */
 export function LangSwitcher({ initialLocale }: Props) {
   const [locale, setLocale] = useState<Locale>(initialLocale);
+  const [pending, start] = useTransition();
+  const router = useRouter();
+
+  function pick(next: Locale) {
+    if (next === locale && !pending) return;
+    setLocale(next);
+    applyLocale(next);
+    start(() => {
+      router.refresh();
+    });
+  }
 
   return (
     <div
@@ -37,15 +58,13 @@ export function LangSwitcher({ initialLocale }: Props) {
             role="radio"
             aria-checked={active}
             aria-label={aria}
-            onClick={() => {
-              setLocale(l);
-              applyLocale(l);
-            }}
+            onClick={() => pick(l)}
+            disabled={pending}
             className={[
               "h-9 px-3 min-w-[44px] rounded-pill text-body-sm font-medium select-none",
-              "transition-[background-color,color,transform] duration-snap ease-snap",
+              "transition-[background-color,color,transform,opacity] duration-snap ease-snap",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]",
-              "active:scale-[0.96]",
+              "active:scale-[0.96] disabled:cursor-wait",
               active
                 ? "bg-[var(--color-accent)] text-[var(--color-accent-contrast)]"
                 : "text-[var(--color-text)] hover:bg-[color-mix(in_oklab,var(--color-text)_8%,transparent)]",
@@ -55,6 +74,14 @@ export function LangSwitcher({ initialLocale }: Props) {
           </button>
         );
       })}
+      {pending && (
+        <span
+          aria-live="polite"
+          className="text-caption text-muted px-2 hidden sm:inline"
+        >
+          {locale === "he" ? "מתרגם…" : "Translating…"}
+        </span>
+      )}
     </div>
   );
 }

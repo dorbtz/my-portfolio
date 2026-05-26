@@ -50,7 +50,7 @@ export default async function AdminMcpPage() {
       <ul className="grid gap-3 mt-6">
         {TOOLS.map((t) => (
           <li key={t.name}>
-            <GlassCard padding={5}>
+            <GlassCard padding={5} className="admin-card">
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <p className="text-h3 font-semibold">
                   <code className="font-mono">{t.name}</code>

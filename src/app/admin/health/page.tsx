@@ -59,7 +59,7 @@ export default async function AdminHealthPage() {
       </p>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6">
-        <GlassCard padding={5}>
+        <GlassCard padding={5} className="admin-card">
           <p className="text-caption uppercase tracking-wider text-muted">AI provider</p>
           <p className="text-h3 font-semibold mt-1">
             {s.aiConfigured ? "Gemini (configured)" : "Not configured"}
@@ -69,7 +69,7 @@ export default async function AdminHealthPage() {
           </p>
         </GlassCard>
 
-        <GlassCard padding={5}>
+        <GlassCard padding={5} className="admin-card">
           <p className="text-caption uppercase tracking-wider text-muted">Embedding corpus</p>
           <p className="text-display font-bold leading-none mt-1">{s.embCount}</p>
           <ul className="mt-3 grid gap-1 text-body-sm text-muted">
@@ -81,13 +81,13 @@ export default async function AdminHealthPage() {
           </ul>
         </GlassCard>
 
-        <GlassCard padding={5}>
+        <GlassCard padding={5} className="admin-card">
           <p className="text-caption uppercase tracking-wider text-muted">Translations cached</p>
           <p className="text-display font-bold leading-none mt-1">{s.trCount}</p>
           <p className="text-caption text-muted mt-2">EN → HE pairs in translations_cache</p>
         </GlassCard>
 
-        <GlassCard padding={5} className="sm:col-span-2">
+        <GlassCard padding={5} className="admin-card sm:col-span-2">
           <p className="text-caption uppercase tracking-wider text-muted">Messages classifier</p>
           <p className="text-display font-bold leading-none mt-1">{s.msgsTotal}</p>
           <ul className="mt-3 flex flex-wrap gap-2">
@@ -105,7 +105,7 @@ export default async function AdminHealthPage() {
         </GlassCard>
       </div>
 
-      <GlassCard padding={6} className="mt-6">
+      <GlassCard padding={6} className="admin-card mt-6">
         <h2 className="text-h2 font-semibold">Maintenance</h2>
         <p className="text-body-sm text-muted mt-1">
           Re-sync the embeddings table from the current content. Run after any
