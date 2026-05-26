@@ -19,7 +19,6 @@ import { isMutedWebm, onWebmMuteChange } from "@/shared/lib/audio";
  */
 
 const VIDEO_WEBM = "/assets/One-Piece/dendenluffy/dendenluffyg5-live-transparent.webm";
-const VIDEO_MP4 = "/assets/One-Piece/dendenluffy/dendenluffyg5-live.mp4";
 const IMAGE_BG = "/assets/One-Piece/dendenluffy/DenDenBackground.png";
 
 type Props = {
@@ -118,7 +117,6 @@ export default function DenDenLuffyMedia({ playing, onEnded, alt }: Props) {
         onEnded={onEnded}
       >
         <source src={VIDEO_WEBM} type="video/webm" />
-        <source src={VIDEO_MP4} type="video/mp4" />
       </video>
     </div>
   );
