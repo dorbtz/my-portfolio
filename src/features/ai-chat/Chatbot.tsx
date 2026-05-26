@@ -1,8 +1,8 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import type { UIMessage } from "ai";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { DefaultChatTransport, type UIMessage } from "ai";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { GlassCard } from "@/shared/ui/GlassCard";
 import { GlassButton } from "@/shared/ui/GlassButton";
 
@@ -19,7 +19,13 @@ export function Chatbot() {
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const { messages, sendMessage, status, error } = useChat({});
+  // useChat() in AI SDK v6 defaults to POST /api/chat. Our route lives at
+  // /api/ai/chat (namespaced under /api/ai/*) so we provide the URL explicitly.
+  const transport = useMemo(
+    () => new DefaultChatTransport({ api: "/api/ai/chat" }),
+    []
+  );
+  const { messages, sendMessage, status, error } = useChat({ transport });
 
   // Auto-scroll to latest message when content streams in.
   useEffect(() => {

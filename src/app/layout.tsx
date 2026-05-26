@@ -39,6 +39,11 @@ export const metadata: Metadata = {
   openGraph: { type: "website", siteName: "Dor Ben Tzur", locale: "en_US" },
   twitter: { card: "summary_large_image" },
   robots: { index: true, follow: true },
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export const viewport: Viewport = {
