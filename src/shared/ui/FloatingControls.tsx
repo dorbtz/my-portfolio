@@ -17,11 +17,14 @@ type Props = {
 export function FloatingControls({ initialTheme, initialScheme, initialLocale }: Props) {
   return (
     <div
+      // dir="ltr" pins the cluster's internal layout regardless of page direction —
+      // the site-control surface always reads left-to-right, like an OS control center.
+      // Anchored with physical `right-*` so it stays on the right edge even in RTL pages.
+      dir="ltr"
       className={[
         "fixed z-50 flex items-center gap-2",
         "top-[max(env(safe-area-inset-top),0.75rem)]",
-        "end-[max(env(safe-area-inset-right),0.75rem)]",
-        // Mobile: stack tightly. Desktop: row.
+        "right-[max(env(safe-area-inset-right),0.75rem)]",
         "flex-wrap justify-end max-w-[calc(100vw-1.5rem)]",
       ].join(" ")}
       aria-label="Site controls"
