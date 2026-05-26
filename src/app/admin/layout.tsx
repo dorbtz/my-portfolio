@@ -80,24 +80,37 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="min-h-dvh">
       <div className="max-w-[min(1200px,calc(100%-2rem))] mx-auto pt-6 pb-16">
-        {/* Back-to-site bar — admin has no public Header, this gives a one-click exit */}
-        <div className="mb-6 flex items-center justify-between gap-3 flex-wrap">
+        {/* Back-to-site bar — admin has no public Header, this gives a one-click
+            exit. 3-column grid: back-link left, email center, empty right spacer
+            so the floating ThemeSwitcher / LangSwitcher cluster (fixed top-right
+            on the viewport) doesn't overlap the email. Email hides below `lg`
+            because that's the breakpoint where the floating cluster fits beside it. */}
+        <div className="mb-6 grid grid-cols-[auto_1fr_auto] items-center gap-3">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-body-sm text-fg hover:text-accent transition-colors"
+            className="inline-flex items-center gap-2 text-body-sm text-fg hover:text-accent transition-colors justify-self-start"
             aria-label="Back to dorbtz.com"
           >
             <span aria-hidden>←</span>
             <span className="font-semibold tracking-tight">
               dor<span className="text-accent">b</span>tz
             </span>
-            <span className="text-muted">· back to site</span>
+            <span className="text-muted hidden sm:inline">· back to site</span>
           </Link>
-          {signedIn && user && (
-            <span className="text-caption text-muted hidden sm:inline">
+          {signedIn && user ? (
+            <span
+              className="text-caption text-muted text-center truncate justify-self-center hidden lg:inline"
+              title={user.email}
+            >
               {user.email}
             </span>
+          ) : (
+            <span />
           )}
+          {/* Reserved space matching the floating cluster's footprint so the
+              centered email visually balances. ~360px is the cluster's max width
+              at desktop with both ThemeSwitcher (~220px) + LangSwitcher (~100px). */}
+          <span aria-hidden className="justify-self-end hidden lg:inline-block w-[360px]" />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
