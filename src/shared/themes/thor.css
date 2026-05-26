@@ -1,7 +1,13 @@
 /**
- * Thor theme — Asgardian dossier vibe.
+ * Thor theme — Asgardian dossier.
  * Light: pale Asgard blue + Bifrost blue accent.
  * Dark:  deep navy + Mjolnir gold accent.
+ *
+ * Design surface (v2 expansion):
+ *   - Display font: Bebas Neue (condensed military caps)
+ *   - Hero background: radial Bifrost glow + faint lightning bolts SVG
+ *   - Mjolnir sigil watermark in the hero (low opacity)
+ *   - Primary button has a soft Bifrost glow on hover
  */
 
 [data-theme="thor"],
@@ -12,14 +18,21 @@
   --color-text-muted: #4a5168;
   --color-accent: #0a4dff;
   --color-accent-contrast: #ffffff;
-  --color-border: rgba(10, 15, 30, 0.1);
+  --color-border: rgba(10, 15, 30, 0.12);
 
-  --glass-bg: rgba(255, 255, 255, 0.55);
-  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(10, 77, 255, 0.22);
   --glass-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    0 24px 64px -16px rgba(10, 15, 30, 0.2);
-  --glass-vibrancy: rgba(10, 77, 255, 0.1);
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 24px 64px -16px rgba(10, 77, 255, 0.18);
+  --glass-vibrancy: rgba(10, 77, 255, 0.12);
+
+  /* Display font + heading style */
+  --font-display: var(--font-thor, "Bebas Neue"), "Impact", "Arial Narrow", sans-serif;
+  --heading-letter-spacing: 0.04em;
+  --heading-text-transform: uppercase;
+  --hero-watermark: url("/assets/Marvel/mjolnir.png");
+  --hero-watermark-tint: rgba(10, 77, 255, 0.5);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -30,14 +43,20 @@
     --color-text-muted: #9aa3c2;
     --color-accent: #f5c518;
     --color-accent-contrast: #0a0f1e;
-    --color-border: rgba(245, 247, 255, 0.08);
+    --color-border: rgba(245, 247, 255, 0.1);
 
-    --glass-bg: rgba(15, 21, 42, 0.6);
-    --glass-border: rgba(245, 197, 24, 0.16);
+    --glass-bg: rgba(15, 21, 42, 0.65);
+    --glass-border: rgba(245, 197, 24, 0.22);
     --glass-shadow:
-      inset 0 1px 0 rgba(245, 197, 24, 0.1),
-      0 24px 64px -16px rgba(0, 0, 0, 0.7);
-    --glass-vibrancy: rgba(245, 197, 24, 0.1);
+      inset 0 1px 0 rgba(245, 197, 24, 0.14),
+      0 24px 64px -16px rgba(0, 0, 0, 0.75);
+    --glass-vibrancy: rgba(245, 197, 24, 0.12);
+
+    --font-display: var(--font-thor, "Bebas Neue"), "Impact", "Arial Narrow", sans-serif;
+    --heading-letter-spacing: 0.04em;
+    --heading-text-transform: uppercase;
+    --hero-watermark: url("/assets/Marvel/mjolnir.png");
+    --hero-watermark-tint: rgba(245, 197, 24, 0.55);
   }
 }
 
@@ -48,12 +67,18 @@
   --color-text-muted: #9aa3c2;
   --color-accent: #f5c518;
   --color-accent-contrast: #0a0f1e;
-  --color-border: rgba(245, 247, 255, 0.08);
+  --color-border: rgba(245, 247, 255, 0.1);
 
-  --glass-bg: rgba(15, 21, 42, 0.6);
-  --glass-border: rgba(245, 197, 24, 0.16);
+  --glass-bg: rgba(15, 21, 42, 0.65);
+  --glass-border: rgba(245, 197, 24, 0.22);
   --glass-shadow:
-    inset 0 1px 0 rgba(245, 197, 24, 0.1),
-    0 24px 64px -16px rgba(0, 0, 0, 0.7);
-  --glass-vibrancy: rgba(245, 197, 24, 0.1);
+    inset 0 1px 0 rgba(245, 197, 24, 0.14),
+    0 24px 64px -16px rgba(0, 0, 0, 0.75);
+  --glass-vibrancy: rgba(245, 197, 24, 0.12);
+
+  --font-display: var(--font-thor, "Bebas Neue"), "Impact", "Arial Narrow", sans-serif;
+  --heading-letter-spacing: 0.04em;
+  --heading-text-transform: uppercase;
+  --hero-watermark: url("/assets/Marvel/mjolnir.png");
+  --hero-watermark-tint: rgba(245, 197, 24, 0.55);
 }

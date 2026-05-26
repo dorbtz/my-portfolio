@@ -21,6 +21,12 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.6),
     0 24px 64px -16px rgba(11, 13, 18, 0.18);
   --glass-vibrancy: rgba(124, 58, 237, 0.1);
+
+  /* Display font + heading letter-spacing — clean editorial */
+  --font-display: var(--font-hightech, "Geist Sans"), -apple-system, "SF Pro Display", "Segoe UI", sans-serif;
+  --heading-letter-spacing: -0.02em;
+  --heading-text-transform: none;
+  --hero-watermark: none;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -57,4 +63,9 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
     0 24px 64px -16px rgba(0, 0, 0, 0.6);
   --glass-vibrancy: rgba(0, 212, 255, 0.08);
+
+  --font-display: var(--font-hightech, "Geist Sans"), -apple-system, "SF Pro Display", "Segoe UI", sans-serif;
+  --heading-letter-spacing: -0.02em;
+  --heading-text-transform: none;
+  --hero-watermark: none;
 }

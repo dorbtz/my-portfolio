@@ -44,7 +44,8 @@
   --glass-blur: 20px;
   --glass-saturate: 180%;
 
-  /* Fonts — system stack for M2; next/font self-hosted Geist lands in M3 */
+  /* Body font — same across themes for legibility. Display font is per-theme
+     (see hightech.css / thor.css / luffy.css; overridden via --font-display). */
   --font-sans: -apple-system, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, system-ui, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }

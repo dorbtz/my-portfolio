@@ -33,6 +33,95 @@ body {
   box-shadow: var(--glass-shadow);
 }
 
+/* Headlines pick up the per-theme display font + transform / spacing.
+   Applied via the `text-display`, `text-h1`, `text-h2`, `text-h3` utilities
+   plus an explicit selector so headings work even without those classes. */
+h1, h2, h3, .text-display, .text-h1, .text-h2 {
+  font-family: var(--font-display, var(--font-sans));
+  letter-spacing: var(--heading-letter-spacing, normal);
+  text-transform: var(--heading-text-transform, none);
+}
+
+/* Hero background slot — theme-driven via CSS variables.
+   Used by features/hero/Hero.tsx as <div class="hero-bg"> wrapping the content. */
+.hero-bg {
+  position: relative;
+  isolation: isolate;
+}
+.hero-bg::before {
+  content: "";
+  position: absolute;
+  inset: -2rem -1rem -4rem -1rem;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(900px 500px at 50% 0%, var(--glass-vibrancy), transparent 70%);
+}
+
+/* Thor: faint lightning streaks behind the hero */
+[data-theme="thor"] .hero-bg::before {
+  background:
+    radial-gradient(900px 500px at 50% 0%, var(--glass-vibrancy), transparent 70%),
+    repeating-linear-gradient(
+      115deg,
+      transparent 0 40px,
+      color-mix(in oklab, var(--color-accent) 5%, transparent) 40px 42px,
+      transparent 42px 80px
+    );
+}
+
+/* Luffy: parchment hatch lines + warm sun glow */
+[data-theme="luffy"] .hero-bg::before {
+  background:
+    radial-gradient(700px 400px at 50% 0%, var(--glass-vibrancy), transparent 70%),
+    repeating-linear-gradient(
+      45deg,
+      transparent 0 6px,
+      color-mix(in oklab, var(--color-text) 3%, transparent) 6px 7px
+    );
+}
+
+/* Per-theme decorative watermark — themes set --hero-watermark (PNG url)
+   and --hero-watermark-tint (color). Sits in the upper-right of the hero,
+   tinted via mask-image so it picks up the theme accent. */
+.hero-bg::after {
+  content: "";
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: clamp(80px, 16vw, 180px);
+  height: clamp(80px, 16vw, 180px);
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  background-color: var(--hero-watermark-tint, transparent);
+  -webkit-mask-image: var(--hero-watermark, none);
+  mask-image: var(--hero-watermark, none);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  transition: opacity var(--duration-glide) var(--ease-soft);
+}
+[data-theme="thor"] .hero-bg::after,
+[data-theme="luffy"] .hero-bg::after { opacity: 0.35; }
+
+/* Per-theme button polish — Luffy primary button gets a stamped offset shadow;
+   Thor primary button gets a soft Bifrost glow. */
+[data-theme="luffy"] .glass-button {
+  box-shadow: 4px 4px 0 0 color-mix(in oklab, var(--color-text) 70%, transparent);
+}
+[data-theme="luffy"] .glass-button:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 0 color-mix(in oklab, var(--color-text) 80%, transparent);
+}
+[data-theme="thor"] .glass-button {
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--color-accent) 30%, transparent),
+              0 0 24px -8px var(--color-accent);
+}
+
 /* Semantic helpers (small, used everywhere) */
 .bg-canvas { background-color: var(--color-bg); }
 .bg-surface { background-color: var(--color-bg-elevated); }

@@ -1,10 +1,31 @@
 import type { Metadata, Viewport } from "next";
+import { Bangers, Bebas_Neue, Geist } from "next/font/google";
 import "./globals.css";
 import { readThemeState } from "@/shared/lib/theme/ssr";
 import { FloatingControls } from "@/shared/ui/FloatingControls";
 import { Header } from "@/features/chrome/Header";
 import { Footer } from "@/features/chrome/Footer";
 import { Chatbot } from "@/features/ai-chat/Chatbot";
+
+// Per-theme display fonts. Each theme's CSS sets --font-display to one of
+// these variables; the body class string just makes the variables available.
+const fontHightech = Geist({
+  subsets: ["latin"],
+  variable: "--font-hightech",
+  display: "swap",
+});
+const fontThor = Bebas_Neue({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-thor",
+  display: "swap",
+});
+const fontLuffy = Bangers({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-luffy",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://dorbtz.com"),
@@ -36,7 +57,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const dir = locale === "he" ? "rtl" : "ltr";
 
   return (
-    <html lang={locale} dir={dir} data-theme={theme} data-scheme={schemeAttr} suppressHydrationWarning>
+    <html
+      lang={locale}
+      dir={dir}
+      data-theme={theme}
+      data-scheme={schemeAttr}
+      className={`${fontHightech.variable} ${fontThor.variable} ${fontLuffy.variable}`}
+      suppressHydrationWarning
+    >
       <body>
         <Header />
         {children}

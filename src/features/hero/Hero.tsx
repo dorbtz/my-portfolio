@@ -7,16 +7,8 @@ import { HERO } from "@/shared/data/sections";
 export function Hero() {
   return (
     <Section id="hero" padding={10} ariaLabel="Introduction">
-      <div className="relative">
-        {/* Soft vibrancy gradient behind the hero */}
-        <div
-          aria-hidden
-          className="absolute inset-0 -z-10 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(800px 400px at 50% 0%, var(--glass-vibrancy), transparent 70%)",
-          }}
-        />
+      {/* hero-bg supplies theme-specific background patterns + watermark via CSS */}
+      <div className="hero-bg">
         <AppleSpring kind="fade-up" trigger="mount">
           <p className="text-caption uppercase tracking-[0.18em] text-accent text-center">
             {HERO.eyebrow}
