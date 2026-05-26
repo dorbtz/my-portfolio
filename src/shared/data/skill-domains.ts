@@ -185,13 +185,235 @@ export const ISLAND_FILES: readonly string[] = [
 
 /** Positions along the Grand Line spiral — % coords inside a 16:9 container. */
 export const ISLAND_POSITIONS: readonly { x: number; y: number }[] = [
-  { x: 12, y: 70 }, // Whiskey Peak
-  { x: 22, y: 38 }, // Little Garden
-  { x: 32, y: 72 }, // Drum Island
-  { x: 42, y: 35 }, // Alabasta
-  { x: 50, y: 78 }, // Jaya
-  { x: 60, y: 20 }, // Skypiea
-  { x: 70, y: 60 }, // Water 7
-  { x: 80, y: 30 }, // Thriller Bark
-  { x: 90, y: 65 }, // Sabaody
+  { x: 12, y: 68 }, // Whiskey Peak
+  { x: 21, y: 40 }, // Little Garden
+  { x: 30, y: 70 }, // Drum Island
+  { x: 39, y: 35 }, // Alabasta
+  { x: 48, y: 72 }, // Jaya
+  { x: 57, y: 22 }, // Skypiea
+  { x: 66, y: 58 }, // Water 7
+  { x: 75, y: 32 }, // Thriller Bark
+  { x: 84, y: 60 }, // Sabaody
 ];
+
+// ============================================================
+// FUTURE — Marvel realms + One Piece islands reserved for next dossiers
+// ============================================================
+
+export type FutureRealm = {
+  realm: string;
+  tier: "Bifrost" | "Mystic" | "Cosmic" | "Quantum" | "Multiversal";
+  color: string;
+  hint: string;
+  lore: string;
+};
+
+export const FUTURE_REALMS: readonly FutureRealm[] = [
+  {
+    realm: "Wakanda",
+    tier: "Bifrost",
+    color: "#76cfff",
+    hint: "Reserved for the next dossier",
+    lore: "Vibranium-rich nation — T'Challa's kingdom and Earth's tech vanguard.",
+  },
+  {
+    realm: "Sanctum Sanctorum",
+    tier: "Mystic",
+    color: "#c084fc",
+    hint: "Reserved for the next dossier",
+    lore: "Doctor Strange's mystic stronghold — Earth's primary magical defense.",
+  },
+  {
+    realm: "Vormir",
+    tier: "Mystic",
+    color: "#c084fc",
+    hint: "Reserved for the next dossier",
+    lore: "Soul-Stone keeper's realm — a soul for a soul.",
+  },
+  {
+    realm: "Knowhere",
+    tier: "Cosmic",
+    color: "#ffd700",
+    hint: "Reserved for the next dossier",
+    lore: "Mining colony inside a Celestial's severed head — Guardians' base.",
+  },
+  {
+    realm: "Sakaar",
+    tier: "Cosmic",
+    color: "#ffd700",
+    hint: "Reserved for the next dossier",
+    lore: "Junk planet of the Grandmaster — arena where Hulk reigned.",
+  },
+  {
+    realm: "Titan",
+    tier: "Cosmic",
+    color: "#ffd700",
+    hint: "Reserved for the next dossier",
+    lore: "Thanos' devastated homeworld — site of the Strange / Stark stand.",
+  },
+  {
+    realm: "Quantum Realm",
+    tier: "Quantum",
+    color: "#34d399",
+    hint: "Reserved for the next dossier",
+    lore: "Subatomic dimension where time and space lose meaning — Kang's prison.",
+  },
+  {
+    realm: "Battleworld",
+    tier: "Multiversal",
+    color: "#ff6bd6",
+    hint: "Reserved for the next dossier",
+    lore: "Patchwork of universes assembled by the Beyonder during Secret Wars.",
+  },
+  {
+    realm: "Eternity",
+    tier: "Multiversal",
+    color: "#ff6bd6",
+    hint: "The legendary final realm",
+    lore: "The cosmic embodiment of all reality — endgame of any cosmic-tier journey.",
+  },
+];
+
+export const FUTURE_REALM_STARS: readonly StarPos[] = [
+  { x: 14, y: 22, tier: "top" }, // Wakanda — far-left upper canopy
+  { x: 18, y: 42, tier: "mid" }, // Sanctum — left outer branch
+  { x: 10, y: 60, tier: "mid" }, // Vormir — far-left lower branch
+  { x: 86, y: 22, tier: "top" }, // Knowhere — far-right upper canopy
+  { x: 82, y: 42, tier: "mid" }, // Sakaar — right outer branch
+  { x: 90, y: 60, tier: "mid" }, // Titan — far-right lower branch
+  { x: 38, y: 12, tier: "top" }, // Quantum — left sky
+  { x: 50, y: 6,  tier: "top" }, // Battleworld — sky peak
+  { x: 62, y: 12, tier: "top" }, // Eternity — right sky
+];
+
+export type FutureIsland = {
+  island: string;
+  file: string; // filename in /assets/One-Piece/islands/
+  gear: "Gear 3" | "Gear 4" | "Gear 5";
+  color: string;
+  hint: string;
+  lore: string;
+};
+
+export const FUTURE_ISLANDS: readonly FutureIsland[] = [
+  {
+    island: "Fishman Island",
+    file: "fishman-island",
+    gear: "Gear 3",
+    color: "#76cfff",
+    hint: "Underwater realtime — coming soon",
+    lore: "Underwater bubble city 10,000m below the Red Line — Jinbe's homeland.",
+  },
+  {
+    island: "Punk Hazard",
+    file: "punk-hazard",
+    gear: "Gear 3",
+    color: "#fb923c",
+    hint: "Chaos engineering — coming soon",
+    lore: "Fire-and-ice island of Caesar Clown's lab.",
+  },
+  {
+    island: "Dressrosa",
+    file: "dressrosa",
+    gear: "Gear 4",
+    color: "#f87171",
+    hint: "Reserved for the next dossier",
+    lore: "Doflamingo's SMILE factory kingdom — Gear 4 Boundman's debut.",
+  },
+  {
+    island: "Zou",
+    file: "zou",
+    gear: "Gear 4",
+    color: "#a78bfa",
+    hint: "Reserved for the next dossier",
+    lore: "Mokomo Dukedom on the back of the millennium-old elephant Zunesha.",
+  },
+  {
+    island: "Whole Cake Island",
+    file: "whole-cake-island",
+    gear: "Gear 4",
+    color: "#fbbf24",
+    hint: "Reserved for the next dossier",
+    lore: "Big Mom's confectionery kingdom — Snakeman's debut.",
+  },
+  {
+    island: "Wano Country",
+    file: "wano-country",
+    gear: "Gear 5",
+    color: "#ffd700",
+    hint: "Reserved for the next dossier",
+    lore: "Feudal samurai nation — site of Onigashima and Gear 5 awakening.",
+  },
+  {
+    island: "Egghead",
+    file: "egghead",
+    gear: "Gear 5",
+    color: "#34d399",
+    hint: "Reserved for the next dossier",
+    lore: "Vegapunk's futuristic egg-shaped lab island in the New World.",
+  },
+  {
+    island: "Elbaph",
+    file: "elbaph",
+    gear: "Gear 5",
+    color: "#fbbf24",
+    hint: "Reserved for the next dossier",
+    lore: "Giant warrior nation under the colossal Elbaph World Tree.",
+  },
+  {
+    island: "Laugh Tale",
+    file: "laugh-tale",
+    gear: "Gear 5",
+    color: "#ff6bd6",
+    hint: "The legendary final island",
+    lore: "Roger laughed — and the One Piece waits.",
+  },
+];
+
+/** Positions for future islands — second arc above the main line. */
+export const FUTURE_ISLAND_POSITIONS: readonly { x: number; y: number }[] = [
+  { x: 16, y: 18 }, // Fishman Island
+  { x: 26, y: 84 }, // Punk Hazard
+  { x: 35, y: 14 }, // Dressrosa
+  { x: 44, y: 88 }, // Zou
+  { x: 53, y: 12 }, // Whole Cake Island
+  { x: 62, y: 84 }, // Wano Country
+  { x: 71, y: 16 }, // Egghead
+  { x: 80, y: 80 }, // Elbaph
+  { x: 92, y: 28 }, // Laugh Tale
+];
+
+/** Dawn Island — Luffy's origin. Special: backstory sections, not skills. */
+export type OriginIsland = {
+  island: string;
+  file: string;
+  sub: string;
+  lore: string;
+  sections: { title: string; body: string }[];
+  pos: { x: number; y: number };
+};
+
+export const DAWN_ISLAND: OriginIsland = {
+  island: "Dawn Island",
+  file: "dawn-island",
+  sub: "East Blue · Foosha Village",
+  lore: "East Blue. Foosha Village under Mt. Colubo — where the voyage began.",
+  pos: { x: 4, y: 50 },
+  sections: [
+    {
+      title: "The Origin Code",
+      body:
+        "At seven, Luffy ate the cursed Gum-Gum Fruit Shanks brought ashore. The price: never swim again. The reward: a body that turns punches into recoil. Shanks left him the straw hat with one promise — bring it back when you've become a great pirate.",
+    },
+    {
+      title: "The Primary Directive",
+      body:
+        "Find the One Piece. Become King of the Pirates — the freest person on the seas. Roger said it himself before the executioner's blade fell: my treasure waits, find it.",
+    },
+    {
+      title: "The Awakening",
+      body:
+        "On Onigashima, against Kaido, the Gum-Gum Fruit revealed its real name: Hito Hito no Mi, Model Nika. The Sun God of liberation. Reality itself becomes elastic; freedom becomes a force.",
+    },
+  ],
+};

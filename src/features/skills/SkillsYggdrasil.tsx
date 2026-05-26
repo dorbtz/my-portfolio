@@ -1,25 +1,37 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { REALM_STARS, SKILL_DOMAINS } from "@/shared/data/skill-domains";
+import { useCallback, useEffect, useState } from "react";
+import {
+  FUTURE_REALMS,
+  FUTURE_REALM_STARS,
+  REALM_STARS,
+  SKILL_DOMAINS,
+  type FutureRealm,
+  type SkillDomain,
+  type StarPos,
+} from "@/shared/data/skill-domains";
 
 /**
- * Thor-mode interactive Yggdrasil — 9 realm stars positioned on the
- * canonical YGGDRASIL.png. Click / hover / focus a star to open a
- * portal-style tooltip with the realm's skills.
+ * Thor-mode interactive Yggdrasil — 9 visited realm stars + 9 future
+ * (Marvel multiverse) realm stars on the canonical YGGDRASIL.png.
  *
- * Reads from the same SKILL_DOMAINS the chip grid uses, so every theme
- * shows the same data. Layout is responsive (% coords), tooltip clamps
- * to viewport edges, fully keyboard-accessible (Enter / Space / Esc).
+ * Visited stars are bright + filled with the domain's accent color.
+ * Future stars are dimmer + dashed-border + show a "reserved" tooltip.
+ *
+ * Tooltip uses a 6px gap to feel attached to the star (was 12px) +
+ * pointer-events:none so it doesn't capture the hover and cause flicker.
+ * Fully keyboard-accessible (Enter / Space toggle, Esc close).
  */
 
 const YGGDRASIL_BG = "/assets/Marvel/skills/YGGDRASIL-transparent.png";
 
-type TooltipState = { left: number; top: number; index: number } | null;
+type ActiveKind = "visited" | "future";
+type TooltipState = { left: number; top: number; index: number; kind: ActiveKind } | null;
 
 const TOOLTIP_W = 300;
 const TOOLTIP_H = 240;
+const GAP = 6;
 
 function clampTooltip(
   anchor: DOMRect,
@@ -28,17 +40,12 @@ function clampTooltip(
   w: number,
   h: number
 ): { left: number; top: number } {
-  const gap = 12;
-  // Default: above the star centered
   let left = anchor.left + anchor.width / 2 - w / 2;
-  let top = anchor.top - h - gap;
-  // If overflowing top, flip to below
-  if (top < gap) top = anchor.bottom + gap;
-  // Clamp horizontally
-  if (left < gap) left = gap;
-  if (left + w > vw - gap) left = vw - w - gap;
-  // Vertical fallback (very tall tooltip on small viewport)
-  if (top + h > vh - gap) top = Math.max(gap, vh - h - gap);
+  let top = anchor.top - h - GAP;
+  if (top < GAP) top = anchor.bottom + GAP;
+  if (left < GAP) left = GAP;
+  if (left + w > vw - GAP) left = vw - w - GAP;
+  if (top + h > vh - GAP) top = Math.max(GAP, vh - h - GAP);
   return { left, top };
 }
 
@@ -46,14 +53,17 @@ export function SkillsYggdrasil() {
   const [tip, setTip] = useState<TooltipState>(null);
   const [bgFailed, setBgFailed] = useState(false);
 
-  const openAt = useCallback((el: Element, i: number) => {
+  const openAt = useCallback((el: Element, i: number, kind: ActiveKind) => {
     const rect = el.getBoundingClientRect();
-    setTip({ ...clampTooltip(rect, window.innerWidth, window.innerHeight, TOOLTIP_W, TOOLTIP_H), index: i });
+    setTip({
+      ...clampTooltip(rect, window.innerWidth, window.innerHeight, TOOLTIP_W, TOOLTIP_H),
+      index: i,
+      kind,
+    });
   }, []);
 
   const close = useCallback(() => setTip(null), []);
 
-  // Close tooltip on scroll / outside click / Esc
   useEffect(() => {
     if (!tip) return;
     const onScroll = () => close();
@@ -68,8 +78,6 @@ export function SkillsYggdrasil() {
     };
   }, [tip, close]);
 
-  const active = tip ? SKILL_DOMAINS[tip.index] : null;
-
   return (
     <div className="yggdrasil-wrap relative w-full" style={{ aspectRatio: "16 / 10" }}>
       {!bgFailed && (
@@ -83,92 +91,203 @@ export function SkillsYggdrasil() {
         />
       )}
 
-      {/* Star layer */}
       <div className="absolute inset-0">
-        {SKILL_DOMAINS.map((domain, i) => {
-          const pos = REALM_STARS[i];
-          if (!pos) return null;
-          const isActive = tip?.index === i;
-          return (
-            <button
-              key={domain.realm}
-              type="button"
-              aria-label={`${domain.realm} — ${domain.name}. Click to view skills.`}
-              aria-expanded={isActive}
-              onClick={(e) => {
-                if (isActive) close();
-                else openAt(e.currentTarget, i);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  if (isActive) close();
-                  else openAt(e.currentTarget, i);
-                }
-              }}
-              onMouseEnter={(e) => openAt(e.currentTarget, i)}
-              onMouseLeave={(e) => {
-                // Don't close if focus is still on this button
-                if (document.activeElement !== e.currentTarget) close();
-              }}
-              onFocus={(e) => openAt(e.currentTarget, i)}
-              onBlur={close}
-              className={[
-                "yggdrasil-star absolute -translate-x-1/2 -translate-y-1/2",
-                "w-9 h-9 sm:w-11 sm:h-11 rounded-full",
-                "border border-[var(--color-accent)] grid place-items-center",
-                "text-caption font-bold uppercase tracking-wider",
-                "transition-[transform,box-shadow,opacity] duration-snap ease-snap",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]",
-                "hover:scale-125 focus-visible:scale-125",
-              ].join(" ")}
-              style={{
-                left: `${pos.x}%`,
-                top: `${pos.y}%`,
-                background: `radial-gradient(circle, ${domain.color} 0%, color-mix(in oklab, ${domain.color} 30%, transparent) 70%, transparent 100%)`,
-                color: "var(--color-accent-contrast)",
-                boxShadow: isActive
-                  ? `0 0 24px 6px ${domain.color}, inset 0 0 12px ${domain.color}`
-                  : `0 0 12px 2px color-mix(in oklab, ${domain.color} 40%, transparent)`,
-              }}
-            >
-              {domain.realm.charAt(0)}
-            </button>
-          );
-        })}
+        {/* Visited realms — bright */}
+        {SKILL_DOMAINS.map((domain, i) => (
+          <RealmStar
+            key={`v-${domain.realm}`}
+            kind="visited"
+            domain={domain}
+            pos={REALM_STARS[i]}
+            isActive={tip?.kind === "visited" && tip.index === i}
+            onOpen={(el) => openAt(el, i, "visited")}
+            onClose={close}
+          />
+        ))}
+        {/* Future realms — dim + dashed */}
+        {FUTURE_REALMS.map((realm, i) => (
+          <FutureStar
+            key={`f-${realm.realm}`}
+            realm={realm}
+            pos={FUTURE_REALM_STARS[i]}
+            isActive={tip?.kind === "future" && tip.index === i}
+            onOpen={(el) => openAt(el, i, "future")}
+            onClose={close}
+          />
+        ))}
       </div>
 
-      {/* Tooltip — fixed positioned, so it escapes any clipping ancestor */}
-      {tip && active && (
-        <div
-          role="tooltip"
-          className="fixed z-[80] glass rounded-lg p-4"
-          style={{
-            left: tip.left,
-            top: tip.top,
-            width: TOOLTIP_W,
-            maxHeight: TOOLTIP_H,
-            overflowY: "auto",
-            background: `linear-gradient(180deg, color-mix(in oklab, ${active.color} 14%, var(--color-bg-elevated)), var(--color-bg-elevated))`,
-            border: `1px solid ${active.color}`,
-            boxShadow: `0 24px 64px -16px ${active.color}aa`,
-          }}
-        >
-          <p className="text-caption uppercase tracking-wider" style={{ color: active.color }}>
-            {active.realm}
-          </p>
-          <p className="text-body font-semibold mt-1">{active.name}</p>
-          <p className="text-caption text-muted mt-1 italic">{active.lore}</p>
-          <ul className="mt-3 grid gap-1">
-            {active.children.map((s) => (
-              <li key={s.name} className="text-body-sm">
-                <span className="font-medium">{s.name}</span>{" "}
-                <span className="text-muted">— {s.description}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+      {tip?.kind === "visited" && SKILL_DOMAINS[tip.index] && (
+        <VisitedTooltip domain={SKILL_DOMAINS[tip.index]} left={tip.left} top={tip.top} />
       )}
+      {tip?.kind === "future" && FUTURE_REALMS[tip.index] && (
+        <FutureTooltip realm={FUTURE_REALMS[tip.index]} left={tip.left} top={tip.top} />
+      )}
+    </div>
+  );
+}
+
+// ---------- subcomponents ----------
+
+function RealmStar({
+  domain,
+  pos,
+  isActive,
+  onOpen,
+  onClose,
+}: {
+  kind: "visited";
+  domain: SkillDomain;
+  pos: StarPos;
+  isActive: boolean;
+  onOpen: (el: Element) => void;
+  onClose: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={`${domain.realm} — ${domain.name}`}
+      aria-expanded={isActive}
+      onClick={(e) => (isActive ? onClose() : onOpen(e.currentTarget))}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          isActive ? onClose() : onOpen(e.currentTarget);
+        }
+      }}
+      onMouseEnter={(e) => onOpen(e.currentTarget)}
+      onMouseLeave={(e) => {
+        if (document.activeElement !== e.currentTarget) onClose();
+      }}
+      onFocus={(e) => onOpen(e.currentTarget)}
+      onBlur={onClose}
+      className={[
+        "absolute -translate-x-1/2 -translate-y-1/2",
+        "w-9 h-9 sm:w-11 sm:h-11 rounded-full border-2",
+        "grid place-items-center text-caption font-bold uppercase tracking-wider",
+        "transition-[transform,box-shadow] duration-snap ease-snap",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]",
+        "hover:scale-125 focus-visible:scale-125",
+      ].join(" ")}
+      style={{
+        left: `${pos.x}%`,
+        top: `${pos.y}%`,
+        background: `radial-gradient(circle, ${domain.color} 0%, color-mix(in oklab, ${domain.color} 30%, transparent) 70%, transparent 100%)`,
+        color: "#0a0f1e",
+        borderColor: domain.color,
+        boxShadow: isActive
+          ? `0 0 24px 6px ${domain.color}, inset 0 0 12px ${domain.color}`
+          : `0 0 12px 2px color-mix(in oklab, ${domain.color} 40%, transparent)`,
+      }}
+    >
+      {domain.realm.charAt(0)}
+    </button>
+  );
+}
+
+function FutureStar({
+  realm,
+  pos,
+  isActive,
+  onOpen,
+  onClose,
+}: {
+  realm: FutureRealm;
+  pos: StarPos;
+  isActive: boolean;
+  onOpen: (el: Element) => void;
+  onClose: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={`${realm.realm} — ${realm.hint}`}
+      aria-expanded={isActive}
+      onClick={(e) => (isActive ? onClose() : onOpen(e.currentTarget))}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          isActive ? onClose() : onOpen(e.currentTarget);
+        }
+      }}
+      onMouseEnter={(e) => onOpen(e.currentTarget)}
+      onMouseLeave={(e) => {
+        if (document.activeElement !== e.currentTarget) onClose();
+      }}
+      onFocus={(e) => onOpen(e.currentTarget)}
+      onBlur={onClose}
+      className={[
+        "absolute -translate-x-1/2 -translate-y-1/2",
+        "w-6 h-6 sm:w-7 sm:h-7 rounded-full",
+        "transition-[transform,opacity] duration-snap ease-snap",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]",
+        "hover:scale-150 focus-visible:scale-150",
+      ].join(" ")}
+      style={{
+        left: `${pos.x}%`,
+        top: `${pos.y}%`,
+        border: `2px dashed ${realm.color}`,
+        background: `color-mix(in oklab, ${realm.color} 15%, transparent)`,
+        opacity: isActive ? 1 : 0.7,
+        boxShadow: isActive ? `0 0 16px 4px ${realm.color}` : "none",
+      }}
+    />
+  );
+}
+
+function VisitedTooltip({ domain, left, top }: { domain: SkillDomain; left: number; top: number }) {
+  return (
+    <div
+      role="tooltip"
+      className="fixed z-[80] rounded-lg p-4 pointer-events-none"
+      style={{
+        left,
+        top,
+        width: TOOLTIP_W,
+        maxHeight: TOOLTIP_H,
+        overflowY: "auto",
+        background: `linear-gradient(180deg, color-mix(in oklab, ${domain.color} 14%, var(--color-bg-elevated)), var(--color-bg-elevated))`,
+        border: `1px solid ${domain.color}`,
+        boxShadow: `0 24px 64px -16px ${domain.color}aa`,
+      }}
+    >
+      <p className="text-caption uppercase tracking-wider" style={{ color: domain.color }}>
+        {domain.realm}
+      </p>
+      <p className="text-body font-semibold mt-1 text-fg">{domain.name}</p>
+      <p className="text-caption text-muted mt-1 italic">{domain.lore}</p>
+      <ul className="mt-3 grid gap-1">
+        {domain.children.map((s) => (
+          <li key={s.name} className="text-body-sm text-fg">
+            <span className="font-medium">{s.name}</span>{" "}
+            <span className="text-muted">— {s.description}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function FutureTooltip({ realm, left, top }: { realm: FutureRealm; left: number; top: number }) {
+  return (
+    <div
+      role="tooltip"
+      className="fixed z-[80] rounded-lg p-4 pointer-events-none"
+      style={{
+        left,
+        top,
+        width: TOOLTIP_W,
+        background: "var(--color-bg-elevated)",
+        border: `1px dashed ${realm.color}`,
+        boxShadow: `0 16px 48px -16px ${realm.color}66`,
+      }}
+    >
+      <p className="text-caption uppercase tracking-wider" style={{ color: realm.color }}>
+        {realm.tier} · Future
+      </p>
+      <p className="text-body font-semibold mt-1 text-fg">{realm.realm}</p>
+      <p className="text-caption text-muted mt-1 italic">{realm.lore}</p>
+      <p className="text-body-sm text-muted mt-2">— {realm.hint}</p>
     </div>
   );
 }
