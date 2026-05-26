@@ -26,7 +26,11 @@ export function FloatingControls({ initialTheme, initialScheme, initialLocale }:
       dir="ltr"
       className={[
         "fixed z-50 flex items-end sm:items-center gap-2",
-        "top-[max(env(safe-area-inset-top),0.75rem)]",
+        // Mobile: drop the cluster BELOW the sticky header (h-14 = 56 px)
+        // so the ThemeSwitcher pill doesn't overlap the "dorbtz" wordmark.
+        // Desktop: anchor at the corner — the header is max-w-1200, so the
+        // cluster sits in the empty right margin where it can't overlap.
+        "top-[calc(env(safe-area-inset-top,0px)+3.75rem)] sm:top-[max(env(safe-area-inset-top),0.75rem)]",
         "right-[max(env(safe-area-inset-right),0.75rem)]",
         "max-w-[calc(100vw-1.5rem)]",
         // Stack vertically below sm, side-by-side above. flex-wrap is the
