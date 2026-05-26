@@ -493,6 +493,20 @@ h1, h2, h3, .text-display, .text-h1, .text-h2 {
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
+/* Luffy theme ambient rain — drops fall from top to bottom of viewport */
+@keyframes luffy-rain-fall {
+  0%   { transform: translateY(0)     rotate(-8deg);  opacity: 0; }
+  10%  { opacity: 0.2; }
+  90%  { opacity: 0.2; }
+  100% { transform: translateY(110vh) rotate(12deg); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .luffy-rain-drop {
+    animation: none !important;
+    opacity: 0.08 !important;
+  }
+}
+
 /* Easter-egg effect: Bifrost flash on M-J-O-L combo */
 @keyframes easter-thor-flash {
   0%   { opacity: 0; }

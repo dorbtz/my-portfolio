@@ -4,6 +4,7 @@ import { Section } from "@/shared/ui/Section";
 import { ABOUT } from "@/shared/data/sections";
 import { readThemeState } from "@/shared/lib/theme/ssr";
 import { localize } from "@/shared/lib/i18n/localize";
+import { CastStrip } from "./CastStrip";
 
 export async function About() {
   const { locale } = await readThemeState();
@@ -33,6 +34,8 @@ export async function About() {
           </AppleSpring>
         ))}
       </div>
+      {/* Decorative cast strip — Avengers icons in Thor / Straw Hat in Luffy. */}
+      <CastStrip />
     </Section>
   );
 }

@@ -10,6 +10,7 @@ import { ConditionalChrome } from "@/shared/ui/ConditionalChrome";
 import { EasterEggs } from "@/shared/ui/EasterEggs";
 import { EasterEggEffects } from "@/shared/ui/EasterEggEffects";
 import { SkipToContent } from "@/shared/ui/SkipToContent";
+import { ThemeAmbience } from "@/features/effects/ThemeAmbience";
 
 // Per-theme display fonts. Each theme's CSS sets --font-display to one of
 // these variables; the body class string just makes the variables available.
@@ -80,6 +81,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     >
       <body>
         <SkipToContent />
+        {/* Per-theme atmospheric layers (Luffy rain / Thor storm). Lazy-loaded
+            + self-gate on data-theme so HighTech ships none of this JS. */}
+        <ConditionalChrome>
+          <ThemeAmbience />
+        </ConditionalChrome>
         <ConditionalChrome>
           <Header />
         </ConditionalChrome>
