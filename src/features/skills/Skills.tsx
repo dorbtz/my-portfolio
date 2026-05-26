@@ -4,6 +4,7 @@ import { Section } from "@/shared/ui/Section";
 import { SKILL_GROUPS } from "@/shared/data/profile";
 import { readThemeState } from "@/shared/lib/theme/ssr";
 import { localize } from "@/shared/lib/i18n/localize";
+import { SkillsThemeViz } from "./SkillsThemeViz";
 
 const SKILLS_EYEBROW = "Stack";
 const SKILLS_TITLE = "What I work with.";
@@ -31,6 +32,16 @@ export async function Skills() {
           <h2 className="text-h1 font-bold mt-2">{t(SKILLS_TITLE)}</h2>
           <p className="text-body text-muted mt-3 max-w-2xl">{t(SKILLS_BODY)}</p>
         </AppleSpring>
+
+        {/* Per-theme interactive visualization sits ABOVE the chip grid.
+            Renders only on Thor (Yggdrasil) and Luffy (Grand Line); the
+            HighTech default falls through to the chip grid below. */}
+        <AppleSpring kind="fade-up" delay={120}>
+          <div className="mt-8 relative z-10">
+            <SkillsThemeViz />
+          </div>
+        </AppleSpring>
+
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-8 relative z-10">
           {SKILL_GROUPS.map((group, gi) => (
             <AppleSpring key={group.id} kind="fade-up" delay={80 + gi * 60}>
