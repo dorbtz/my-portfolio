@@ -26,17 +26,20 @@ const THOR_LINEUP = [
   { src: "/assets/Marvel/magneto.png", alt: "Magneto" },
 ];
 
+// Capitalized .png filenames — the high-res replacements the user dropped
+// into /public/assets/One-Piece/wanted/ (the lowercase .webp files in the
+// same folder are the older lower-res versions, kept around but unused).
 const LUFFY_LINEUP = [
-  { src: "/assets/One-Piece/wanted/luffy.webp", alt: "Wanted: Monkey D. Luffy" },
-  { src: "/assets/One-Piece/wanted/zoro.webp", alt: "Wanted: Roronoa Zoro" },
-  { src: "/assets/One-Piece/wanted/nami.webp", alt: "Wanted: Nami" },
-  { src: "/assets/One-Piece/wanted/usopp.webp", alt: "Wanted: Usopp" },
-  { src: "/assets/One-Piece/wanted/sanji.webp", alt: "Wanted: Sanji" },
-  { src: "/assets/One-Piece/wanted/chopper.webp", alt: "Wanted: Tony Tony Chopper" },
-  { src: "/assets/One-Piece/wanted/robin.webp", alt: "Wanted: Nico Robin" },
-  { src: "/assets/One-Piece/wanted/franky.webp", alt: "Wanted: Franky" },
-  { src: "/assets/One-Piece/wanted/brook.webp", alt: "Wanted: Brook" },
-  { src: "/assets/One-Piece/wanted/jinbe.webp", alt: "Wanted: Jinbe" },
+  { src: "/assets/One-Piece/wanted/luffy.png", alt: "Wanted: Monkey D. Luffy" },
+  { src: "/assets/One-Piece/wanted/Zoro.png", alt: "Wanted: Roronoa Zoro" },
+  { src: "/assets/One-Piece/wanted/Nami.png", alt: "Wanted: Nami" },
+  { src: "/assets/One-Piece/wanted/Usopp.png", alt: "Wanted: Usopp" },
+  { src: "/assets/One-Piece/wanted/Sanji.png", alt: "Wanted: Sanji" },
+  { src: "/assets/One-Piece/wanted/Chopper.png", alt: "Wanted: Tony Tony Chopper" },
+  { src: "/assets/One-Piece/wanted/Robin.png", alt: "Wanted: Nico Robin" },
+  { src: "/assets/One-Piece/wanted/Franky.png", alt: "Wanted: Franky" },
+  { src: "/assets/One-Piece/wanted/Brook.png", alt: "Wanted: Brook" },
+  { src: "/assets/One-Piece/wanted/Jinbe.png", alt: "Wanted: Jinbe" },
 ];
 
 export function ThemeArtStrip() {

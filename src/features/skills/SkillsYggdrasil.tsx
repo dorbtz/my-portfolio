@@ -11,6 +11,7 @@ import {
   type SkillDomain,
   type StarPos,
 } from "@/shared/data/skill-domains";
+import { MobileZoomPan } from "@/shared/ui/MobileZoomPan";
 
 /**
  * Thor-mode interactive Yggdrasil — 9 visited realm stars + 9 future
@@ -71,7 +72,16 @@ export function SkillsYggdrasil() {
   }, [open, close]);
 
   return (
-    <div className="yggdrasil-wrap relative w-full" style={{ aspectRatio: "16 / 10" }}>
+    // MobileZoomPan: pinch-zoom + drag on touch devices so the realms can
+    // breathe instead of feeling crammed on a narrow phone. Desktop renders
+    // children unchanged. All realm stars are % positioned inside, so the
+    // transform scales them perfectly in sync.
+    <MobileZoomPan
+      hint="Pinch to zoom · drag to pan"
+      resetLabel="Reset tree"
+      className="yggdrasil-wrap relative w-full"
+      style={{ aspectRatio: "16 / 10" }}
+    >
       {!bgFailed && (
         <img
           src={YGGDRASIL_BG}
@@ -116,7 +126,7 @@ export function SkillsYggdrasil() {
           <FutureCard realm={FUTURE_REALMS[open.index]} onClose={close} />
         </CardOverlay>
       )}
-    </div>
+    </MobileZoomPan>
   );
 }
 
@@ -160,7 +170,9 @@ function CardOverlay({ children, onClose }: { children: React.ReactNode; onClose
         role="dialog"
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[min(540px,92vw)] max-h-[88dvh] overflow-y-auto"
+        // Tighter on phones (88vw with a 420 px cap) so the realm card
+        // doesn't feel oversized; full desktop sizing on sm+.
+        className="w-full max-w-[min(420px,88vw)] sm:max-w-[min(540px,92vw)] max-h-[85dvh] overflow-y-auto"
       >
         {children}
       </div>

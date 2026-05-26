@@ -15,6 +15,7 @@ import {
   type OriginIsland,
   type SkillDomain,
 } from "@/shared/data/skill-domains";
+import { MobileZoomPan } from "@/shared/ui/MobileZoomPan";
 
 /**
  * Luffy-mode interactive Grand Line. Uses the canon WORLDMAP.jpeg as the
@@ -83,9 +84,13 @@ export function SkillsGrandLine() {
   }, [open, close]);
 
   return (
-    // overflow-visible on the outer so hover labels at the map's right/left
-    // edges can spill out without being clipped by the rounded map frame.
-    <div
+    // MobileZoomPan: pinch-zoom + drag on touch devices ONLY (markers stay
+    // locked to their painted islands since they're % positioned inside
+    // the wrapper — scaling the wrapper scales everything together).
+    // Desktop renders children unchanged.
+    <MobileZoomPan
+      hint="Pinch to zoom · drag to pan"
+      resetLabel="Reset map"
       className="grandline-wrap relative w-full rounded-lg border border-line"
       style={{ aspectRatio: "4096 / 2085" }}
     >
@@ -203,7 +208,7 @@ export function SkillsGrandLine() {
           />
         </CardOverlay>
       )}
-    </div>
+    </MobileZoomPan>
   );
 }
 
@@ -257,7 +262,9 @@ function CardOverlay({ children, onClose }: { children: React.ReactNode; onClose
         role="dialog"
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[min(540px,92vw)] max-h-[88dvh] overflow-y-auto"
+        // Tighter on phones (88vw with a 420 px cap) so the card doesn't
+        // feel oversized; same desktop sizing (540 px / 92vw) on sm+.
+        className="w-full max-w-[min(420px,88vw)] sm:max-w-[min(540px,92vw)] max-h-[85dvh] overflow-y-auto"
       >
         {children}
       </div>

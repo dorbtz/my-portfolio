@@ -20,7 +20,6 @@ import { isMutedWebm, onWebmMuteChange } from "@/shared/lib/audio";
  */
 
 const VIDEO_WEBM = "/assets/Marvel/heimdall/heimdall.webm";
-const VIDEO_MP4 = "/assets/Marvel/heimdall/heimdall3.mp4";
 const IMAGE_BG = "/assets/Marvel/heimdall/heimall3-bg.png";
 
 type Props = {
@@ -117,7 +116,6 @@ export default function HeimdallMedia({ playing, onEnded, alt }: Props) {
         onEnded={onEnded}
       >
         <source src={VIDEO_WEBM} type="video/webm" />
-        <source src={VIDEO_MP4} type="video/mp4" />
       </video>
     </div>
   );
