@@ -4,19 +4,10 @@ import { GlassCard } from "@/shared/ui/GlassCard";
 import { readThemeState } from "@/shared/lib/theme/ssr";
 import { getChromeStrings } from "@/shared/lib/i18n/chrome";
 import { localize } from "@/shared/lib/i18n/localize";
-
-/**
- * Theme-aware fallback glyph for project cards without a cover image.
- * Rendered top-right at low opacity, tinted to the card's text color
- * via mask-image so it works in both light + dark schemes.
- */
-const THEME_GLYPH: Record<"thor" | "luffy", string> = {
-  thor: "/assets/Marvel/mjolnir.png",
-  luffy: "/assets/One-Piece/nika-symbol.png",
-};
+import { ProjectGlyph } from "./ProjectGlyph";
 
 export async function ProjectCard({ project }: { project: Project }) {
-  const { locale, theme } = await readThemeState();
+  const { locale } = await readThemeState();
   const t = getChromeStrings(locale);
   // Translate the tagline so the card text matches the rest of the page.
   // Cached per project slug — same lookup as the project detail page so
@@ -25,10 +16,6 @@ export async function ProjectCard({ project }: { project: Project }) {
     { en: project.tagline, contentType: `project:${project.slug}.tagline` },
   ]);
   const isStub = project.status === "draft";
-  const glyph =
-    !project.coverUrl && (theme === "thor" || theme === "luffy")
-      ? THEME_GLYPH[theme]
-      : null;
 
   return (
     <Link
@@ -40,23 +27,11 @@ export async function ProjectCard({ project }: { project: Project }) {
         padding={6}
         className="project-card h-full overflow-hidden transition-transform duration-snap ease-snap group-hover:-translate-y-0.5 relative"
       >
-        {glyph && (
-          <span
-            aria-hidden
-            className="absolute top-3 right-3 w-10 h-10 pointer-events-none opacity-25"
-            style={{
-              WebkitMaskImage: `url(${glyph})`,
-              maskImage: `url(${glyph})`,
-              WebkitMaskSize: "contain",
-              maskSize: "contain",
-              WebkitMaskRepeat: "no-repeat",
-              maskRepeat: "no-repeat",
-              WebkitMaskPosition: "center",
-              maskPosition: "center",
-              backgroundColor: "currentColor",
-            }}
-          />
-        )}
+        {/* Per-theme glyph — reactive client component so the icon swaps
+            live when the user flips the floating theme switcher (the
+            Server-Component cookie read used previously was stale until
+            the next navigation). */}
+        <ProjectGlyph hasCover={Boolean(project.coverUrl)} />
         <div className="flex items-center justify-between gap-3">
           <p className="text-caption uppercase tracking-wider text-accent">
             {t.status[project.status]}

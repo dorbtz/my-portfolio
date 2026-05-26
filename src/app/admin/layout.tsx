@@ -1,72 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { getSessionUser, isAllowlistedAdmin } from "@/shared/lib/auth/server";
 import { readThemeState } from "@/shared/lib/theme/ssr";
 import { SignOutButton } from "./SignOutButton";
+import { AdminNav } from "./AdminNav";
 
 export const metadata: Metadata = {
   title: { default: "Admin", template: "%s — Admin" },
   robots: { index: false, follow: false },
 };
 
-type NavItem = {
-  label: string;
-  href: string;
-  /** Per-theme glyph: which icon file to use under the active theme. */
-  thorIcon: string;
-  luffyIcon: string;
-};
-
-/**
- * Admin nav with per-theme decorative icons.
- *  - HighTech: no icon (clean minimal default)
- *  - Thor:     Marvel icons from public/assets/Marvel/icons/
- *  - Luffy:    One-Piece icons from public/assets/One-Piece/icons/
- */
-const NAV: NavItem[] = [
-  {
-    label: "Dashboard",
-    href: "/admin",
-    thorIcon: "/assets/Marvel/icons/mjolnir.ico",
-    luffyIcon: "/assets/One-Piece/icons/strawhatflag.ico",
-  },
-  {
-    label: "Content",
-    href: "/admin/content",
-    thorIcon: "/assets/Marvel/icons/captain-shield.ico",
-    luffyIcon: "/assets/One-Piece/icons/luffy.ico",
-  },
-  {
-    label: "Messages",
-    href: "/admin/messages",
-    thorIcon: "/assets/Marvel/icons/spiderman.ico",
-    luffyIcon: "/assets/One-Piece/icons/strawhatflag.ico",
-  },
-  {
-    label: "Health",
-    href: "/admin/health",
-    thorIcon: "/assets/Marvel/icons/ironman.ico",
-    luffyIcon: "/assets/One-Piece/icons/luffy.ico",
-  },
-  {
-    label: "MCP tools",
-    href: "/admin/mcp",
-    thorIcon: "/assets/Marvel/icons/stan-lee.ico",
-    luffyIcon: "/assets/One-Piece/icons/strawhatflag.ico",
-  },
-  {
-    label: "Account",
-    href: "/admin/account",
-    thorIcon: "/assets/Marvel/icons/blackpanther.ico",
-    luffyIcon: "/assets/One-Piece/icons/luffy.ico",
-  },
-];
-
 /**
  * Admin shell — wraps every /admin/** route except /admin/login itself.
  * Renders a glass sidebar nav + main content slot. Middleware already
  * gated the route; layout only fetches the user for the signed-in chrome.
+ * Nav is rendered by the AdminNav Client Component so per-theme icons
+ * swap LIVE on theme toggle (no refresh needed).
  */
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const [user, { theme }] = await Promise.all([
@@ -74,8 +23,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     readThemeState(),
   ]);
   const signedIn = Boolean(user && (await isAllowlistedAdmin(user.email)));
-  const themeIcon = (item: NavItem) =>
-    theme === "thor" ? item.thorIcon : theme === "luffy" ? item.luffyIcon : null;
 
   return (
     // dir="ltr" pins the entire admin shell (top bar, sidebar nav, cards)
@@ -119,38 +66,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
         <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
           <aside className="lg:sticky lg:top-20 lg:self-start">
-            <nav
-              aria-label="Admin sections"
-              className="admin-nav glass rounded-lg p-2 flex lg:flex-col gap-1 flex-wrap"
-            >
-              {NAV.map((item) => {
-                const icon = themeIcon(item);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="admin-nav__item px-3 py-2 rounded-md text-body-sm font-medium text-fg hover:bg-[color-mix(in_oklab,var(--color-text)_8%,transparent)] transition-colors flex items-center gap-2"
-                  >
-                    {icon ? (
-                      <Image
-                        src={icon}
-                        alt=""
-                        width={18}
-                        height={18}
-                        aria-hidden
-                        className="pointer-events-none select-none rounded-sm"
-                        unoptimized
-                      />
-                    ) : (
-                      <span aria-hidden className="w-[18px] h-[18px] grid place-items-center text-accent">
-                        ◆
-                      </span>
-                    )}
-                    <span>{item.label}</span>
-                  </Link>
-                );
-              })}
-            </nav>
+            <AdminNav initialTheme={theme} />
             {signedIn && user && (
               <div className="glass rounded-lg p-3 mt-3 hidden lg:block">
                 <p className="text-caption text-muted">Signed in as</p>

@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import {
   FUTURE_REALMS,
   FUTURE_REALM_STARS,
@@ -16,79 +16,59 @@ import {
  * Thor-mode interactive Yggdrasil — 9 visited realm stars + 9 future
  * (Marvel multiverse) realm stars on the canonical YGGDRASIL.png.
  *
- * Visited stars are bright + filled with the domain's accent color.
- * Future stars are dimmer + dashed-border + show a "reserved" tooltip.
- *
- * Tooltip uses a 6px gap to feel attached to the star (was 12px) +
- * pointer-events:none so it doesn't capture the hover and cause flicker.
- * Fully keyboard-accessible (Enter / Space toggle, Esc close).
+ * Interaction model (anchored to the marker, never clips):
+ *   - Hover (mouse only)        -> tiny realm-name label DIRECTLY ABOVE the
+ *                                  star — rendered as a child of the star
+ *                                  so it always reads as "attached" to the
+ *                                  exact realm the cursor is on.
+ *   - Click (PC) / Tap (mobile) -> opens an MCU-dossier card centered on
+ *                                  the viewport with a translucent backdrop.
+ *   - Esc / backdrop / re-click -> closes.
  */
 
 const YGGDRASIL_BG = "/assets/Marvel/skills/YGGDRASIL-transparent.png";
 
-type ActiveKind = "visited" | "future";
-type TooltipState = { left: number; top: number; width: number; index: number; kind: ActiveKind } | null;
+type CardKind = "visited" | "future";
+type OpenCard = { kind: CardKind; index: number };
 
-const TOOLTIP_H = 240;
-const GAP = 6;
-const MARGIN = 12; // minimum distance to viewport edge — keeps tooltip readable
+const HOVER_QUERY = "(hover: hover) and (pointer: fine)";
 
-/** Tooltip width adapts to viewport: caps at 300px, shrinks on small phones
- *  so the popup is never wider than the screen minus a safe margin. */
-function tooltipWidth(vw: number): number {
-  return Math.min(300, vw - MARGIN * 2);
-}
-
-function clampTooltip(
-  anchor: DOMRect,
-  vw: number,
-  vh: number,
-  w: number,
-  h: number
-): { left: number; top: number; width: number } {
-  // Final width — never wider than viewport minus the margin on each side.
-  const width = Math.min(w, vw - MARGIN * 2);
-  // Center on the anchor, then clamp.
-  let left = anchor.left + anchor.width / 2 - width / 2;
-  let top = anchor.top - h - GAP;
-  if (top < MARGIN) top = anchor.bottom + GAP;
-  // Horizontal clamp — Math.max guards against negative when width === vw - 2*MARGIN
-  left = Math.max(MARGIN, Math.min(left, vw - width - MARGIN));
-  // Vertical clamp (tall tooltip on short viewport)
-  top = Math.max(MARGIN, Math.min(top, vh - h - MARGIN));
-  return { left, top, width };
+function useCanHover(): boolean {
+  return useSyncExternalStore(
+    (cb) => {
+      if (typeof window === "undefined" || !window.matchMedia) return () => {};
+      const mq = window.matchMedia(HOVER_QUERY);
+      mq.addEventListener?.("change", cb);
+      return () => mq.removeEventListener?.("change", cb);
+    },
+    () =>
+      typeof window !== "undefined" && window.matchMedia
+        ? window.matchMedia(HOVER_QUERY).matches
+        : false,
+    () => false
+  );
 }
 
 export function SkillsYggdrasil() {
-  const [tip, setTip] = useState<TooltipState>(null);
+  const [open, setOpen] = useState<OpenCard | null>(null);
   const [bgFailed, setBgFailed] = useState(false);
+  const canHover = useCanHover();
 
-  const openAt = useCallback((el: Element, i: number, kind: ActiveKind) => {
-    const rect = el.getBoundingClientRect();
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    setTip({
-      ...clampTooltip(rect, vw, vh, tooltipWidth(vw), TOOLTIP_H),
-      index: i,
-      kind,
-    });
-  }, []);
-
-  const close = useCallback(() => setTip(null), []);
+  const close = useCallback(() => setOpen(null), []);
+  const toggle = useCallback(
+    (kind: CardKind, index: number) =>
+      setOpen((prev) => (prev && prev.kind === kind && prev.index === index ? null : { kind, index })),
+    []
+  );
 
   useEffect(() => {
-    if (!tip) return;
-    const onScroll = () => close();
+    if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") close();
     };
-    window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("keydown", onKey);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [tip, close]);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, close]);
 
   return (
     <div className="yggdrasil-wrap relative w-full" style={{ aspectRatio: "16 / 10" }}>
@@ -104,75 +84,145 @@ export function SkillsYggdrasil() {
       )}
 
       <div className="absolute inset-0">
-        {/* Visited realms — bright */}
         {SKILL_DOMAINS.map((domain, i) => (
           <RealmStar
             key={`v-${domain.realm}`}
-            kind="visited"
             domain={domain}
             pos={REALM_STARS[i]}
-            isActive={tip?.kind === "visited" && tip.index === i}
-            onOpen={(el) => openAt(el, i, "visited")}
-            onClose={close}
+            canHover={canHover}
+            isOpen={open?.kind === "visited" && open.index === i}
+            onToggle={() => toggle("visited", i)}
           />
         ))}
-        {/* Future realms — dim + dashed */}
         {FUTURE_REALMS.map((realm, i) => (
           <FutureStar
             key={`f-${realm.realm}`}
             realm={realm}
             pos={FUTURE_REALM_STARS[i]}
-            isActive={tip?.kind === "future" && tip.index === i}
-            onOpen={(el) => openAt(el, i, "future")}
-            onClose={close}
+            canHover={canHover}
+            isOpen={open?.kind === "future" && open.index === i}
+            onToggle={() => toggle("future", i)}
           />
         ))}
       </div>
 
-      {tip?.kind === "visited" && SKILL_DOMAINS[tip.index] && (
-        <VisitedTooltip domain={SKILL_DOMAINS[tip.index]} left={tip.left} top={tip.top} width={tip.width} />
+      {open?.kind === "visited" && SKILL_DOMAINS[open.index] && (
+        <CardOverlay onClose={close}>
+          <VisitedCard domain={SKILL_DOMAINS[open.index]} onClose={close} />
+        </CardOverlay>
       )}
-      {tip?.kind === "future" && FUTURE_REALMS[tip.index] && (
-        <FutureTooltip realm={FUTURE_REALMS[tip.index]} left={tip.left} top={tip.top} width={tip.width} />
+      {open?.kind === "future" && FUTURE_REALMS[open.index] && (
+        <CardOverlay onClose={close}>
+          <FutureCard realm={FUTURE_REALMS[open.index]} onClose={close} />
+        </CardOverlay>
       )}
     </div>
   );
 }
 
-// ---------- subcomponents ----------
+// ---------- shared overlay + hover label ----------
+
+/** Realm-name chip rendered as a CHILD of the star — sits directly above
+ *  the star with a small gap, attaches visually no matter where on the
+ *  viewport the star happens to be. */
+function StarLabel({ text, accent }: { text: string; accent: string }) {
+  return (
+    <span
+      role="presentation"
+      className="absolute left-1/2 bottom-full mb-2 -translate-x-1/2 px-2 py-1 rounded-md text-caption font-semibold pointer-events-none whitespace-nowrap z-10"
+      style={{
+        background: "rgba(8, 12, 28, 0.92)",
+        color: accent,
+        border: `1px solid ${accent}`,
+        boxShadow: `0 6px 18px -6px rgba(0,0,0,0.6), 0 0 12px -4px ${accent}`,
+        fontFamily: 'var(--font-thor, "Bebas Neue"), Impact, sans-serif',
+        letterSpacing: "0.08em",
+        textTransform: "uppercase",
+      }}
+    >
+      {text}
+    </span>
+  );
+}
+
+function CardOverlay({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+  return (
+    // skill-card-overlay class is targeted by globals.css to drop the dark
+    // backdrop + blur on Thor + light mode (per user request — the dark
+    // overlay clashes with the bright theme; the card alone reads cleaner).
+    <div
+      className="skill-card-overlay fixed inset-0 z-[90] grid place-items-center p-4 sm:p-6"
+      style={{ background: "rgba(8, 12, 28, 0.7)", backdropFilter: "blur(3px)" }}
+      onClick={onClose}
+      role="presentation"
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-[min(540px,92vw)] max-h-[88dvh] overflow-y-auto"
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function CloseBtn({ onClose }: { onClose: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-label="Close"
+      onClick={onClose}
+      className="absolute top-2 right-2 w-9 h-9 grid place-items-center rounded-full text-fg hover:bg-[color-mix(in_oklab,var(--color-text)_10%,transparent)] transition-colors z-10"
+    >
+      <span aria-hidden className="text-xl leading-none">×</span>
+    </button>
+  );
+}
+
+// ---------- stars ----------
+
+type StarHandlers = {
+  canHover: boolean;
+  isOpen: boolean;
+  onToggle: () => void;
+};
+
+function bindStarHandlers(h: StarHandlers, setHover: (v: boolean) => void) {
+  return {
+    "aria-expanded": h.isOpen,
+    onClick: (e: React.MouseEvent) => {
+      e.stopPropagation();
+      h.onToggle();
+    },
+    onKeyDown: (e: React.KeyboardEvent<HTMLButtonElement>) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        h.onToggle();
+      }
+    },
+    onMouseEnter: () => h.canHover && setHover(true),
+    onMouseLeave: () => setHover(false),
+    onFocus: () => setHover(true),
+    onBlur: () => setHover(false),
+  };
+}
 
 function RealmStar({
   domain,
   pos,
-  isActive,
-  onOpen,
-  onClose,
-}: {
-  kind: "visited";
+  ...h
+}: StarHandlers & {
   domain: SkillDomain;
   pos: StarPos;
-  isActive: boolean;
-  onOpen: (el: Element) => void;
-  onClose: () => void;
 }) {
+  const [hovered, setHovered] = useState(false);
   return (
     <button
       type="button"
       aria-label={`${domain.realm} — ${domain.name}`}
-      aria-expanded={isActive}
-      onClick={(e) => (isActive ? onClose() : onOpen(e.currentTarget))}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          isActive ? onClose() : onOpen(e.currentTarget);
-        }
-      }}
-      onMouseEnter={(e) => onOpen(e.currentTarget)}
-      onMouseLeave={(e) => {
-        if (document.activeElement !== e.currentTarget) onClose();
-      }}
-      onFocus={(e) => onOpen(e.currentTarget)}
-      onBlur={onClose}
+      {...bindStarHandlers(h, setHovered)}
       className={[
         "absolute -translate-x-1/2 -translate-y-1/2",
         "w-9 h-9 sm:w-11 sm:h-11 rounded-full border-2",
@@ -187,12 +237,13 @@ function RealmStar({
         background: `radial-gradient(circle, ${domain.color} 0%, color-mix(in oklab, ${domain.color} 30%, transparent) 70%, transparent 100%)`,
         color: "#0a0f1e",
         borderColor: domain.color,
-        boxShadow: isActive
+        boxShadow: h.isOpen
           ? `0 0 24px 6px ${domain.color}, inset 0 0 12px ${domain.color}`
           : `0 0 12px 2px color-mix(in oklab, ${domain.color} 40%, transparent)`,
       }}
     >
       {domain.realm.charAt(0)}
+      {hovered && h.canHover && <StarLabel text={domain.realm} accent={domain.color} />}
     </button>
   );
 }
@@ -200,37 +251,19 @@ function RealmStar({
 function FutureStar({
   realm,
   pos,
-  isActive,
-  onOpen,
-  onClose,
-}: {
+  ...h
+}: StarHandlers & {
   realm: FutureRealm;
   pos: StarPos;
-  isActive: boolean;
-  onOpen: (el: Element) => void;
-  onClose: () => void;
 }) {
+  const [hovered, setHovered] = useState(false);
   return (
     <button
       type="button"
       aria-label={`${realm.realm} — ${realm.hint}`}
-      aria-expanded={isActive}
-      onClick={(e) => (isActive ? onClose() : onOpen(e.currentTarget))}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          isActive ? onClose() : onOpen(e.currentTarget);
-        }
-      }}
-      onMouseEnter={(e) => onOpen(e.currentTarget)}
-      onMouseLeave={(e) => {
-        if (document.activeElement !== e.currentTarget) onClose();
-      }}
-      onFocus={(e) => onOpen(e.currentTarget)}
-      onBlur={onClose}
+      {...bindStarHandlers(h, setHovered)}
       className={[
         "absolute -translate-x-1/2 -translate-y-1/2",
-        // Mobile: 44px tap target (Apple HIG min). Desktop: visual restraint.
         "w-11 h-11 sm:w-7 sm:h-7 rounded-full",
         "transition-[transform,opacity] duration-snap ease-snap",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]",
@@ -241,66 +274,111 @@ function FutureStar({
         top: `${pos.y}%`,
         border: `2px dashed ${realm.color}`,
         background: `color-mix(in oklab, ${realm.color} 15%, transparent)`,
-        opacity: isActive ? 1 : 0.7,
-        boxShadow: isActive ? `0 0 16px 4px ${realm.color}` : "none",
+        opacity: h.isOpen ? 1 : 0.7,
+        boxShadow: h.isOpen ? `0 0 16px 4px ${realm.color}` : "none",
       }}
-    />
+    >
+      {hovered && h.canHover && <StarLabel text={realm.realm} accent={realm.color} />}
+    </button>
   );
 }
 
-function VisitedTooltip({ domain, left, top, width }: { domain: SkillDomain; left: number; top: number; width: number }) {
+// ---------- cards (MCU dossier style) ----------
+
+function VisitedCard({ domain, onClose }: { domain: SkillDomain; onClose: () => void }) {
   return (
     <div
-      role="tooltip"
-      className="fixed z-[80] rounded-lg p-4 pointer-events-none"
+      className="relative rounded-md p-5 sm:p-6"
       style={{
-        left,
-        top,
-        width,
-        maxHeight: TOOLTIP_H,
-        overflowY: "auto",
-        background: `linear-gradient(180deg, color-mix(in oklab, ${domain.color} 14%, var(--color-bg-elevated)), var(--color-bg-elevated))`,
-        border: `1px solid ${domain.color}`,
-        boxShadow: `0 24px 64px -16px ${domain.color}aa`,
+        background:
+          "linear-gradient(180deg, color-mix(in oklab, var(--color-bg-elevated) 100%, transparent), color-mix(in oklab, var(--color-bg) 100%, transparent))",
+        border: `1px solid color-mix(in oklab, ${domain.color} 60%, transparent)`,
+        boxShadow: `inset 0 1px 0 color-mix(in oklab, ${domain.color} 30%, transparent), 0 24px 64px -16px rgba(0,0,0,0.6), 0 0 32px -8px ${domain.color}`,
       }}
     >
-      <p className="text-caption uppercase tracking-wider" style={{ color: domain.color }}>
-        {domain.realm}
-      </p>
-      <p className="text-body font-semibold mt-1 text-fg">{domain.name}</p>
-      <p className="text-caption text-muted mt-1 italic">{domain.lore}</p>
-      <ul className="mt-3 grid gap-1">
-        {domain.children.map((s) => (
-          <li key={s.name} className="text-body-sm text-fg">
-            <span className="font-medium">{s.name}</span>{" "}
-            <span className="text-muted">— {s.description}</span>
-          </li>
-        ))}
-      </ul>
+      <div
+        className="absolute top-0 left-0 right-0 px-4 py-2 text-caption uppercase tracking-[0.32em]"
+        style={{
+          background: `linear-gradient(90deg, color-mix(in oklab, ${domain.color} 25%, transparent), color-mix(in oklab, ${domain.color} 6%, transparent) 60%, transparent)`,
+          color: domain.color,
+          borderBottom: `1px solid color-mix(in oklab, ${domain.color} 40%, transparent)`,
+          fontFamily: 'var(--font-thor, "Bebas Neue"), Impact, sans-serif',
+        }}
+      >
+        {"// ASGARDIAN ARCHIVE · "}{domain.realm}
+      </div>
+      <CloseBtn onClose={onClose} />
+      <div className="mt-10">
+        <p
+          className="text-h3 font-bold tracking-tight"
+          style={{
+            fontFamily: 'var(--font-thor, "Bebas Neue"), Impact, sans-serif',
+            color: "var(--color-text)",
+            letterSpacing: "0.04em",
+            textTransform: "uppercase",
+          }}
+        >
+          {domain.name}
+        </p>
+        <p className="text-caption text-muted italic mt-1">{domain.lore}</p>
+        <ul className="mt-4 grid gap-1.5">
+          {domain.children.map((s) => (
+            <li key={s.name} className="text-body-sm text-fg">
+              <span className="font-semibold">{s.name}</span>{" "}
+              <span className="text-muted">— {s.description}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div
+        aria-hidden
+        className="absolute left-4 right-4 bottom-3 h-px"
+        style={{
+          background: `repeating-linear-gradient(90deg, ${domain.color} 0 8px, transparent 8px 14px)`,
+          opacity: 0.6,
+        }}
+      />
     </div>
   );
 }
 
-function FutureTooltip({ realm, left, top, width }: { realm: FutureRealm; left: number; top: number; width: number }) {
+function FutureCard({ realm, onClose }: { realm: FutureRealm; onClose: () => void }) {
   return (
     <div
-      role="tooltip"
-      className="fixed z-[80] rounded-lg p-4 pointer-events-none"
+      className="relative rounded-md p-5 sm:p-6"
       style={{
-        left,
-        top,
-        width,
         background: "var(--color-bg-elevated)",
         border: `1px dashed ${realm.color}`,
         boxShadow: `0 16px 48px -16px ${realm.color}66`,
       }}
     >
-      <p className="text-caption uppercase tracking-wider" style={{ color: realm.color }}>
-        {realm.tier} · Future
-      </p>
-      <p className="text-body font-semibold mt-1 text-fg">{realm.realm}</p>
-      <p className="text-caption text-muted mt-1 italic">{realm.lore}</p>
-      <p className="text-body-sm text-muted mt-2">— {realm.hint}</p>
+      <div
+        className="absolute top-0 left-0 right-0 px-4 py-2 text-caption uppercase tracking-[0.32em]"
+        style={{
+          background: `linear-gradient(90deg, color-mix(in oklab, ${realm.color} 20%, transparent), transparent)`,
+          color: realm.color,
+          borderBottom: `1px dashed ${realm.color}`,
+          fontFamily: 'var(--font-thor, "Bebas Neue"), Impact, sans-serif',
+        }}
+      >
+        {"// MULTIVERSE · "}{realm.tier}
+      </div>
+      <CloseBtn onClose={onClose} />
+      <div className="mt-10">
+        <p
+          className="text-h3 font-bold tracking-tight"
+          style={{
+            fontFamily: 'var(--font-thor, "Bebas Neue"), Impact, sans-serif',
+            color: "var(--color-text)",
+            letterSpacing: "0.04em",
+            textTransform: "uppercase",
+          }}
+        >
+          {realm.realm}
+        </p>
+        <p className="text-caption text-muted italic mt-1">{realm.lore}</p>
+        <p className="text-body-sm text-muted mt-3">— {realm.hint}</p>
+      </div>
     </div>
   );
 }

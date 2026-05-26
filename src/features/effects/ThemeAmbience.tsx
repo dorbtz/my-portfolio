@@ -13,12 +13,16 @@ const LuffyImageRain = dynamic(
   { ssr: false }
 );
 const StormFX = dynamic(() => import("./StormFX").then((m) => m.StormFX), { ssr: false });
+const ThemeAudio = dynamic(() => import("./ThemeAudio").then((m) => m.ThemeAudio), {
+  ssr: false,
+});
 
 export function ThemeAmbience() {
   return (
     <>
       <LuffyImageRain />
       <StormFX />
+      <ThemeAudio />
     </>
   );
 }

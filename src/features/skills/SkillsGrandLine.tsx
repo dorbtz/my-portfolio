@@ -1,13 +1,15 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import {
   DAWN_ISLAND,
+  ENIES_LOBBY,
   FUTURE_ISLAND_POSITIONS,
   FUTURE_ISLANDS,
   ISLAND_FILES,
   ISLAND_POSITIONS,
+  MARY_GEOISE,
   SKILL_DOMAINS,
   type FutureIsland,
   type OriginIsland,
@@ -15,113 +17,120 @@ import {
 } from "@/shared/data/skill-domains";
 
 /**
- * Luffy-mode interactive Grand Line — uses the canon WORLDMAP.jpeg as the
- * map base (fan-made, painted, full world geography 1:1) and overlays
- * interactive skill markers at canonical island positions.
+ * Luffy-mode interactive Grand Line. Uses the canon WORLDMAP.jpeg as the
+ * map base and overlays interactive island markers.
  *
- * Markers are small + low-key so they don't compete with the map's own
- * painted islands. Hovering one lifts + glows it; clicking opens the
- * tooltip with the same skill data the chip grid uses.
+ * Interaction model (anchored to the marker, never clips):
+ *   - Hover (mouse only)        -> tiny label DIRECTLY ABOVE the marker
+ *                                  (rendered as a child of the marker, so
+ *                                  it always reads as "attached" to the
+ *                                  exact island the cursor is on)
+ *   - Click (PC) / Tap (mobile) -> opens a manga-panel card centered on
+ *                                  the viewport with a translucent backdrop
+ *   - Esc / backdrop / re-click -> closes
  *
- * Positions are approximate (the actual map has hundreds of unnamed islets
- * around the canon ones). If a position is visibly off-island, nudge the
- * { x, y } in shared/data/skill-domains.ts — both halves of the map
- * (ISLAND_POSITIONS + FUTURE_ISLAND_POSITIONS) live there.
+ * The wrap uses overflow-visible on its outer so hover labels at the far
+ * edges can spill past the rounded map frame (the JPEG itself stays
+ * masked to the rounded corners via the inner image wrapper).
  */
 
 const ISLANDS_DIR = "/assets/One-Piece/islands";
 const WORLDMAP_SRC = "/assets/One-Piece/WORLDMAP.jpeg";
 
-type ActiveKind = "visited" | "future" | "origin";
-type TooltipState = { left: number; top: number; width: number; index: number; kind: ActiveKind } | null;
+type CardKind = "visited" | "future" | "origin" | "landmark" | "enies";
+type OpenCard = { kind: CardKind; index: number };
 
-const TOOLTIP_H = 280;
-const GAP = 6;
-const MARGIN = 12;
+const HOVER_QUERY = "(hover: hover) and (pointer: fine)";
 
-function tooltipWidth(vw: number): number {
-  return Math.min(320, vw - MARGIN * 2);
+function useCanHover(): boolean {
+  return useSyncExternalStore(
+    (cb) => {
+      if (typeof window === "undefined" || !window.matchMedia) return () => {};
+      const mq = window.matchMedia(HOVER_QUERY);
+      mq.addEventListener?.("change", cb);
+      return () => mq.removeEventListener?.("change", cb);
+    },
+    () =>
+      typeof window !== "undefined" && window.matchMedia
+        ? window.matchMedia(HOVER_QUERY).matches
+        : false,
+    () => false
+  );
 }
 
-function clampTooltip(
-  anchor: DOMRect,
-  vw: number,
-  vh: number,
-  w: number,
-  h: number
-): { left: number; top: number; width: number } {
-  const width = Math.min(w, vw - MARGIN * 2);
-  let left = anchor.left + anchor.width / 2 - width / 2;
-  let top = anchor.top - h - GAP;
-  if (top < MARGIN) top = anchor.bottom + GAP;
-  left = Math.max(MARGIN, Math.min(left, vw - width - MARGIN));
-  top = Math.max(MARGIN, Math.min(top, vh - h - MARGIN));
-  return { left, top, width };
+function landmarkSrc(island: OriginIsland): string {
+  return island.imagePath ?? `${ISLANDS_DIR}/${island.file}.webp`;
 }
 
 export function SkillsGrandLine() {
-  const [tip, setTip] = useState<TooltipState>(null);
+  const [open, setOpen] = useState<OpenCard | null>(null);
+  const canHover = useCanHover();
 
-  const openAt = useCallback((el: Element, i: number, kind: ActiveKind) => {
-    const rect = el.getBoundingClientRect();
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    setTip({
-      ...clampTooltip(rect, vw, vh, tooltipWidth(vw), TOOLTIP_H),
-      index: i,
-      kind,
-    });
-  }, []);
-
-  const close = useCallback(() => setTip(null), []);
+  const close = useCallback(() => setOpen(null), []);
+  const toggle = useCallback(
+    (kind: CardKind, index: number) =>
+      setOpen((prev) => (prev && prev.kind === kind && prev.index === index ? null : { kind, index })),
+    []
+  );
 
   useEffect(() => {
-    if (!tip) return;
-    const onScroll = () => close();
+    if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") close();
     };
-    window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("keydown", onKey);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [tip, close]);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, close]);
 
   return (
+    // overflow-visible on the outer so hover labels at the map's right/left
+    // edges can spill out without being clipped by the rounded map frame.
     <div
-      className="grandline-wrap relative w-full rounded-lg overflow-hidden border border-line"
-      // Native ratio of the JPEG: 4096 × 2085 ≈ 1.964:1. Use that exactly
-      // so the painted geography doesn't get squashed or letterboxed.
+      className="grandline-wrap relative w-full rounded-lg border border-line"
       style={{ aspectRatio: "4096 / 2085" }}
     >
-      {/* Canon world map as the base */}
-      <img
-        src={WORLDMAP_SRC}
-        alt="One Piece world map (fan-made) — North/South/East/West Blue, Red Line, Calm Belt, Grand Line, and Paradise → New World"
-        className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
-        loading="lazy"
-        draggable={false}
-      />
+      {/* Inner image wrapper handles its OWN rounded mask + overflow-hidden
+          so the JPEG stays masked even though the outer wrap is visible. */}
+      <div className="absolute inset-0 overflow-hidden rounded-lg">
+        <img
+          src={WORLDMAP_SRC}
+          alt="One Piece world map (fan-made) — North/South/East/West Blue, Red Line, Calm Belt, Grand Line, and Paradise → New World"
+          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+          loading="lazy"
+          draggable={false}
+        />
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.25) 100%)",
+          }}
+        />
+      </div>
 
-      {/* Subtle dark vignette so the markers + tooltips read clearly on top */}
-      <div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.25) 100%)",
-        }}
-      />
-
-      {/* Marker layer */}
+      {/* Marker layer — NOT overflow-hidden, so hover labels can spill. */}
       <div className="absolute inset-0">
-        <OriginMarker
+        <LandmarkMarker
           island={DAWN_ISLAND}
-          isActive={tip?.kind === "origin"}
-          onOpen={(el) => openAt(el, 0, "origin")}
-          onClose={close}
+          variant="dawn"
+          canHover={canHover}
+          isOpen={open?.kind === "origin"}
+          onToggle={() => toggle("origin", 0)}
+        />
+        <LandmarkMarker
+          island={MARY_GEOISE}
+          variant="mariejois"
+          canHover={canHover}
+          isOpen={open?.kind === "landmark"}
+          onToggle={() => toggle("landmark", 0)}
+        />
+        <LandmarkMarker
+          island={ENIES_LOBBY}
+          variant="enies"
+          canHover={canHover}
+          isOpen={open?.kind === "enies"}
+          onToggle={() => toggle("enies", 0)}
         />
         {SKILL_DOMAINS.map((domain, i) => (
           <VisitedMarker
@@ -129,90 +138,222 @@ export function SkillsGrandLine() {
             domain={domain}
             file={ISLAND_FILES[i]}
             pos={ISLAND_POSITIONS[i]}
-            isActive={tip?.kind === "visited" && tip.index === i}
-            onOpen={(el) => openAt(el, i, "visited")}
-            onClose={close}
+            canHover={canHover}
+            isOpen={open?.kind === "visited" && open.index === i}
+            onToggle={() => toggle("visited", i)}
           />
         ))}
+        {/* (visited markers above; the open-card render below passes the
+            same ISLAND_FILES entry to VisitedCard for the backdrop image.) */}
         {FUTURE_ISLANDS.map((island, i) => (
           <PostParadiseMarker
             key={`f-${island.island}`}
             island={island}
             pos={FUTURE_ISLAND_POSITIONS[i]}
-            isActive={tip?.kind === "future" && tip.index === i}
-            onOpen={(el) => openAt(el, i, "future")}
-            onClose={close}
+            canHover={canHover}
+            isOpen={open?.kind === "future" && open.index === i}
+            onToggle={() => toggle("future", i)}
           />
         ))}
       </div>
 
-      {tip?.kind === "visited" && SKILL_DOMAINS[tip.index] && (
-        <VisitedTooltip domain={SKILL_DOMAINS[tip.index]} left={tip.left} top={tip.top} width={tip.width} />
+      {/* Centered modal card (no clipping possible — viewport-centered) */}
+      {open?.kind === "visited" && SKILL_DOMAINS[open.index] && (
+        <CardOverlay onClose={close}>
+          <VisitedCard
+            domain={SKILL_DOMAINS[open.index]}
+            file={ISLAND_FILES[open.index]}
+            onClose={close}
+          />
+        </CardOverlay>
       )}
-      {tip?.kind === "future" && FUTURE_ISLANDS[tip.index] && (
-        <FutureTooltip island={FUTURE_ISLANDS[tip.index]} left={tip.left} top={tip.top} width={tip.width} />
+      {open?.kind === "future" && FUTURE_ISLANDS[open.index] && (
+        <CardOverlay onClose={close}>
+          <FutureCard island={FUTURE_ISLANDS[open.index]} onClose={close} />
+        </CardOverlay>
       )}
-      {tip?.kind === "origin" && (
-        <OriginTooltip island={DAWN_ISLAND} left={tip.left} top={tip.top} width={tip.width} />
+      {open?.kind === "origin" && (
+        <CardOverlay onClose={close}>
+          <OriginCard
+            island={DAWN_ISLAND}
+            accent="#ffc60b"
+            onClose={close}
+            eyebrow="ORIGIN"
+          />
+        </CardOverlay>
+      )}
+      {open?.kind === "landmark" && (
+        <CardOverlay onClose={close}>
+          <OriginCard
+            island={MARY_GEOISE}
+            accent="#e8c061"
+            onClose={close}
+            eyebrow="LANDMARK"
+          />
+        </CardOverlay>
+      )}
+      {open?.kind === "enies" && (
+        <CardOverlay onClose={close}>
+          <OriginCard
+            island={ENIES_LOBBY}
+            accent="#76cfff"
+            onClose={close}
+            eyebrow="LANDMARK"
+            customBackdrop={<EniesLobbyBackdrop />}
+          />
+        </CardOverlay>
       )}
     </div>
   );
 }
 
-// ---------- markers (small + halo so they read on top of the painted map) ----------
+// ---------- shared overlay + hover label ----------
 
-const MARKER_BASE =
-  "absolute -translate-x-1/2 -translate-y-1/2 rounded-full overflow-hidden " +
-  "transition-[transform,box-shadow] duration-snap ease-snap " +
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] " +
-  "hover:scale-125 focus-visible:scale-125 ";
-
-function OriginMarker({
-  island,
-  isActive,
-  onOpen,
-  onClose,
+/** Tiny "name on marker" chip. Rendered as a CHILD of each marker so it
+ *  always sits exactly next to whichever island the cursor is on.
+ *  `position="below"` is used for islands stacked under another island
+ *  (e.g. Jaya, with Skypiea directly above) so the chip doesn't get hidden
+ *  behind the neighbour. */
+function MarkerLabel({
+  text,
+  accent,
+  position = "above",
 }: {
-  island: OriginIsland;
-  isActive: boolean;
-  onOpen: (el: Element) => void;
-  onClose: () => void;
+  text: string;
+  accent: string;
+  position?: "above" | "below";
 }) {
+  const placement =
+    position === "below"
+      ? "top-full mt-2"
+      : "bottom-full mb-2";
+  return (
+    <span
+      role="presentation"
+      className={`absolute left-1/2 ${placement} -translate-x-1/2 px-2 py-1 rounded-md text-caption font-semibold pointer-events-none whitespace-nowrap z-10`}
+      style={{
+        background: "rgba(15, 23, 42, 0.92)",
+        color: "#fff7d6",
+        border: `1px solid ${accent}`,
+        boxShadow: "0 6px 18px -6px rgba(0,0,0,0.6)",
+        fontFamily: 'var(--font-luffy, "Bangers"), "Comic Sans MS", cursive',
+        letterSpacing: "0.04em",
+      }}
+    >
+      {text}
+    </span>
+  );
+}
+
+function CardOverlay({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-[90] grid place-items-center p-4 sm:p-6"
+      style={{ background: "rgba(8, 12, 28, 0.65)", backdropFilter: "blur(2px)" }}
+      onClick={onClose}
+      role="presentation"
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-[min(540px,92vw)] max-h-[88dvh] overflow-y-auto"
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function CloseBtn({ onClose }: { onClose: () => void }) {
   return (
     <button
       type="button"
-      aria-label={`${island.island} — origin`}
-      aria-expanded={isActive}
-      onClick={(e) => (isActive ? onClose() : onOpen(e.currentTarget))}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          isActive ? onClose() : onOpen(e.currentTarget);
-        }
-      }}
-      onMouseEnter={(e) => onOpen(e.currentTarget)}
-      onMouseLeave={(e) => {
-        if (document.activeElement !== e.currentTarget) onClose();
-      }}
-      onFocus={(e) => onOpen(e.currentTarget)}
-      onBlur={onClose}
-      className={MARKER_BASE + "w-9 h-9 sm:w-10 sm:h-10"}
+      aria-label="Close"
+      onClick={onClose}
+      className="absolute top-2 right-2 w-9 h-9 grid place-items-center rounded-full text-fg hover:bg-[color-mix(in_oklab,var(--color-text)_10%,transparent)] transition-colors z-20"
+    >
+      <span aria-hidden className="text-xl leading-none">×</span>
+    </button>
+  );
+}
+
+// ---------- markers ----------
+
+const MARKER_BASE =
+  "absolute -translate-x-1/2 -translate-y-1/2 rounded-full " +
+  "transition-[transform,box-shadow] duration-snap ease-snap " +
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] " +
+  "hover:scale-125 focus-visible:scale-125 group ";
+
+type MarkerHandlers = {
+  canHover: boolean;
+  isOpen: boolean;
+  onToggle: () => void;
+};
+
+function bindHandlers(h: MarkerHandlers, setHover: (v: boolean) => void) {
+  return {
+    "aria-expanded": h.isOpen,
+    onClick: (e: React.MouseEvent) => {
+      e.stopPropagation();
+      h.onToggle();
+    },
+    onKeyDown: (e: React.KeyboardEvent<HTMLButtonElement>) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        h.onToggle();
+      }
+    },
+    onMouseEnter: () => h.canHover && setHover(true),
+    onMouseLeave: () => setHover(false),
+    onFocus: () => setHover(true),
+    onBlur: () => setHover(false),
+  };
+}
+
+function LandmarkMarker({
+  island,
+  variant,
+  ...h
+}: MarkerHandlers & { island: OriginIsland; variant: "dawn" | "mariejois" | "enies" }) {
+  const [hovered, setHovered] = useState(false);
+  // Per-variant tinting: warm gold for Dawn (origin), regal gold for
+  // Mariejois (Holy Land), icy blue for Enies Lobby (WG steel).
+  const accent =
+    variant === "dawn" ? "#ffc60b" : variant === "mariejois" ? "#e8c061" : "#76cfff";
+  const ring =
+    variant === "dawn" ? "#ffc60b" : variant === "mariejois" ? "#d4af37" : "#76cfff";
+  return (
+    <button
+      type="button"
+      aria-label={`${island.island} — ${island.sub}`}
+      {...bindHandlers(h, setHovered)}
+      className={MARKER_BASE + "w-9 h-9 sm:w-10 sm:h-10 overflow-visible"}
       style={{
         left: `${island.pos.x}%`,
         top: `${island.pos.y}%`,
-        border: "2px solid #ffc60b",
-        boxShadow: isActive
-          ? "0 0 16px 6px #ffc60b, 0 0 2px 1px rgba(0,0,0,0.6)"
-          : "0 0 12px 3px rgba(255,198,11,0.7), 0 0 2px 1px rgba(0,0,0,0.6)",
+        border: `2px solid ${ring}`,
+        background: "transparent",
+        boxShadow: h.isOpen
+          ? `0 0 16px 6px ${ring}, 0 0 2px 1px rgba(0,0,0,0.6)`
+          : `0 0 12px 3px ${ring}b3, 0 0 2px 1px rgba(0,0,0,0.6)`,
       }}
     >
-      <img
-        src={`${ISLANDS_DIR}/${island.file}.webp`}
-        alt=""
-        aria-hidden
-        className="w-full h-full object-cover pointer-events-none"
-        loading="lazy"
-      />
+      <span className="block w-full h-full overflow-hidden rounded-full">
+        {/* Pangaea-Castle image for Mariejois (downloaded from the canon
+            infobox) — same lookup as Dawn / Enies via landmarkSrc, which
+            honours imagePath. Crown glyph retired now that we have a real
+            picture. */}
+        <img
+          src={landmarkSrc(island)}
+          alt=""
+          aria-hidden
+          className="w-full h-full object-cover pointer-events-none"
+          loading="lazy"
+        />
+      </span>
+      {hovered && h.canHover && <MarkerLabel text={island.island} accent={accent} />}
     </button>
   );
 }
@@ -221,52 +362,44 @@ function VisitedMarker({
   domain,
   file,
   pos,
-  isActive,
-  onOpen,
-  onClose,
-}: {
+  ...h
+}: MarkerHandlers & {
   domain: SkillDomain;
   file: string;
-  pos: { x: number; y: number };
-  isActive: boolean;
-  onOpen: (el: Element) => void;
-  onClose: () => void;
+  pos: { x: number; y: number; labelBelow?: boolean };
 }) {
+  const [hovered, setHovered] = useState(false);
   return (
     <button
       type="button"
       aria-label={`${domain.island} — ${domain.name}`}
-      aria-expanded={isActive}
-      onClick={(e) => (isActive ? onClose() : onOpen(e.currentTarget))}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          isActive ? onClose() : onOpen(e.currentTarget);
-        }
-      }}
-      onMouseEnter={(e) => onOpen(e.currentTarget)}
-      onMouseLeave={(e) => {
-        if (document.activeElement !== e.currentTarget) onClose();
-      }}
-      onFocus={(e) => onOpen(e.currentTarget)}
-      onBlur={onClose}
-      className={MARKER_BASE + "w-7 h-7 sm:w-8 sm:h-8"}
+      {...bindHandlers(h, setHovered)}
+      className={MARKER_BASE + "w-7 h-7 sm:w-8 sm:h-8 overflow-visible"}
       style={{
         left: `${pos.x}%`,
         top: `${pos.y}%`,
         border: `2px solid ${domain.color}`,
-        boxShadow: isActive
+        boxShadow: h.isOpen
           ? `0 0 16px 6px ${domain.color}, 0 0 2px 1px rgba(0,0,0,0.6)`
           : `0 0 10px 2px ${domain.color}aa, 0 0 2px 1px rgba(0,0,0,0.6)`,
       }}
     >
-      <img
-        src={`${ISLANDS_DIR}/${file}.webp`}
-        alt=""
-        aria-hidden
-        className="w-full h-full object-cover pointer-events-none"
-        loading="lazy"
-      />
+      <span className="block w-full h-full overflow-hidden rounded-full">
+        <img
+          src={`${ISLANDS_DIR}/${file}.webp`}
+          alt=""
+          aria-hidden
+          className="w-full h-full object-cover pointer-events-none"
+          loading="lazy"
+        />
+      </span>
+      {hovered && h.canHover && (
+        <MarkerLabel
+          text={domain.island}
+          accent={domain.color}
+          position={pos.labelBelow ? "below" : "above"}
+        />
+      )}
     </button>
   );
 }
@@ -274,157 +407,310 @@ function VisitedMarker({
 function PostParadiseMarker({
   island,
   pos,
-  isActive,
-  onOpen,
-  onClose,
-}: {
+  ...h
+}: MarkerHandlers & {
   island: FutureIsland;
   pos: { x: number; y: number };
-  isActive: boolean;
-  onOpen: (el: Element) => void;
-  onClose: () => void;
 }) {
+  const [hovered, setHovered] = useState(false);
   const isFuture = island.status === "future";
   const isCurrent = island.status === "current";
   return (
     <button
       type="button"
       aria-label={`${island.island} — ${island.hint}`}
-      aria-expanded={isActive}
-      onClick={(e) => (isActive ? onClose() : onOpen(e.currentTarget))}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          isActive ? onClose() : onOpen(e.currentTarget);
-        }
-      }}
-      onMouseEnter={(e) => onOpen(e.currentTarget)}
-      onMouseLeave={(e) => {
-        if (document.activeElement !== e.currentTarget) onClose();
-      }}
-      onFocus={(e) => onOpen(e.currentTarget)}
-      onBlur={onClose}
+      {...bindHandlers(h, setHovered)}
       className={
         MARKER_BASE +
         (isFuture ? "w-6 h-6 sm:w-7 sm:h-7 " : "w-7 h-7 sm:w-8 sm:h-8 ") +
-        (isCurrent ? "grandline-current-pulse" : "")
+        (isCurrent ? "grandline-current-pulse " : "") +
+        "overflow-visible"
       }
       style={{
         left: `${pos.x}%`,
         top: `${pos.y}%`,
         border: isFuture ? `2px dashed ${island.color}` : `2px solid ${island.color}`,
-        opacity: isFuture && !isActive ? 0.85 : 1,
-        boxShadow: isActive
+        opacity: isFuture && !h.isOpen ? 0.85 : 1,
+        boxShadow: h.isOpen
           ? `0 0 16px 6px ${island.color}, 0 0 2px 1px rgba(0,0,0,0.6)`
           : isCurrent
           ? `0 0 14px 4px ${island.color}, 0 0 2px 1px rgba(0,0,0,0.6)`
           : `0 0 8px 2px ${island.color}aa, 0 0 2px 1px rgba(0,0,0,0.6)`,
       }}
     >
-      <img
-        src={`${ISLANDS_DIR}/${island.file}.webp`}
-        alt=""
-        aria-hidden
-        className="w-full h-full object-cover pointer-events-none"
-        loading="lazy"
-        style={{ filter: isFuture ? "grayscale(40%)" : "none" }}
-      />
+      <span className="block w-full h-full overflow-hidden rounded-full">
+        <img
+          src={`${ISLANDS_DIR}/${island.file}.webp`}
+          alt=""
+          aria-hidden
+          className="w-full h-full object-cover pointer-events-none"
+          loading="lazy"
+          style={{ filter: isFuture ? "grayscale(40%)" : "none" }}
+        />
+      </span>
+      {hovered && h.canHover && <MarkerLabel text={island.island} accent={island.color} />}
     </button>
   );
 }
 
-// ---------- tooltips ----------
+// ---------- cards (manga-panel style) ----------
 
-function VisitedTooltip({ domain, left, top, width }: { domain: SkillDomain; left: number; top: number; width: number }) {
+/** Title strip — sits INSIDE the card padding so the manga banner is fully
+ *  visible even when the overlay's `overflow-y-auto` would have clipped a
+ *  hanging-off-the-top variant. */
+function CardTitleStrip({ children, accent }: { children: React.ReactNode; accent: string }) {
   return (
     <div
-      role="tooltip"
-      className="fixed z-[80] rounded-md p-4 pointer-events-none"
+      className="absolute top-3 left-3 right-3 px-3 py-1.5 text-center text-caption font-bold uppercase tracking-[0.14em] z-20"
       style={{
-        left,
-        top,
-        width,
-        maxHeight: TOOLTIP_H,
-        overflowY: "auto",
-        background: "var(--color-bg-elevated)",
-        border: `3px solid color-mix(in oklab, var(--color-text) 88%, transparent)`,
-        boxShadow: `5px 5px 0 0 color-mix(in oklab, var(--color-text) 92%, transparent)`,
+        background: accent,
+        color: "#1a0d05",
+        border: "2px solid #1a0d05",
+        fontFamily: 'var(--font-luffy, "Bangers"), "Comic Sans MS", cursive',
+        letterSpacing: "0.1em",
+        fontSize: "0.78rem",
+        lineHeight: 1.2,
+        wordSpacing: "0.04em",
+        boxShadow: "2px 2px 0 0 #1a0d05",
       }}
     >
-      <p className="text-caption uppercase tracking-wider" style={{ color: domain.color }}>
-        {domain.gear} · {domain.island}
+      {children}
+    </div>
+  );
+}
+
+/** Shared manga-panel shell.  Layers a faded sepia island backdrop under the
+ *  cream paper + halftone dots so each card "feels" like the island it
+ *  represents without losing the manga look (sepia + opacity 0.2 + cream
+ *  wash on top + halftone dots in multiply mode = visible island, intact
+ *  manga texture, readable text). */
+function MangaCardShell({
+  imageSrc,
+  customBackdrop,
+  borderStyle = "solid",
+  shadowAccent = "#1a0d05",
+  titleStrip,
+  onClose,
+  children,
+}: {
+  imageSrc?: string;
+  customBackdrop?: React.ReactNode;
+  borderStyle?: "solid" | "dashed";
+  shadowAccent?: string;
+  titleStrip: React.ReactNode;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className="relative rounded-md overflow-hidden"
+      style={{
+        background: "#fffaf0",
+        color: "#1a0d05",
+        border: `3px ${borderStyle} #1a0d05`,
+        boxShadow: `6px 6px 0 0 ${shadowAccent}, inset 0 0 0 1px rgba(0,0,0,0.15)`,
+      }}
+    >
+      {/* Layer 1 — island photo backdrop. Higher opacity + lighter sepia so
+          the island reads clearly while still feeling like manga-paper. */}
+      {imageSrc && (
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `url(${imageSrc})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            opacity: 0.45,
+            filter: "sepia(0.35) saturate(0.85) contrast(1.02)",
+          }}
+        />
+      )}
+      {/* Layer 1b — custom backdrop (Mary Geoise palace, Enies Lobby etc.) */}
+      {customBackdrop}
+      {/* Layer 2 — light cream wash so body text stays legible without
+          washing out the island image (was 32/55/85, now 12/26/55). */}
+      {(imageSrc || customBackdrop) && (
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(255,250,240,0.12) 0%, rgba(255,250,240,0.26) 45%, rgba(255,250,240,0.55) 100%)",
+          }}
+        />
+      )}
+      {/* Layer 3 — Ben-Day halftone dots in multiply blend (manga texture) */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 10% 20%, rgba(26,13,5,0.10) 1px, transparent 2px), " +
+            "radial-gradient(circle at 70% 80%, rgba(26,13,5,0.08) 1px, transparent 2px)",
+          backgroundSize: "24px 24px, 31px 31px",
+          mixBlendMode: "multiply",
+        }}
+      />
+      {titleStrip}
+      <CloseBtn onClose={onClose} />
+      {/* Content — pushed below the title strip via pt-14 so the banner is
+          always fully visible (was hanging off the top w/ -top-3 and got
+          clipped by the overlay's overflow-y-auto). */}
+      <div className="relative z-10 p-5 sm:p-6 pt-14">{children}</div>
+    </div>
+  );
+}
+
+function VisitedCard({
+  domain,
+  file,
+  onClose,
+}: {
+  domain: SkillDomain;
+  file: string;
+  onClose: () => void;
+}) {
+  return (
+    <MangaCardShell
+      imageSrc={`${ISLANDS_DIR}/${file}.webp`}
+      titleStrip={
+        <CardTitleStrip accent={domain.color}>
+          {domain.gear} · {domain.island}
+        </CardTitleStrip>
+      }
+      onClose={onClose}
+    >
+      <p
+        className="text-h3 font-bold leading-tight"
+        style={{ fontFamily: 'var(--font-luffy, "Bangers"), "Comic Sans MS", cursive', color: "#1a0d05" }}
+      >
+        {domain.name}
       </p>
-      <p className="text-body font-semibold mt-1 text-fg">{domain.name}</p>
-      <p className="text-caption text-muted mt-1 italic">{domain.lore}</p>
-      <ul className="mt-3 grid gap-1">
+      <p className="text-caption italic mt-1" style={{ color: "#5a3818" }}>
+        {domain.lore}
+      </p>
+      <ul className="mt-4 grid gap-1.5">
         {domain.children.map((s) => (
-          <li key={s.name} className="text-body-sm text-fg">
-            <span className="font-medium">{s.name}</span>{" "}
-            <span className="text-muted">— {s.description}</span>
+          <li key={s.name} className="text-body-sm" style={{ color: "#1a0d05" }}>
+            <span className="font-bold">{s.name}</span>{" "}
+            <span style={{ color: "#5a3818" }}>— {s.description}</span>
           </li>
         ))}
       </ul>
-    </div>
+    </MangaCardShell>
   );
 }
 
-function FutureTooltip({ island, left, top, width }: { island: FutureIsland; left: number; top: number; width: number }) {
+function FutureCard({ island, onClose }: { island: FutureIsland; onClose: () => void }) {
   const statusLabel =
     island.status === "current" ? "Current arc" : island.status === "future" ? "Future" : "Visited";
   return (
-    <div
-      role="tooltip"
-      className="fixed z-[80] rounded-md p-4 pointer-events-none"
-      style={{
-        left,
-        top,
-        width,
-        background: "var(--color-bg-elevated)",
-        border:
-          island.status === "future"
-            ? `2px dashed ${island.color}`
-            : `2px solid ${island.color}`,
-        boxShadow: "4px 4px 0 0 color-mix(in oklab, var(--color-text) 60%, transparent)",
-      }}
+    <MangaCardShell
+      imageSrc={`${ISLANDS_DIR}/${island.file}.webp`}
+      borderStyle={island.status === "future" ? "dashed" : "solid"}
+      titleStrip={
+        <CardTitleStrip accent={island.color}>
+          {island.gear} · {statusLabel}
+        </CardTitleStrip>
+      }
+      onClose={onClose}
     >
-      <p className="text-caption uppercase tracking-wider" style={{ color: island.color }}>
-        {island.gear} · {statusLabel}
+      <p
+        className="text-h3 font-bold leading-tight"
+        style={{ fontFamily: 'var(--font-luffy, "Bangers"), "Comic Sans MS", cursive', color: "#1a0d05" }}
+      >
+        {island.island}
       </p>
-      <p className="text-body font-semibold mt-1 text-fg">{island.island}</p>
-      <p className="text-caption text-muted mt-1 italic">{island.lore}</p>
-      <p className="text-body-sm text-muted mt-2">— {island.hint}</p>
-    </div>
+      <p className="text-caption italic mt-1" style={{ color: "#5a3818" }}>
+        {island.lore}
+      </p>
+      <p className="text-body-sm mt-3" style={{ color: "#1a0d05" }}>
+        — {island.hint}
+      </p>
+    </MangaCardShell>
   );
 }
 
-function OriginTooltip({ island, left, top, width }: { island: OriginIsland; left: number; top: number; width: number }) {
+function OriginCard({
+  island,
+  accent,
+  eyebrow,
+  customBackdrop,
+  onClose,
+}: {
+  island: OriginIsland;
+  accent: string;
+  eyebrow: string;
+  customBackdrop?: React.ReactNode;
+  onClose: () => void;
+}) {
+  // If a customBackdrop is supplied (Mary Geoise / Enies Lobby), skip the
+  // image lookup — otherwise build it from imagePath or the islands dir.
+  const imageSrc = customBackdrop
+    ? undefined
+    : island.imagePath ?? `${ISLANDS_DIR}/${island.file}.webp`;
   return (
-    <div
-      role="tooltip"
-      className="fixed z-[80] rounded-md p-4 pointer-events-none"
-      style={{
-        left,
-        top,
-        width,
-        maxHeight: TOOLTIP_H + 60,
-        overflowY: "auto",
-        background: "var(--color-bg-elevated)",
-        border: "3px solid #ffc60b",
-        boxShadow: "5px 5px 0 0 #ffc60b88",
-      }}
+    <MangaCardShell
+      imageSrc={imageSrc}
+      customBackdrop={customBackdrop}
+      shadowAccent={accent}
+      titleStrip={
+        <CardTitleStrip accent={accent}>
+          {eyebrow} · {island.sub}
+        </CardTitleStrip>
+      }
+      onClose={onClose}
     >
-      <p className="text-caption uppercase tracking-wider" style={{ color: "#ffc60b" }}>
-        ORIGIN · {island.sub}
+      <p
+        className="text-h3 font-bold leading-tight"
+        style={{ fontFamily: 'var(--font-luffy, "Bangers"), "Comic Sans MS", cursive', color: "#1a0d05" }}
+      >
+        {island.island}
       </p>
-      <p className="text-body font-semibold mt-1 text-fg">{island.island}</p>
-      <p className="text-caption text-muted mt-1 italic">{island.lore}</p>
-      <div className="mt-3 grid gap-2">
+      <p className="text-caption italic mt-1" style={{ color: "#5a3818" }}>
+        {island.lore}
+      </p>
+      <div className="mt-4 grid gap-3">
         {island.sections.map((s) => (
           <div key={s.title}>
-            <p className="text-body-sm font-semibold text-fg">{s.title}</p>
-            <p className="text-caption text-muted mt-0.5">{s.body}</p>
+            <p className="text-body-sm font-bold" style={{ color: "#1a0d05" }}>
+              {s.title}
+            </p>
+            <p className="text-caption mt-0.5" style={{ color: "#5a3818" }}>
+              {s.body}
+            </p>
           </div>
         ))}
+      </div>
+    </MangaCardShell>
+  );
+}
+
+// ---------- custom backdrops (composited in CSS/SVG, no external download) ----------
+
+/** Enies Lobby — uses the WG icon as a centered watermark on a navy/steel
+ *  gradient backdrop (judicial-island palette). */
+function EniesLobbyBackdrop() {
+  return (
+    <div aria-hidden className="absolute inset-0 pointer-events-none">
+      {/* Steel-blue radial wash */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 50%, rgba(118, 207, 255, 0.35) 0%, rgba(60, 100, 160, 0.18) 50%, transparent 80%)",
+        }}
+      />
+      {/* WG building icon, centered, faded */}
+      <div className="absolute inset-0 grid place-items-center">
+        <img
+          src="/assets/One-Piece/icons/enies-lobby-map-icon-transparent.png"
+          alt=""
+          aria-hidden
+          className="max-w-[55%] max-h-[55%] object-contain"
+          style={{ opacity: 0.35, filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.3))" }}
+        />
       </div>
     </div>
   );

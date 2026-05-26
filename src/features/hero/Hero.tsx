@@ -5,6 +5,7 @@ import { Section } from "@/shared/ui/Section";
 import { HERO } from "@/shared/data/sections";
 import { readThemeState } from "@/shared/lib/theme/ssr";
 import { localize } from "@/shared/lib/i18n/localize";
+import { ThemeHeroPanel } from "./ThemeHeroPanel";
 
 export async function Hero() {
   const { locale } = await readThemeState();
@@ -41,6 +42,11 @@ export async function Hero() {
               </GlassButton>
             </Link>
           </div>
+          {/* Per-theme decorative hero centerpiece — manga Devil Fruit panel
+              (Luffy) or Mjolnir + Bifrost disc (Thor). Renders nothing for
+              the HighTech default. Client component so it hot-swaps with
+              the floating theme switcher without a page refresh. */}
+          <ThemeHeroPanel />
         </AppleSpring>
       </div>
     </Section>

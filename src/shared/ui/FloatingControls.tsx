@@ -2,6 +2,7 @@
 
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { LangSwitcher } from "./LangSwitcher";
+import { SoundToggle } from "./SoundToggle";
 import type { ColorScheme, Locale, Theme } from "../lib/theme/types";
 
 type Props = {
@@ -36,6 +37,7 @@ export function FloatingControls({ initialTheme, initialScheme, initialLocale }:
     >
       <ThemeSwitcher initialTheme={initialTheme} initialScheme={initialScheme} />
       <LangSwitcher initialLocale={initialLocale} />
+      <SoundToggle />
     </div>
   );
 }

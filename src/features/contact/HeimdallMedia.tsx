@@ -1,32 +1,27 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 // Plain <img> is the right call here: layered absolute-positioned media
-// where next/image's automatic optimizations don't add value (sources are
-// small backdrop assets the WEBM overlay sits on top of, lazy-loaded,
-// only ever mounted when theme=thor).
+// where next/image's automatic optimizations don't add value (single
+// backdrop the WEBM overlay sits on top of, lazy-loaded, only ever
+// mounted when theme=thor).
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
+import { isMutedWebm, onWebmMuteChange } from "@/shared/lib/audio";
 
 /**
- * Thor-mode Contact card visual — layered media (static backdrop +
- * always-resident transparent WEBM overlay).
+ * Thor-mode Contact card visual — heimall3-bg.png (the painted backdrop)
+ * with the transparent Heimdall WEBM (sword sweep, glow) overlaid in the
+ * exact same spot on every screen size.
  *
- * - Background PNG is clipped to a rounded "window".
- * - WEBM (VP9-alpha) sits as a SIBLING of the window so its transparent
- *   canvas can spill past the rounded frame if the aspect mismatches.
- * - Static Heimdall PNG fallback shows until the WEBM reaches `canplay`,
- *   so the user never sees a black frame (slow connections or codec gaps).
- * - The overlay seeks to frame 0 on mount so the idle state shows a
- *   single resting frame, not a black box.
- *
- * Plays once on `playing=true` then fires `onEnded`. Muted by default
- * (sound toggle ships in M8 alongside other polish).
+ * Per user request the cartoon heimdall.png foreground figure was dropped;
+ * only the painted backdrop + the WEBM remain. The WEBM is sized larger
+ * than the frame (135 %) and offset so it sits visually centred while
+ * spilling slightly past the card border at the animation peak.
  */
 
 const VIDEO_WEBM = "/assets/Marvel/heimdall/heimdall.webm";
 const VIDEO_MP4 = "/assets/Marvel/heimdall/heimdall3.mp4";
 const IMAGE_BG = "/assets/Marvel/heimdall/heimall3-bg.png";
-const IMAGE_FIGURE = "/assets/Marvel/heimdall/heimdall.png";
 
 type Props = {
   /** True -> overlay plays from frame 0. False -> paused at frame 0. */
@@ -38,9 +33,16 @@ type Props = {
 
 export default function HeimdallMedia({ playing, onEnded, alt }: Props) {
   const overlayRef = useRef<HTMLVideoElement>(null);
-  const [figureVisible, setFigureVisible] = useState(true);
+  // INDEPENDENT mute for the WEBM voice — separate from the ambient music
+  // toggle. Muted by default; flips when the user clicks the Voice pill.
+  const webmMuted = useSyncExternalStore(
+    (cb) => onWebmMuteChange(() => cb()),
+    isMutedWebm,
+    () => true
+  );
 
-  // Force frame 0 on mount so the idle state isn't a black box.
+  // Seek to frame 0 once metadata is ready so the idle state shows the
+  // resting first frame instead of a black box.
   useEffect(() => {
     const v = overlayRef.current;
     if (!v) return;
@@ -80,14 +82,14 @@ export default function HeimdallMedia({ playing, onEnded, alt }: Props) {
   }, [playing]);
 
   return (
-    // Outer wrapper centers the card and caps the width — Heimdall was huge
-    // when the Contact form column went wide on desktop. Cap at sm
-    // (384px) and center; mobile gets the full width minus the column
-    // padding. aspect-[16/10] keeps the proportions stable.
-    // overflow-visible on the outer so the WEBM can spill past the card
-    // border (sword sweep, glow) when the animation peaks.
+    // 4/5 aspect (taller than the previous 16/10) so the portrait Asgard
+    // backdrop — runic doorway at the top, full bifrost descending,
+    // golden floor + runic mandala at the bottom — actually fits.
+    // 320 px wide keeps the card narrow on every breakpoint per user
+    // request. Background uses `object-cover` with the natural centre
+    // position so the bifrost reads top-to-bottom without crushing.
     <div
-      className="relative w-full max-w-sm mx-auto aspect-[16/10] isolate overflow-visible"
+      className="relative w-full max-w-[320px] mx-auto aspect-[4/5] isolate overflow-visible"
       aria-label={alt}
       role="img"
     >
@@ -96,30 +98,22 @@ export default function HeimdallMedia({ playing, onEnded, alt }: Props) {
           src={IMAGE_BG}
           alt=""
           aria-hidden
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover object-center"
           loading="lazy"
         />
-        {figureVisible && (
-          <img
-            src={IMAGE_FIGURE}
-            alt=""
-            aria-hidden
-            className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-            loading="lazy"
-          />
-        )}
       </div>
-      {/* WEBM overlay sized 115% with negative offsets so it spills past the
-          rounded backdrop frame when the animation extends beyond the card. */}
+      {/* WEBM overlay sized 150 %. Heimdall in the source clip stands
+          left-of-centre (the bifrost rises beside him), so a perfectly
+          centred mathematical offset (-25 %) leaves him drifting left
+          of the bifrost in the card. Pushing left to -15 % moves him
+          ~10 % to the right so he stands at the foot of the bifrost. */}
       <video
         ref={overlayRef}
-        muted
+        muted={webmMuted}
         playsInline
         preload="auto"
         className="absolute object-contain pointer-events-none"
-        style={{ width: "115%", height: "115%", left: "-7.5%", top: "-7.5%" }}
-        onCanPlay={() => setFigureVisible(false)}
-        onError={() => setFigureVisible(true)}
+        style={{ width: "150%", height: "150%", left: "0%", top: "-25%" }}
         onEnded={onEnded}
       >
         <source src={VIDEO_WEBM} type="video/webm" />

@@ -5,6 +5,7 @@ import { ABOUT } from "@/shared/data/sections";
 import { readThemeState } from "@/shared/lib/theme/ssr";
 import { localize } from "@/shared/lib/i18n/localize";
 import { CastStrip } from "./CastStrip";
+import { ThemeArtStrip } from "./ThemeArtStrip";
 
 export async function About() {
   const { locale } = await readThemeState();
@@ -36,6 +37,10 @@ export async function About() {
       </div>
       {/* Decorative cast strip — Avengers icons in Thor / Straw Hat in Luffy. */}
       <CastStrip />
+      {/* Large character art line-up — Avengers PNGs (Thor) or WANTED-poster
+          board (Luffy). Adds real fandom artwork to the page; renders nothing
+          for the HighTech default. */}
+      <ThemeArtStrip />
     </Section>
   );
 }

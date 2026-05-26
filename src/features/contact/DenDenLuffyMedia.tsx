@@ -5,7 +5,8 @@
 // small backdrop assets the WEBM overlay sits on top of, lazy-loaded,
 // only ever mounted when theme=luffy).
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
+import { isMutedWebm, onWebmMuteChange } from "@/shared/lib/audio";
 
 /**
  * Luffy-mode Contact card visual — static background image with a
@@ -31,6 +32,13 @@ type Props = {
 
 export default function DenDenLuffyMedia({ playing, onEnded, alt }: Props) {
   const overlayRef = useRef<HTMLVideoElement>(null);
+  // INDEPENDENT mute for the WEBM voice — separate from the ambient music
+  // (drums) toggle. Muted by default; flips when the user clicks the Voice pill.
+  const webmMuted = useSyncExternalStore(
+    (cb) => onWebmMuteChange(() => cb()),
+    isMutedWebm,
+    () => true
+  );
 
   useEffect(() => {
     const v = overlayRef.current;
@@ -70,16 +78,24 @@ export default function DenDenLuffyMedia({ playing, onEnded, alt }: Props) {
   }, [playing]);
 
   return (
-    // Cap width so the Den-Den-Mushi doesn't dominate the Contact form on
-    // wide screens. overflow-visible so the snail's wobble + receiver
-    // lift extend past the rounded backdrop card border ("getting out
-    // of the card" as the user described).
+    // Outer stage is wider so the snail WEBM has room to grow without being
+    // clipped, while the actual painted bg-image card is INSET (narrower)
+    // inside the stage. End result: the wooden-bar card reads as a smaller
+    // tabletop scene, and the snail looms over it — exactly what the user
+    // asked for ("background card less wide, snail can be bigger, animation
+    // has room to work").
     <div
-      className="relative w-full max-w-sm mx-auto aspect-[16/10] isolate overflow-visible"
+      className="relative w-full max-w-[380px] mx-auto aspect-[16/11] isolate overflow-visible"
       aria-label={alt}
       role="img"
     >
-      <div className="absolute inset-0 overflow-hidden rounded-lg">
+      {/* Painted bg card — narrower than the stage (~72 % width), full
+          height, centred. Rounded + clipped so the wood texture reads as
+          a discrete tabletop card. */}
+      <div
+        className="absolute top-0 bottom-0 overflow-hidden rounded-lg"
+        style={{ left: "14%", right: "14%" }}
+      >
         <img
           src={IMAGE_BG}
           alt=""
@@ -88,15 +104,17 @@ export default function DenDenLuffyMedia({ playing, onEnded, alt }: Props) {
           loading="lazy"
         />
       </div>
-      {/* WEBM overlay sized 120% and offset so the snail's animation
-          spills out of the card frame at the bounce peak. */}
+      {/* Snail WEBM sized relative to the wider outer stage — at 175 % of
+          a 380 px stage = ~665 px tall snail vs ~273 px wide bg card, so the
+          snail is dramatically larger than the tabletop. Centred a touch
+          right (the snail is framed slightly left in the source clip). */}
       <video
         ref={overlayRef}
-        muted
+        muted={webmMuted}
         playsInline
         preload="auto"
         className="absolute object-contain pointer-events-none"
-        style={{ width: "120%", height: "120%", left: "-10%", top: "-10%" }}
+        style={{ width: "185%", height: "185%", left: "0%", top: "-40%" }}
         onEnded={onEnded}
       >
         <source src={VIDEO_WEBM} type="video/webm" />

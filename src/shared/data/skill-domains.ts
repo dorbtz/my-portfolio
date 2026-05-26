@@ -196,17 +196,27 @@ export const ISLAND_FILES: readonly string[] = [
  * Coordinates eyeballed from the canon map's painted islands.  Nudge in
  * here if any marker lands clearly off-island — both halves live here.
  */
-export const ISLAND_POSITIONS: readonly { x: number; y: number }[] = [
-  // Paradise — eastern entry near Reverse Mountain, working west toward Red Line
-  { x: 60, y: 48 }, // 0 Whiskey Peak — first Paradise island, east end
-  { x: 64, y: 51 }, // 1 Little Garden
-  { x: 68, y: 52 }, // 2 Drum Island
-  { x: 72, y: 53 }, // 3 Alabasta
-  { x: 76, y: 54 }, // 4 Jaya
-  { x: 76, y: 46 }, // 5 Skypiea — sky island ABOVE Jaya (knock-up stream)
-  { x: 80, y: 53 }, // 6 Water 7
-  { x: 84, y: 52 }, // 7 Thriller Bark
-  { x: 88, y: 51 }, // 8 Sabaody — foot of Red Line on the Paradise side
+/** Marker position on WORLDMAP.jpeg — measured by scanning the actual JPEG
+ *  for each island's painted label / icon centre.  4096 × 2085 source,
+ *  values are %-of-width / %-of-height so they scale with the container.
+ *
+ *  `labelBelow` (optional, default false) — render the hover-name chip
+ *  BELOW the marker instead of above. Set on islands whose canonical
+ *  position has another marker stacked directly on top (e.g. Skypiea
+ *  sits above Jaya per the knock-up stream, so Jaya's name above its
+ *  marker would be visually overlapped by Skypiea). */
+export const ISLAND_POSITIONS: readonly { x: number; y: number; labelBelow?: boolean }[] = [
+  // Paradise — measured directly off the canon fan-map (Sadjiri).
+  // Each x/y lands the marker on the island's painted icon.
+  { x: 56, y: 47 }, // 0 Whiskey Peak  (Cactus island)
+  { x: 61, y: 48 }, // 1 Little Garden
+  { x: 64, y: 47 }, // 2 Drum Island   (Sakura kingdom)
+  { x: 69, y: 44 }, // 3 Alabasta      (Sandy island — Rainbase / Alubarna / Nanohana)
+  { x: 72, y: 49, labelBelow: true }, // 4 Jaya — Skypiea stacked above, push label down
+  { x: 75, y: 45 }, // 5 Skypiea       (sky island ABOVE Jaya / Upper Yard / Angel)
+  { x: 86, y: 52 }, // 6 Water 7       (Water seven — city of canals + Pucci / Scrap nearby)
+  { x: 90, y: 51 }, // 7 Thriller Bark (Florian Triangle — slightly UP from Enies Lobby)
+  { x: 95, y: 54 }, // 8 Sabaody       (Sabaody archipelago — foot of Red Line east face)
 ];
 
 // ============================================================
@@ -402,26 +412,40 @@ export const FUTURE_ISLANDS: readonly FutureIsland[] = [
 ];
 
 /**
- * New World positions on WORLDMAP.jpeg — start at Fishman Island (under
- * Red Line, on the New World side which is the LEFT half of the map) and
- * flow west then loop back. Eyeballed from the canon yellow trail.
+ * New World positions on WORLDMAP.jpeg — measured directly off the canon
+ * fan-map (Sadjiri). The map is cylindrical so the Red Line appears at
+ * BOTH edges: Fishman sits under its eastern arm (right edge), Mary
+ * Geoise sits on top of its western arm (left edge — see [[mary_geoise]]).
+ *
+ * The Straw Hat trail in the New World loops: Punk Hazard (south-west) →
+ * Dressrosa → Zou → north to Whole Cake Island & Wano (samurai feudal
+ * realm + sub-islands Kuri/Hakumai/Onigashima/Flower Capital) → Egghead →
+ * Elbaph → Laugh Tale.  Y values follow the painted ocean route, hence
+ * Punk Hazard / Dressrosa / Zou riding the lower band (y≈55-60 %) while
+ * Whole Cake / Wano sit in the upper band (y≈49 %).
  */
 export const FUTURE_ISLAND_POSITIONS: readonly { x: number; y: number }[] = [
-  { x: 44, y: 56 }, // 0 Fishman Island   — under Red Line at center
-  { x: 40, y: 53 }, // 1 Punk Hazard
-  { x: 35, y: 52 }, // 2 Dressrosa
-  { x: 30, y: 53 }, // 3 Zou
-  { x: 25, y: 51 }, // 4 Whole Cake Island
-  { x: 20, y: 52 }, // 5 Wano Country
-  { x: 15, y: 51 }, // 6 Egghead
-  { x: 9,  y: 49 }, // 7 Elbaph (current arc) — far-left New World
-  { x: 4,  y: 51 }, // 8 Laugh Tale (future)
+  { x: 98, y: 48 }, // 0 Fishman Island       — RIGHT EDGE, dead on the "Fish-Man island (under Redline)" label
+  { x: 7,  y: 55 }, // 1 Punk Hazard          — far-west south-band (nudged right + up per user)
+  { x: 15, y: 53 }, // 2 Dressrosa            (Acacia / Royal Palace / Corrida — nudged right + up per user)
+  { x: 25, y: 54 }, // 3 Zou                  — directly on the painted ELEPHANT with red "Zou" label
+  { x: 22, y: 49 }, // 4 Whole Cake Island    (Big Mom's confectionery, upper band)
+  { x: 31, y: 44 }, // 5 Wano Country         (Onigashima cluster — nudged one more notch left)
+  { x: 32, y: 50 }, // 6 Egghead island       (small nudge down)
+  { x: 37, y: 49 }, // 7 Elbaph                (Warland Kingdom — current arc, nudged left per user)
+  { x: 45, y: 49 }, // 8 Laugh Tale            (legendary final island — eastern NW edge)
 ];
 
-/** Dawn Island — Luffy's origin. Special: backstory sections, not skills. */
+/** Dawn Island / Mary Geoise — landmark POIs. Backstory sections, not skills.
+ *  `imagePath` (optional) lets a landmark point at any asset under /public —
+ *  useful for landmarks that aren't in /assets/One-Piece/islands/ (e.g. the
+ *  World Government palace, which uses the Enies-Lobby WG icon instead).
+ *  Falls back to `/assets/One-Piece/islands/${file}.webp`.
+ */
 export type OriginIsland = {
   island: string;
   file: string;
+  imagePath?: string;
   sub: string;
   lore: string;
   sections: { title: string; body: string }[];
@@ -433,9 +457,10 @@ export const DAWN_ISLAND: OriginIsland = {
   file: "dawn-island",
   sub: "East Blue · Foosha Village",
   lore: "East Blue. Foosha Village under Mt. Colubo — where the voyage began.",
-  // East Blue quadrant on the WORLDMAP.jpeg — upper-right area, on the
-  // pink Straw Hat journey trail through East Blue.
-  pos: { x: 78, y: 25 },
+  // East Blue quadrant on the WORLDMAP.jpeg — Foosha Village / Mt. Corvo
+  // / Goa Kingdom / Dawn Island cluster. Sits LEFT of the eastern Red Line
+  // wall, not on it (re-scanned: the label is at ~89 %x / 21 %y).
+  pos: { x: 89, y: 20 },
   sections: [
     {
       title: "The Origin Code",
@@ -451,6 +476,65 @@ export const DAWN_ISLAND: OriginIsland = {
       title: "The Awakening",
       body:
         "On Onigashima, against Kaido, the Gum-Gum Fruit revealed its real name: Hito Hito no Mi, Model Nika. The Sun God of liberation. Reality itself becomes elastic; freedom becomes a force.",
+    },
+  ],
+};
+
+/** Mary Geoise — landmark, NOT a skill domain. Sits on TOP of the Red
+ *  Line at the western (left) edge of the map. Card uses the real
+ *  Pangaea-Castle infobox image (`mary-geoise.webp`); marker still uses
+ *  the inline crown glyph so it reads as a distinct landmark on the map. */
+export const MARY_GEOISE: OriginIsland = {
+  island: "Mary Geoise",
+  file: "mary-geoise",
+  imagePath: "/assets/One-Piece/islands/mary-geoise.webp",
+  sub: "Red Line · Holy Land",
+  lore: "The seat of the World Government. The Holy Land where the Five Elders rule and the Empty Throne waits.",
+  pos: { x: 2, y: 46 },
+  sections: [
+    {
+      title: "Pangaea Castle",
+      body:
+        "Carved into the spine of the Red Line above the Calm Belt. The Celestial Dragons live here above the law, and 800 years of secrets are kept under its dome.",
+    },
+    {
+      title: "The Reverie",
+      body:
+        "Every four years the kings of the world meet in Mariejois. It was at the last Reverie that Sabo lit the fuse — and Vivi disappeared.",
+    },
+    {
+      title: "The Empty Throne",
+      body:
+        "An Imu sits on the throne nobody is supposed to know exists, while the Five Elders kneel. The deepest mystery of the world begins here.",
+    },
+  ],
+};
+
+/** Enies Lobby — World Government judicial island. Stationed between
+ *  Water 7 and Thriller Bark per canon (Robin's arc). Slightly BELOW
+ *  Thriller Bark on the painted map. Landmark, not a skill. */
+export const ENIES_LOBBY: OriginIsland = {
+  island: "Enies Lobby",
+  file: "enies-lobby",
+  imagePath: "/assets/One-Piece/icons/enies-lobby-map-icon-transparent.png",
+  sub: "Calm Belt · Judicial Island",
+  lore: "The World Government's island of judgement — gateway to Impel Down on the other side of the Gates of Justice.",
+  pos: { x: 89, y: 56 },
+  sections: [
+    {
+      title: "The Burning Banner",
+      body:
+        "Above the Tower of Justice, the world's flag burned. The Straw Hats declared war on the World Government to take Nico Robin back.",
+    },
+    {
+      title: "The Gates of Justice",
+      body:
+        "Three colossal gates control sea-currents to Impel Down and the Marine HQ. Opened by 25 keys — only the chief justice can authorise them.",
+    },
+    {
+      title: "Buster Call",
+      body:
+        "Five vice-admirals plus a fleet of ten battleships — the World Government's nuclear option. Aokiji called one on Ohara, Spandam called one here.",
     },
   ],
 };

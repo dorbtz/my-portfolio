@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { GlassCard } from "@/shared/ui/GlassCard";
 import { GlassButton } from "@/shared/ui/GlassButton";
 import { useClientStrings } from "@/shared/lib/i18n/client-strings";
+import { MessageBubble } from "./MessageBubble";
 
 /**
  * Floating Chatbot widget. Bottom-right glass surface (mirrors the
@@ -96,35 +97,27 @@ export function Chatbot() {
 
         <div
           ref={scrollRef}
-          className="flex-1 overflow-y-auto rounded-md p-2 border border-line bg-[color-mix(in_oklab,var(--color-text)_3%,transparent)] min-h-[180px]"
+          className="flex-1 overflow-y-auto rounded-lg p-3 border border-line bg-[color-mix(in_oklab,var(--color-text)_3%,transparent)] min-h-[200px]"
         >
           {messages.length === 0 ? (
             <p className="text-body-sm text-muted p-3">{t.emptyState}</p>
           ) : (
-            <ul className="flex flex-col gap-2 p-1">
+            <ul className="flex flex-col gap-3 p-1">
               {(messages as UIMessage[]).map((m) => {
-                // Concatenate the text parts; ignore tool/data/source parts in M5
-                // (we add tool-calling later if needed).
                 const text = m.parts
                   .map((p) => (p.type === "text" ? p.text : ""))
                   .filter(Boolean)
                   .join("");
                 return (
-                  <li
+                  <MessageBubble
                     key={m.id}
-                    className={[
-                      "rounded-md px-3 py-2 text-body-sm whitespace-pre-wrap",
-                      m.role === "user"
-                        ? "self-end bg-[var(--color-accent)] text-[var(--color-accent-contrast)] max-w-[85%]"
-                        : "self-start bg-[var(--color-bg-elevated)] text-fg max-w-[95%] border border-line",
-                    ].join(" ")}
-                  >
-                    {text}
-                  </li>
+                    role={m.role === "user" ? "user" : "assistant"}
+                    text={text}
+                  />
                 );
               })}
               {status === "submitted" && (
-                <li className="self-start text-caption text-muted px-3 py-2">{t.thinking}</li>
+                <MessageBubble role="assistant" text="" thinking />
               )}
             </ul>
           )}

@@ -11,6 +11,11 @@ html {
   /* Keeps anchor targets clear of the sticky header (h-14 mobile, h-16 desktop) */
   scroll-padding-top: 5rem;
   scroll-behavior: smooth;
+  /* Prevent horizontal page scroll from intentional spillover animations
+     (Den-Den snail bounce, Heimdall sword sweep, LuffyImageRain drops,
+     StormFX bolts).  All those layers WANT to extend past their cards;
+     this clips the page boundary so iPhone SE doesn't side-scroll. */
+  overflow-x: hidden;
 }
 
 body {
@@ -20,6 +25,7 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   min-height: 100dvh;
+  overflow-x: hidden;
   transition: background-color var(--duration-glide) var(--ease-soft), color var(--duration-glide) var(--ease-soft);
 }
 
@@ -128,37 +134,125 @@ h1, h2, h3, .text-display, .text-h1, .text-h2 {
  * admin sidebar so the admin still feels like the active theme.
  * ============================================================ */
 
+/* ----- THOR admin nav: MCU dossier panel ----- */
 [data-theme="thor"] .admin-nav {
+  position: relative;
   background: linear-gradient(
     180deg,
     color-mix(in oklab, var(--color-bg-elevated) 100%, transparent),
     color-mix(in oklab, var(--color-bg) 100%, transparent)
   );
-  border: 1px solid color-mix(in oklab, var(--color-accent) 30%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-accent) 35%, transparent);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   box-shadow:
-    inset 0 1px 0 color-mix(in oklab, var(--color-accent) 18%, transparent),
-    inset 0 -1px 0 color-mix(in oklab, var(--color-accent) 18%, transparent),
-    0 12px 32px -16px rgba(0, 0, 0, 0.5);
+    inset 0 1px 0 color-mix(in oklab, var(--color-accent) 22%, transparent),
+    inset 0 -1px 0 color-mix(in oklab, var(--color-accent) 22%, transparent),
+    0 16px 40px -16px rgba(0, 0, 0, 0.55),
+    0 0 28px -10px var(--color-accent);
+  /* Comic-book "energy bolt" diagonal gradient at the corners */
+  background-image:
+    linear-gradient(
+      135deg,
+      color-mix(in oklab, var(--color-accent) 14%, transparent) 0%,
+      transparent 25%,
+      transparent 75%,
+      color-mix(in oklab, var(--color-accent) 14%, transparent) 100%
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 24px,
+      color-mix(in oklab, var(--color-accent) 6%, transparent) 24px 25px
+    );
+}
+[data-theme="thor"] .admin-nav::before {
+  /* Top dossier banner — same vibe as the project-card dossier header */
+  content: "// ASGARDIAN CONSOLE";
+  position: absolute;
+  top: -10px;
+  left: 14px;
+  padding: 2px 10px;
+  background: var(--color-bg-elevated);
+  border: 1px solid color-mix(in oklab, var(--color-accent) 50%, transparent);
+  color: var(--color-accent);
+  font-family: var(--font-thor, "Bebas Neue"), Impact, sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  pointer-events: none;
 }
 [data-theme="thor"] .admin-nav__item {
   font-family: var(--font-thor, "Bebas Neue"), Impact, sans-serif;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
+  border: 1px solid transparent;
+  transition: border-color 180ms var(--ease-snap), background-color 180ms var(--ease-snap),
+              text-shadow 180ms var(--ease-snap);
+}
+[data-theme="thor"] .admin-nav__item:hover {
+  border-color: color-mix(in oklab, var(--color-accent) 40%, transparent);
+  background: color-mix(in oklab, var(--color-accent) 10%, transparent);
+  text-shadow: 0 0 8px color-mix(in oklab, var(--color-accent) 55%, transparent);
 }
 
+/* ----- LUFFY admin nav: wanted-poster manga panel ----- */
 [data-theme="luffy"] .admin-nav {
+  position: relative;
   background: var(--color-bg-elevated);
   border: 3px solid color-mix(in oklab, var(--color-text) 88%, transparent);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border-radius: var(--radius-md);
-  box-shadow: 4px 4px 0 0 color-mix(in oklab, var(--color-text) 92%, transparent);
+  box-shadow: 5px 5px 0 0 color-mix(in oklab, var(--color-text) 92%, transparent);
+  /* Ben-Day halftone dots — gives the manga-paper texture */
+  background-image:
+    radial-gradient(circle, color-mix(in oklab, var(--color-text) 6%, transparent) 1px, transparent 1.5px);
+  background-size: 8px 8px;
+}
+[data-theme="luffy"] .admin-nav::before {
+  /* WANTED-style banner across the top of the nav */
+  content: "STRAW HAT CONSOLE";
+  position: absolute;
+  top: -12px;
+  left: 12px;
+  padding: 3px 12px;
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  border: 2px solid color-mix(in oklab, var(--color-text) 88%, transparent);
+  font-family: var(--font-luffy, "Bangers"), "Comic Sans MS", cursive;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  pointer-events: none;
+  text-shadow: 1px 1px 0 color-mix(in oklab, var(--color-text) 40%, transparent);
 }
 [data-theme="luffy"] .admin-nav__item {
   font-family: var(--font-luffy, "Bangers"), "Comic Sans MS", cursive;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  font-size: 1rem;
+  border: 2px solid transparent;
+  transition: border-color 160ms var(--ease-snap), background-color 160ms var(--ease-snap),
+              transform 160ms var(--ease-snap);
+}
+[data-theme="luffy"] .admin-nav__item:hover {
+  border-color: color-mix(in oklab, var(--color-text) 50%, transparent);
+  background: color-mix(in oklab, var(--color-accent) 18%, transparent);
+  transform: translate(-1px, -1px);
+}
+[data-theme="luffy"] .admin-nav__item img {
+  /* Bigger, slightly tilted manga icons */
+  width: 22px !important;
+  height: 22px !important;
+  transform: rotate(-4deg);
+  transition: transform 180ms var(--ease-snap);
+}
+[data-theme="luffy"] .admin-nav__item:hover img {
+  transform: rotate(4deg) scale(1.08);
+}
+[data-theme="thor"] .admin-nav__item img {
+  width: 20px !important;
+  height: 20px !important;
+  filter: drop-shadow(0 0 6px color-mix(in oklab, var(--color-accent) 60%, transparent));
 }
 
 /* Reuse .project-card per-theme treatment on admin GlassCards too —
@@ -493,6 +587,27 @@ h1, h2, h3, .text-display, .text-h1, .text-h2 {
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
+/* Thor + LIGHT mode — drop the dark skill-card backdrop entirely so the
+   card reads cleanly on the bright theme (per user request). Inline style
+   on .skill-card-overlay sets the dark rgba + blur; these overrides win
+   via specificity (`[data-theme][data-scheme]` is 2-attr selector + class).
+   Click-through is preserved because the overlay still receives the click
+   that calls onClose — only the visual backdrop is removed. */
+[data-theme="thor"][data-scheme="light"] .skill-card-overlay {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+/* Auto-scheme case: when no `data-scheme` is set, the active appearance
+   follows the OS. If the OS is light, the same override applies. */
+@media (prefers-color-scheme: light) {
+  [data-theme="thor"]:not([data-scheme]) .skill-card-overlay {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
 /* Grand Line current-arc marker pulse (Elbaph) */
 @keyframes grandline-current-pulse {
   0%, 100% { transform: translate(-50%, -50%) scale(1); }
@@ -503,6 +618,24 @@ h1, h2, h3, .text-display, .text-h1, .text-h2 {
 }
 @media (prefers-reduced-motion: reduce) {
   .grandline-current-pulse { animation: none; }
+}
+
+/* Thor — "engaged" ambient electric pulse at the top of the viewport */
+@keyframes storm-engaged-pulse {
+  0%, 100% { opacity: 0.45; }
+  50%      { opacity: 0.85; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [style*="storm-engaged-pulse"] { animation: none !important; }
+}
+
+/* Chatbot thinking dots */
+@keyframes chat-thinking {
+  0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
+  40%           { opacity: 1;    transform: translateY(-2px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [style*="chat-thinking"] { animation: none !important; opacity: 0.5 !important; }
 }
 
 /* Luffy theme ambient rain — drops fall from top to bottom of viewport */
