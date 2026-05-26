@@ -3,6 +3,7 @@
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { LangSwitcher } from "./LangSwitcher";
 import { SoundToggle } from "./SoundToggle";
+import { MobileSettingsMenu } from "./MobileSettingsMenu";
 import type { ColorScheme, Locale, Theme } from "../lib/theme/types";
 
 type Props = {
@@ -12,36 +13,53 @@ type Props = {
 };
 
 /**
- * Top-right floating cluster: theme + scheme + language.
- * Sits above content via fixed positioning + safe-area-aware insets.
+ * Top-right floating site controls.
+ *
+ * Desktop (sm+): full horizontal pill cluster — Theme + Lang + Sound visible
+ *   inline, anchored top-right where the header's max-w-1200 layout leaves
+ *   empty right margin.
+ *
+ * Mobile (< sm): COLLAPSED into a single glass ⚙ icon button below the
+ *   sticky header. Tapping it opens a panel with the same controls grouped
+ *   under short labels (Theme / Language / Sound). Stops the stacked-pills
+ *   tower from overlapping hero content + nav, which was the bug.
  */
 export function FloatingControls({ initialTheme, initialScheme, initialLocale }: Props) {
   return (
-    <div
-      // dir="ltr" pins the cluster's internal layout regardless of page direction —
-      // the site-control surface always reads left-to-right, like an OS control center.
-      // Anchored with physical `right-*` so it stays on the right edge even in RTL pages.
-      // On very small screens (iPhone SE etc.) the cluster stacks vertically so
-      // both pills always fit inside the viewport's max-width budget.
-      dir="ltr"
-      className={[
-        "fixed z-50 flex items-end sm:items-center gap-2",
-        // Mobile: drop the cluster BELOW the sticky header (h-14 = 56 px)
-        // so the ThemeSwitcher pill doesn't overlap the "dorbtz" wordmark.
-        // Desktop: anchor at the corner — the header is max-w-1200, so the
-        // cluster sits in the empty right margin where it can't overlap.
-        "top-[calc(env(safe-area-inset-top,0px)+3.75rem)] sm:top-[max(env(safe-area-inset-top),0.75rem)]",
-        "right-[max(env(safe-area-inset-right),0.75rem)]",
-        "max-w-[calc(100vw-1.5rem)]",
-        // Stack vertically below sm, side-by-side above. flex-wrap is the
-        // safety net for in-between widths where horizontal still fits.
-        "flex-col sm:flex-row sm:flex-wrap sm:justify-end",
-      ].join(" ")}
-      aria-label="Site controls"
-    >
-      <ThemeSwitcher initialTheme={initialTheme} initialScheme={initialScheme} />
-      <LangSwitcher initialLocale={initialLocale} />
-      <SoundToggle />
-    </div>
+    <>
+      {/* Mobile: collapsed icon → menu */}
+      <div
+        dir="ltr"
+        className={[
+          "sm:hidden fixed z-50",
+          "top-[calc(env(safe-area-inset-top,0px)+3.75rem)]",
+          "right-[max(env(safe-area-inset-right),0.75rem)]",
+        ].join(" ")}
+        aria-label="Site controls"
+      >
+        <MobileSettingsMenu
+          initialTheme={initialTheme}
+          initialScheme={initialScheme}
+          initialLocale={initialLocale}
+        />
+      </div>
+
+      {/* Desktop: inline pill cluster */}
+      <div
+        dir="ltr"
+        className={[
+          "hidden sm:flex fixed z-50 items-center gap-2",
+          "top-[max(env(safe-area-inset-top),0.75rem)]",
+          "right-[max(env(safe-area-inset-right),0.75rem)]",
+          "max-w-[calc(100vw-1.5rem)]",
+          "flex-wrap justify-end",
+        ].join(" ")}
+        aria-label="Site controls"
+      >
+        <ThemeSwitcher initialTheme={initialTheme} initialScheme={initialScheme} />
+        <LangSwitcher initialLocale={initialLocale} />
+        <SoundToggle />
+      </div>
+    </>
   );
 }
