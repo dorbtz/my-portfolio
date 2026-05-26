@@ -171,11 +171,12 @@ export function ThemeArtStrip() {
                 alt=""
                 className="h-36 sm:h-48 w-auto object-contain"
                 style={{
+                  // Drop-shadow only — no surrounding cream/border, because
+                  // each poster brings its own painted parchment. Wrapping
+                  // it in a second cream box read as "white border" on the
+                  // wood-grain board, which the user wanted off.
                   filter:
                     "drop-shadow(0 6px 12px rgba(0,0,0,0.5)) drop-shadow(0 2px 2px rgba(0,0,0,0.4))",
-                  border: "3px solid #1a0d05",
-                  background: "#fffaf0",
-                  padding: 2,
                 }}
                 loading="lazy"
               />

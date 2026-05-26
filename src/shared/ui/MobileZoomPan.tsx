@@ -99,6 +99,33 @@ export function MobileZoomPan({
     return () => window.removeEventListener("resize", onResize);
   }, [clamp]);
 
+  // iOS Safari ignores `touch-action: none` for the OS-level pinch-zoom
+  // gesture — it still triggers page zoom unless you preventDefault on the
+  // native touchmove/gesture events. React's synthetic pointer events
+  // can't preventDefault on these (Safari fires them passively). Bind
+  // raw listeners on the outer element with { passive: false } so the
+  // pinch stays inside the map. Multi-touch only — single-finger taps
+  // still bubble normally so marker clicks keep working.
+  useEffect(() => {
+    if (!isTouch) return;
+    const el = outerRef.current;
+    if (!el) return;
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length >= 2) e.preventDefault();
+    };
+    const onGesture = (e: Event) => e.preventDefault();
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("gesturestart", onGesture as EventListener, { passive: false });
+    el.addEventListener("gesturechange", onGesture as EventListener, { passive: false });
+    el.addEventListener("gestureend", onGesture as EventListener, { passive: false });
+    return () => {
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("gesturestart", onGesture as EventListener);
+      el.removeEventListener("gesturechange", onGesture as EventListener);
+      el.removeEventListener("gestureend", onGesture as EventListener);
+    };
+  }, [isTouch]);
+
   const onPointerDown = (e: React.PointerEvent) => {
     if (!isTouch) return;
     pointers.current.set(e.pointerId, {
@@ -171,8 +198,18 @@ export function MobileZoomPan({
   const zoomed = t.scale > 1.01;
 
   return (
-    <div ref={outerRef} className={`relative overflow-hidden ${className ?? ""}`} style={style}>
+    <div
+      ref={outerRef}
+      className={`relative overflow-hidden ${className ?? ""}`}
+      style={{ ...style, touchAction: "none" }}
+    >
+      {/* Inner gets `absolute inset-0` so it inherits the outer's size
+          (without it the transform context exists but has 0 × 0 box, so
+          children using `absolute inset-0` resolve to nothing and the
+          map renders blank with floating markers — the bug the user
+          reported as "messed islands"). */}
       <div
+        className="absolute inset-0"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}

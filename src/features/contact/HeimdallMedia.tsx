@@ -101,18 +101,24 @@ export default function HeimdallMedia({ playing, onEnded, alt }: Props) {
           loading="lazy"
         />
       </div>
-      {/* WEBM overlay sized 150 %. Heimdall in the source clip stands
-          left-of-centre (the bifrost rises beside him), so a perfectly
-          centred mathematical offset (-25 %) leaves him drifting left
-          of the bifrost in the card. Pushing left to -15 % moves him
-          ~10 % to the right so he stands at the foot of the bifrost. */}
+      {/* WEBM overlay sized 150 %. iOS Safari drops the alpha channel on
+          VP9-alpha WEBMs, painting black where the transparent area
+          should be — `mix-blend-mode: screen` makes that black composite
+          to nothing on top of the darker Asgard backdrop, restoring the
+          cut-out look without re-encoding the video. */}
       <video
         ref={overlayRef}
         muted={webmMuted}
         playsInline
         preload="auto"
         className="absolute object-contain pointer-events-none"
-        style={{ width: "150%", height: "150%", left: "0%", top: "-25%" }}
+        style={{
+          width: "150%",
+          height: "150%",
+          left: "0%",
+          top: "-25%",
+          mixBlendMode: "screen",
+        }}
         onEnded={onEnded}
       >
         <source src={VIDEO_WEBM} type="video/webm" />

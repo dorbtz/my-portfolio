@@ -103,17 +103,24 @@ export default function DenDenLuffyMedia({ playing, onEnded, alt }: Props) {
           loading="lazy"
         />
       </div>
-      {/* Snail WEBM sized relative to the wider outer stage — at 175 % of
-          a 380 px stage = ~665 px tall snail vs ~273 px wide bg card, so the
-          snail is dramatically larger than the tabletop. Centred a touch
-          right (the snail is framed slightly left in the source clip). */}
+      {/* Snail WEBM sized 185 % so it visibly looms over the tabletop.
+          `mix-blend-mode: screen` cancels the black background iOS Safari
+          paints when it drops the VP9 alpha channel — black blended with
+          the dark wood backdrop disappears, restoring the cut-out look
+          without re-encoding the WEBM. */}
       <video
         ref={overlayRef}
         muted={webmMuted}
         playsInline
         preload="auto"
         className="absolute object-contain pointer-events-none"
-        style={{ width: "185%", height: "185%", left: "0%", top: "-40%" }}
+        style={{
+          width: "185%",
+          height: "185%",
+          left: "0%",
+          top: "-40%",
+          mixBlendMode: "screen",
+        }}
         onEnded={onEnded}
       >
         <source src={VIDEO_WEBM} type="video/webm" />
