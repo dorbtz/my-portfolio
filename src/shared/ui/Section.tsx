@@ -1,55 +1,38 @@
-// src/components/Section.tsx
-import { useEffect, useRef } from "react";
-import type { PropsWithChildren } from "react";
+import { type ReactNode } from "react";
 
-type Props = PropsWithChildren<{
+type SectionProps = {
   id?: string;
+  ariaLabel?: string;
+  children: ReactNode;
+  /** Vertical padding scale (default: 9 = 96px) */
+  padding?: 6 | 7 | 8 | 9 | 10;
   className?: string;
-  label?: string;
-}>;
+};
 
-/**
- * Section
- * - Provides centered ".wrap"
- * - Automatically reveals any ".reveal" children on first intersection
- * - Adds a small bottom margin for anchor scrolling comfort via CSS (scroll-margin handled in index.css)
- */
-export default function Section({ id, className = "", label, children }: Props) {
-  const ref = useRef<HTMLElement>(null);
+const PAD: Record<number, string> = {
+  6: "py-8 sm:py-12",
+  7: "py-12 sm:py-16",
+  8: "py-16 sm:py-20",
+  9: "py-20 sm:py-24",
+  10: "py-24 sm:py-32",
+};
 
-  useEffect(() => {
-    const root = ref.current;
-    if (!root) return;
-
-    const nodes = Array.from(root.querySelectorAll<HTMLElement>(".reveal"));
-    if (!nodes.length) return;
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) {
-            e.target.classList.add("is-visible");
-            io.unobserve(e.target);
-          }
-        }
-      },
-      { threshold: 0.1, rootMargin: "0px 0px -10% 0px" }
-    );
-
-    nodes.forEach((n) => io.observe(n));
-    return () => io.disconnect();
-  }, []);
-
+/** Page section with consistent max-width + responsive padding. */
+export function Section({ id, ariaLabel, children, padding = 9, className }: SectionProps) {
   return (
-    <section ref={ref} id={id} className={`section ${className}`} data-section>
-      <div className="wrap section-inner">
-        {label ? (
-          <p className="section-label sr-only" data-section-label>
-            {label}
-          </p>
-        ) : null}
-        {children}
-      </div>
+    <section
+      id={id}
+      aria-label={ariaLabel}
+      className={[
+        "w-full mx-auto",
+        "max-w-[min(1200px,calc(100%-2rem))]",
+        PAD[padding],
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      {children}
     </section>
   );
 }

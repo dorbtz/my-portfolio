@@ -1,0 +1,697 @@
+@import "tailwindcss";
+@import "../shared/themes/tokens.css";
+@import "../shared/themes/hightech.css";
+@import "../shared/themes/thor.css";
+@import "../shared/themes/luffy.css";
+
+/* Base reset + theme-driven body styling */
+html {
+  background: var(--color-bg);
+  color-scheme: light dark;
+  /* Keeps anchor targets clear of the sticky header (h-14 mobile, h-16 desktop) */
+  scroll-padding-top: 5rem;
+  scroll-behavior: smooth;
+  /* Prevent horizontal page scroll from intentional spillover animations
+     (Den-Den snail bounce, Heimdall sword sweep, LuffyImageRain drops,
+     StormFX bolts).  All those layers WANT to extend past their cards;
+     this clips the page boundary so iPhone SE doesn't side-scroll. */
+  overflow-x: hidden;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  transition: background-color var(--duration-glide) var(--ease-soft), color var(--duration-glide) var(--ease-soft);
+}
+
+/* Apple Liquid Glass surface — used by GlassCard and floating control pills */
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  box-shadow: var(--glass-shadow);
+}
+
+/* Headlines pick up the per-theme display font + transform / spacing.
+   Applied via the `text-display`, `text-h1`, `text-h2`, `text-h3` utilities
+   plus an explicit selector so headings work even without those classes. */
+h1, h2, h3, .text-display, .text-h1, .text-h2 {
+  font-family: var(--font-display, var(--font-sans));
+  letter-spacing: var(--heading-letter-spacing, normal);
+  text-transform: var(--heading-text-transform, none);
+}
+
+/* Hero background slot — theme-driven via CSS variables.
+   Used by features/hero/Hero.tsx as <div class="hero-bg"> wrapping the content. */
+.hero-bg {
+  position: relative;
+  isolation: isolate;
+}
+.hero-bg::before {
+  content: "";
+  position: absolute;
+  inset: -2rem -1rem -4rem -1rem;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(900px 500px at 50% 0%, var(--glass-vibrancy), transparent 70%);
+}
+
+/* Thor: faint lightning streaks behind the hero */
+[data-theme="thor"] .hero-bg::before {
+  background:
+    radial-gradient(900px 500px at 50% 0%, var(--glass-vibrancy), transparent 70%),
+    repeating-linear-gradient(
+      115deg,
+      transparent 0 40px,
+      color-mix(in oklab, var(--color-accent) 5%, transparent) 40px 42px,
+      transparent 42px 80px
+    );
+}
+
+/* Luffy: parchment hatch lines + warm sun glow */
+[data-theme="luffy"] .hero-bg::before {
+  background:
+    radial-gradient(700px 400px at 50% 0%, var(--glass-vibrancy), transparent 70%),
+    repeating-linear-gradient(
+      45deg,
+      transparent 0 6px,
+      color-mix(in oklab, var(--color-text) 3%, transparent) 6px 7px
+    );
+}
+
+/* Per-theme decorative watermark — themes set --hero-watermark (PNG url)
+   and --hero-watermark-tint (color). Sits in the upper-right of the hero,
+   tinted via mask-image so it picks up the theme accent. */
+.hero-bg::after {
+  content: "";
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: clamp(80px, 16vw, 180px);
+  height: clamp(80px, 16vw, 180px);
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  background-color: var(--hero-watermark-tint, transparent);
+  -webkit-mask-image: var(--hero-watermark, none);
+  mask-image: var(--hero-watermark, none);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  transition: opacity var(--duration-glide) var(--ease-soft);
+}
+[data-theme="thor"] .hero-bg::after,
+[data-theme="luffy"] .hero-bg::after { opacity: 0.35; }
+
+/* Per-theme button polish — Luffy primary button gets a stamped offset shadow;
+   Thor primary button gets a soft Bifrost glow. */
+[data-theme="luffy"] .glass-button {
+  box-shadow: 4px 4px 0 0 color-mix(in oklab, var(--color-text) 70%, transparent);
+}
+[data-theme="luffy"] .glass-button:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 0 color-mix(in oklab, var(--color-text) 80%, transparent);
+}
+[data-theme="thor"] .glass-button {
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--color-accent) 30%, transparent),
+              0 0 24px -8px var(--color-accent);
+}
+
+/* ============================================================
+ * Per-theme ADMIN cards (.admin-nav)
+ * Reuses the per-theme card treatment (Asgardian / Wanted-poster) on the
+ * admin sidebar so the admin still feels like the active theme.
+ * ============================================================ */
+
+/* ----- THOR admin nav: MCU dossier panel ----- */
+[data-theme="thor"] .admin-nav {
+  position: relative;
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--color-bg-elevated) 100%, transparent),
+    color-mix(in oklab, var(--color-bg) 100%, transparent)
+  );
+  border: 1px solid color-mix(in oklab, var(--color-accent) 35%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--color-accent) 22%, transparent),
+    inset 0 -1px 0 color-mix(in oklab, var(--color-accent) 22%, transparent),
+    0 16px 40px -16px rgba(0, 0, 0, 0.55),
+    0 0 28px -10px var(--color-accent);
+  /* Comic-book "energy bolt" diagonal gradient at the corners */
+  background-image:
+    linear-gradient(
+      135deg,
+      color-mix(in oklab, var(--color-accent) 14%, transparent) 0%,
+      transparent 25%,
+      transparent 75%,
+      color-mix(in oklab, var(--color-accent) 14%, transparent) 100%
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 24px,
+      color-mix(in oklab, var(--color-accent) 6%, transparent) 24px 25px
+    );
+}
+[data-theme="thor"] .admin-nav::before {
+  /* Top dossier banner — same vibe as the project-card dossier header */
+  content: "// ASGARDIAN CONSOLE";
+  position: absolute;
+  top: -10px;
+  left: 14px;
+  padding: 2px 10px;
+  background: var(--color-bg-elevated);
+  border: 1px solid color-mix(in oklab, var(--color-accent) 50%, transparent);
+  color: var(--color-accent);
+  font-family: var(--font-thor, "Bebas Neue"), Impact, sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  pointer-events: none;
+}
+[data-theme="thor"] .admin-nav__item {
+  font-family: var(--font-thor, "Bebas Neue"), Impact, sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  transition: border-color 180ms var(--ease-snap), background-color 180ms var(--ease-snap),
+              text-shadow 180ms var(--ease-snap);
+}
+[data-theme="thor"] .admin-nav__item:hover {
+  border-color: color-mix(in oklab, var(--color-accent) 40%, transparent);
+  background: color-mix(in oklab, var(--color-accent) 10%, transparent);
+  text-shadow: 0 0 8px color-mix(in oklab, var(--color-accent) 55%, transparent);
+}
+
+/* ----- LUFFY admin nav: wanted-poster manga panel ----- */
+[data-theme="luffy"] .admin-nav {
+  position: relative;
+  background: var(--color-bg-elevated);
+  border: 3px solid color-mix(in oklab, var(--color-text) 88%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: var(--radius-md);
+  box-shadow: 5px 5px 0 0 color-mix(in oklab, var(--color-text) 92%, transparent);
+  /* Ben-Day halftone dots — gives the manga-paper texture */
+  background-image:
+    radial-gradient(circle, color-mix(in oklab, var(--color-text) 6%, transparent) 1px, transparent 1.5px);
+  background-size: 8px 8px;
+}
+[data-theme="luffy"] .admin-nav::before {
+  /* WANTED-style banner across the top of the nav */
+  content: "STRAW HAT CONSOLE";
+  position: absolute;
+  top: -12px;
+  left: 12px;
+  padding: 3px 12px;
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  border: 2px solid color-mix(in oklab, var(--color-text) 88%, transparent);
+  font-family: var(--font-luffy, "Bangers"), "Comic Sans MS", cursive;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  pointer-events: none;
+  text-shadow: 1px 1px 0 color-mix(in oklab, var(--color-text) 40%, transparent);
+}
+[data-theme="luffy"] .admin-nav__item {
+  font-family: var(--font-luffy, "Bangers"), "Comic Sans MS", cursive;
+  letter-spacing: 0.04em;
+  font-size: 1rem;
+  border: 2px solid transparent;
+  transition: border-color 160ms var(--ease-snap), background-color 160ms var(--ease-snap),
+              transform 160ms var(--ease-snap);
+}
+[data-theme="luffy"] .admin-nav__item:hover {
+  border-color: color-mix(in oklab, var(--color-text) 50%, transparent);
+  background: color-mix(in oklab, var(--color-accent) 18%, transparent);
+  transform: translate(-1px, -1px);
+}
+[data-theme="luffy"] .admin-nav__item img {
+  /* Bigger, slightly tilted manga icons */
+  width: 22px !important;
+  height: 22px !important;
+  transform: rotate(-4deg);
+  transition: transform 180ms var(--ease-snap);
+}
+[data-theme="luffy"] .admin-nav__item:hover img {
+  transform: rotate(4deg) scale(1.08);
+}
+[data-theme="thor"] .admin-nav__item img {
+  width: 20px !important;
+  height: 20px !important;
+  filter: drop-shadow(0 0 6px color-mix(in oklab, var(--color-accent) 60%, transparent));
+}
+
+/* Reuse .project-card per-theme treatment on admin GlassCards too —
+   give admin cards the same Asgardian / Wanted-poster vibe so the
+   admin doesn't feel like a different site under each theme. */
+[data-theme="thor"] .admin-card,
+[data-theme="luffy"] .admin-card { overflow: hidden; }
+[data-theme="thor"] .admin-card {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--color-bg-elevated) 100%, transparent),
+    color-mix(in oklab, var(--color-bg) 100%, transparent)
+  );
+  border: 1px solid color-mix(in oklab, var(--color-accent) 35%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: var(--radius-md);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--color-accent) 18%, transparent),
+    inset 0 -1px 0 color-mix(in oklab, var(--color-accent) 18%, transparent),
+    0 16px 48px -16px rgba(0, 0, 0, 0.45);
+}
+[data-theme="luffy"] .admin-card {
+  background: var(--color-bg-elevated);
+  border: 3px solid color-mix(in oklab, var(--color-text) 88%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: var(--radius-md);
+  box-shadow: 5px 5px 0 0 color-mix(in oklab, var(--color-text) 92%, transparent);
+}
+
+/* ============================================================
+ * Per-theme SKILLS BACKDROP (.skills-section)
+ * Thor: Yggdrasil tree silhouette + golden constellation glow
+ * Luffy: Grand Line ocean tint + One-Piece logo watermark
+ * ============================================================ */
+
+.skills-section { position: relative; isolation: isolate; }
+
+/* Thor — Yggdrasil tree */
+[data-theme="thor"] .skills-section::before {
+  content: "";
+  position: absolute;
+  inset: -2rem 0 -2rem 0;
+  z-index: 0;
+  background-image: url("/assets/Marvel/skills/YGGDRASIL-transparent.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.12;
+  pointer-events: none;
+  filter: drop-shadow(0 0 40px var(--color-accent));
+  animation: yggdrasil-glow 8s var(--ease-soft) infinite;
+}
+@keyframes yggdrasil-glow {
+  0%, 100% { opacity: 0.10; }
+  50%      { opacity: 0.18; }
+}
+[data-theme="thor"] .skills-section::after {
+  /* Drifting constellation dots layered above the tree, behind the cards */
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    radial-gradient(circle at 12% 18%, var(--color-accent) 1px, transparent 2px),
+    radial-gradient(circle at 28% 60%, var(--color-accent) 1px, transparent 2px),
+    radial-gradient(circle at 50%  8%, var(--color-accent) 1px, transparent 2px),
+    radial-gradient(circle at 70% 40%, var(--color-accent) 1px, transparent 2px),
+    radial-gradient(circle at 88% 72%, var(--color-accent) 1px, transparent 2px),
+    radial-gradient(circle at 62% 92%, var(--color-accent) 1px, transparent 2px),
+    radial-gradient(circle at 38% 30%, var(--color-accent) 1px, transparent 2px);
+  opacity: 0.5;
+  pointer-events: none;
+  animation: constellation-drift 12s var(--ease-soft) infinite alternate;
+}
+@keyframes constellation-drift {
+  0%   { transform: translate(0, 0); opacity: 0.35; }
+  100% { transform: translate(8px, -4px); opacity: 0.6; }
+}
+
+/* Luffy — Grand Line ocean + One-Piece logo watermark */
+[data-theme="luffy"] .skills-section::before {
+  content: "";
+  position: absolute;
+  inset: -2rem 0 -2rem 0;
+  z-index: 0;
+  background:
+    /* Hand-drawn ocean wave dotted lines */
+    repeating-radial-gradient(
+      circle at 50% 100%,
+      color-mix(in oklab, var(--color-accent) 8%, transparent) 0,
+      color-mix(in oklab, var(--color-accent) 8%, transparent) 1px,
+      transparent 2px,
+      transparent 40px
+    ),
+    /* Grand Line "log pose" radial */
+    radial-gradient(
+      circle at 50% 50%,
+      color-mix(in oklab, var(--color-accent) 8%, transparent),
+      transparent 60%
+    );
+  pointer-events: none;
+  animation: grandline-pulse 6s var(--ease-soft) infinite;
+}
+@keyframes grandline-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1; }
+}
+[data-theme="luffy"] .skills-section::after {
+  /* One-Piece logo watermark in the corner */
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: clamp(120px, 18vw, 220px);
+  height: clamp(60px, 9vw, 110px);
+  z-index: 0;
+  background-image: url("/assets/One-Piece/One-Piece-Logo-1416.webp");
+  background-repeat: no-repeat;
+  background-position: top right;
+  background-size: contain;
+  opacity: 0.18;
+  pointer-events: none;
+  transform: rotate(-3deg);
+}
+
+/* Per-theme skill cards (subtle decoration over the existing GlassCard) */
+[data-theme="thor"] .skill-card {
+  background: color-mix(in oklab, var(--color-bg-elevated) 90%, transparent);
+  border-color: color-mix(in oklab, var(--color-accent) 30%, transparent);
+  position: relative;
+}
+[data-theme="thor"] .skill-card::before {
+  /* Small "realm star" glyph in the top-right of each card */
+  content: "★";
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--color-accent);
+  opacity: 0.7;
+  text-shadow: 0 0 8px var(--color-accent);
+  animation: realm-twinkle 3s var(--ease-soft) infinite;
+}
+@keyframes realm-twinkle {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 1; }
+}
+[data-theme="luffy"] .skill-card {
+  background: color-mix(in oklab, var(--color-bg-elevated) 92%, transparent);
+  border: 3px solid color-mix(in oklab, var(--color-text) 88%, transparent);
+  border-radius: var(--radius-md);
+  box-shadow: 4px 4px 0 0 color-mix(in oklab, var(--color-text) 92%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* ============================================================
+ * Per-theme PROJECT CARDS (.project-card)
+ * Luffy: wanted-poster style (parchment + thick manga border + WANTED banner)
+ * Thor:  MCU dossier style (navy + gold ridge + ASGARDIAN ARCHIVE header)
+ * High-Tech: untouched — inherits the default .glass surface
+ * ============================================================ */
+
+/* ----- LUFFY: wanted-poster card ----- */
+[data-theme="luffy"] .project-card {
+  background: var(--color-bg-elevated);
+  border: 3px solid color-mix(in oklab, var(--color-text) 88%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: var(--radius-md);
+  /* Stamped manga ink offset shadow */
+  box-shadow:
+    6px 6px 0 0 color-mix(in oklab, var(--color-text) 92%, transparent),
+    inset 0 0 0 1px color-mix(in oklab, var(--color-text) 30%, transparent);
+  /* Aged paper noise via tiny repeating dots */
+  background-image:
+    radial-gradient(
+      circle at 10% 20%,
+      color-mix(in oklab, var(--color-text) 4%, transparent) 1px,
+      transparent 2px
+    ),
+    radial-gradient(
+      circle at 70% 80%,
+      color-mix(in oklab, var(--color-text) 3%, transparent) 1px,
+      transparent 2px
+    );
+  background-size: 24px 24px, 31px 31px;
+  position: relative;
+  isolation: isolate;
+  padding-top: 3.25rem !important; /* room for the WANTED bar */
+  transition: transform var(--duration-snap) var(--ease-snap),
+              box-shadow var(--duration-snap) var(--ease-snap);
+}
+[data-theme="luffy"] .project-card::before {
+  content: "WANTED";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: block;
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  font-family: var(--font-luffy, "Bangers"), "Comic Sans MS", cursive;
+  font-size: 1.5rem;
+  letter-spacing: 0.18em;
+  text-align: center;
+  padding: 0.35rem 0;
+  border-bottom: 3px solid color-mix(in oklab, var(--color-text) 88%, transparent);
+  text-shadow: 2px 2px 0 color-mix(in oklab, var(--color-text) 50%, transparent);
+}
+[data-theme="luffy"] .project-card:hover {
+  transform: translate(-2px, -3px) rotate(-0.3deg);
+  box-shadow:
+    8px 8px 0 0 color-mix(in oklab, var(--color-text) 95%, transparent),
+    inset 0 0 0 1px color-mix(in oklab, var(--color-text) 30%, transparent);
+}
+[data-theme="luffy"] .project-card h3 {
+  font-family: var(--font-luffy, "Bangers"), "Comic Sans MS", cursive;
+  letter-spacing: 0.02em;
+}
+
+/* ----- THOR: MCU dossier card ----- */
+[data-theme="thor"] .project-card {
+  background: linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--color-bg-elevated) 100%, transparent) 0%,
+      color-mix(in oklab, var(--color-bg) 100%, transparent) 100%
+    );
+  border: 1px solid color-mix(in oklab, var(--color-accent) 35%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: var(--radius-md);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--color-accent) 18%, transparent),
+    inset 0 -1px 0 color-mix(in oklab, var(--color-accent) 18%, transparent),
+    0 24px 64px -16px rgba(0, 0, 0, 0.55);
+  position: relative;
+  isolation: isolate;
+  padding-top: 2.75rem !important;
+  transition: transform var(--duration-snap) var(--ease-snap),
+              border-color var(--duration-snap) var(--ease-snap),
+              box-shadow var(--duration-snap) var(--ease-snap);
+}
+[data-theme="thor"] .project-card::before {
+  content: "// ASGARDIAN ARCHIVE  ·  CLASSIFIED";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: block;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--color-accent) 18%, transparent),
+    color-mix(in oklab, var(--color-accent) 6%, transparent) 60%,
+    transparent
+  );
+  color: var(--color-accent);
+  font-family: var(--font-thor, "Bebas Neue"), Impact, sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  padding: 0.55rem 1.1rem;
+  border-bottom: 1px solid color-mix(in oklab, var(--color-accent) 35%, transparent);
+}
+[data-theme="thor"] .project-card::after {
+  /* Gold runic line near the bottom edge */
+  content: "";
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 0.75rem;
+  height: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--color-accent) 0 8px,
+    transparent 8px 14px
+  );
+  opacity: 0.5;
+  pointer-events: none;
+}
+[data-theme="thor"] .project-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--color-accent) 60%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--color-accent) 28%, transparent),
+    inset 0 -1px 0 color-mix(in oklab, var(--color-accent) 28%, transparent),
+    0 0 32px -4px color-mix(in oklab, var(--color-accent) 35%, transparent),
+    0 24px 64px -16px rgba(0, 0, 0, 0.6);
+}
+[data-theme="thor"] .project-card h3 {
+  font-family: var(--font-thor, "Bebas Neue"), Impact, sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Semantic helpers (small, used everywhere) */
+.bg-canvas { background-color: var(--color-bg); }
+.bg-surface { background-color: var(--color-bg-elevated); }
+.text-fg { color: var(--color-text); }
+.text-muted { color: var(--color-text-muted); }
+.text-accent { color: var(--color-accent); }
+.border-line { border: 1px solid var(--color-border); }
+
+/* Subtle scrollbar tuned to the theme */
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--color-text) 22%, transparent);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklab, var(--color-text) 36%, transparent);
+  background-clip: padding-box;
+  border: 3px solid transparent;
+}
+
+/* Focus ring (used on raw elements; components use focus-visible:ring-* utilities) */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* RTL bridge — most layout is already logical-property based; this catches a few decorative spots */
+[dir="rtl"] .flip-rtl { transform: scaleX(-1); }
+
+/* Hide scrollbar but keep horizontal scrolling — used by mobile Header nav
+   when 5 nav items + HE labels exceed the iPhone-SE viewport width. */
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Thor + LIGHT mode — drop the dark skill-card backdrop entirely so the
+   card reads cleanly on the bright theme (per user request). Inline style
+   on .skill-card-overlay sets the dark rgba + blur; these overrides win
+   via specificity (`[data-theme][data-scheme]` is 2-attr selector + class).
+   Click-through is preserved because the overlay still receives the click
+   that calls onClose — only the visual backdrop is removed. */
+[data-theme="thor"][data-scheme="light"] .skill-card-overlay {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+/* Auto-scheme case: when no `data-scheme` is set, the active appearance
+   follows the OS. If the OS is light, the same override applies. */
+@media (prefers-color-scheme: light) {
+  [data-theme="thor"]:not([data-scheme]) .skill-card-overlay {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* Grand Line current-arc marker pulse (Elbaph) */
+@keyframes grandline-current-pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50%      { transform: translate(-50%, -50%) scale(1.06); }
+}
+.grandline-current-pulse {
+  animation: grandline-current-pulse 2.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .grandline-current-pulse { animation: none; }
+}
+
+/* Thor — "engaged" ambient electric pulse at the top of the viewport */
+@keyframes storm-engaged-pulse {
+  0%, 100% { opacity: 0.45; }
+  50%      { opacity: 0.85; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [style*="storm-engaged-pulse"] { animation: none !important; }
+}
+
+/* Chatbot thinking dots */
+@keyframes chat-thinking {
+  0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
+  40%           { opacity: 1;    transform: translateY(-2px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [style*="chat-thinking"] { animation: none !important; opacity: 0.5 !important; }
+}
+
+/* Luffy theme ambient rain — drops fall from top to bottom of viewport */
+@keyframes luffy-rain-fall {
+  0%   { transform: translateY(0)     rotate(-8deg);  opacity: 0; }
+  10%  { opacity: 0.2; }
+  90%  { opacity: 0.2; }
+  100% { transform: translateY(110vh) rotate(12deg); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .luffy-rain-drop {
+    animation: none !important;
+    opacity: 0.08 !important;
+  }
+}
+
+/* Easter-egg effect: Bifrost flash on M-J-O-L combo */
+@keyframes easter-thor-flash {
+  0%   { opacity: 0; }
+  20%  { opacity: 0.45; }
+  100% { opacity: 0; }
+}
+.easter-thor-flash {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 30%, color-mix(in oklab, var(--color-accent) 70%, transparent), transparent 70%),
+    linear-gradient(180deg, color-mix(in oklab, var(--color-accent) 40%, transparent), transparent 60%);
+  animation: easter-thor-flash 1.4s var(--ease-soft) forwards;
+}
+
+/* Easter-egg effect: straw-hat flag rain on L-U-F-F-Y combo */
+@keyframes easter-luffy-drop {
+  0%   { transform: translateY(0)     rotate(-12deg); opacity: 0; }
+  10%  { opacity: 1; }
+  100% { transform: translateY(110vh) rotate(20deg);  opacity: 0; }
+}
+.easter-luffy-drop {
+  animation: easter-luffy-drop 1.3s var(--ease-soft) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .easter-thor-flash,
+  .easter-luffy-drop {
+    animation: none !important;
+    opacity: 0.2 !important;
+  }
+}
+
+/* Visually hidden helper for sr-only-style content (Tailwind has this too but keep explicit) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

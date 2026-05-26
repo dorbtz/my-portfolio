@@ -1,78 +1,26 @@
+/**
+ * Project status — matches the public.projects.status CHECK constraint
+ * in Supabase (draft | in-progress | shipped | archived).
+ */
 export type ProjectStatus = "draft" | "in-progress" | "shipped" | "archived";
 
-/**
- * Which dual-mode universe a project belongs to.
- *
- * - `"thor"`  → only visible in Thor (Asgard / Marvel) mode.
- * - `"gear5"` → only visible in Luffy (Gear 5 / One Piece) mode.
- * - `null`    → mode-neutral; visible in BOTH modes.
- *
- * This is the bulletproof / explicit signal. When present on a Supabase row it
- * overrides the keyword-based heuristic in `getProjectMode`. Admins should set
- * it explicitly via the admin UI for every new row to prevent leakage.
- */
-export type ProjectMode = "thor" | "gear5";
-
-export interface ProjectMetric {
-  label: string;
-  value: string;
-}
-
-export interface ProjectLink {
-  label: string;
-  url: string;
-  icon?: string | null;
-}
-
-export interface Project {
-  id?: string;
+export type Project = {
   slug: string;
   title: string;
-  subtitle?: string;
-  summary: string;
-  description: string;
-  tags: string[];
+  /** Short hook shown on cards + above the detail hero. DB column: subtitle. */
+  tagline: string;
+  /** "The problem" blurb shown on the detail page. DB column: problem. */
+  problem: string;
+  role: string;
+  /** Long-form writeup shown on the detail page. DB column: description. */
+  writeup: string;
   stack: string[];
-  tech: string[];
-  role?: string;
+  tags: string[];
+  coverUrl: string | null;
+  liveUrl: string | null;
+  repoUrl: string | null;
   status: ProjectStatus;
-  /**
-   * Explicit dual-mode classification. When set, this overrides the
-   * keyword-based heuristic so the project is guaranteed to render only in the
-   * matching mode (or both modes, if `null`). Optional for backwards-compat
-   * with rows / fixtures predating the column — falls back to keyword scan.
-   */
-  mode?: ProjectMode | null;
-  priority: number;
-  sortOrder?: number;
   featured: boolean;
-  liveUrl?: string;
-  repoUrl?: string;
-  coverUrl?: string;
-  heroImageAlt?: string;
-  heroVideoUrl?: string;
-  gallery?: string[];
-  links?: ProjectLink[];
-  metrics?: ProjectMetric[];
-  responsibilities?: string[];
-  outcomes?: string[];
-  createdAt: string;
-  updatedAt?: string;
-  owner?: string | null;
-  ownerUsername?: string | null;
-  ownerDisplayName?: string | null;
-  /** Round 34 — owner profile fields read from public.profiles. */
-  ownerEmail?: string | null;
-  ownerAvatarUrl?: string | null;
-  ownerShowName?: boolean;
-  ownerShowUsername?: boolean;
-  ownerShowEmail?: boolean;
-  ownerShowAvatar?: boolean;
-  /**
-   * `true` when this row is one of the bundled fictional fixtures
-   * (`THOR_FIXTURES` / `GEAR5_FIXTURES`).  Real Supabase rows leave this
-   * undefined.  Drives the admin "Include placeholder examples" toggle
-   * and the "PLACEHOLDER" badge on cards.  See Round 75.
-   */
-  placeholder?: boolean;
-}
+  priority: number;
+  sortOrder: number;
+};

@@ -1,0 +1,84 @@
+/**
+ * Luffy theme — pirate wanted-poster.
+ * Light: cream parchment + Wanted red accent.
+ * Dark:  deep treasure brown + Sunny yellow accent.
+ *
+ * Design surface (v2 expansion):
+ *   - Display font: Bangers (comic / wanted-poster)
+ *   - Hero background: parchment hatch lines + radial sun glow
+ *   - Straw-hat watermark in the hero (low opacity)
+ *   - Primary button has a stamped offset shadow (manga ink)
+ */
+
+[data-theme="luffy"],
+[data-theme="luffy"][data-scheme="light"] {
+  --color-bg: #fffbe8;
+  --color-bg-elevated: #ffffff;
+  --color-text: #1a0f08;
+  --color-text-muted: #6b4a30;
+  --color-accent: #d90429;
+  --color-accent-contrast: #ffffff;
+  --color-border: rgba(26, 15, 8, 0.16);
+
+  --glass-bg: rgba(255, 251, 232, 0.72);
+  --glass-border: rgba(26, 15, 8, 0.18);
+  --glass-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 24px 64px -16px rgba(26, 15, 8, 0.28);
+  --glass-vibrancy: rgba(217, 4, 41, 0.1);
+
+  /* Display font + heading style — comic-book wanted-poster vibe */
+  --font-display: var(--font-luffy, "Bangers"), "Comic Sans MS", cursive;
+  --heading-letter-spacing: 0.01em;
+  --heading-text-transform: none;
+  --hero-watermark: url("/assets/One-Piece/nika-symbol.png");
+  --hero-watermark-tint: rgba(217, 4, 41, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="luffy"]:not([data-scheme="light"]) {
+    --color-bg: #1a0f08;
+    --color-bg-elevated: #2a1a0e;
+    --color-text: #fffbe8;
+    --color-text-muted: #d4b896;
+    --color-accent: #ffc60b;
+    --color-accent-contrast: #1a0f08;
+    --color-border: rgba(255, 251, 232, 0.1);
+
+    --glass-bg: rgba(42, 26, 14, 0.65);
+    --glass-border: rgba(255, 198, 11, 0.22);
+    --glass-shadow:
+      inset 0 1px 0 rgba(255, 198, 11, 0.14),
+      0 24px 64px -16px rgba(0, 0, 0, 0.75);
+    --glass-vibrancy: rgba(255, 198, 11, 0.12);
+
+    --font-display: var(--font-luffy, "Bangers"), "Comic Sans MS", cursive;
+    --heading-letter-spacing: 0.01em;
+    --heading-text-transform: none;
+    --hero-watermark: url("/assets/One-Piece/nika-symbol.png");
+    --hero-watermark-tint: rgba(255, 198, 11, 0.55);
+  }
+}
+
+[data-theme="luffy"][data-scheme="dark"] {
+  --color-bg: #1a0f08;
+  --color-bg-elevated: #2a1a0e;
+  --color-text: #fffbe8;
+  --color-text-muted: #d4b896;
+  --color-accent: #ffc60b;
+  --color-accent-contrast: #1a0f08;
+  --color-border: rgba(255, 251, 232, 0.1);
+
+  --glass-bg: rgba(42, 26, 14, 0.65);
+  --glass-border: rgba(255, 198, 11, 0.22);
+  --glass-shadow:
+    inset 0 1px 0 rgba(255, 198, 11, 0.14),
+    0 24px 64px -16px rgba(0, 0, 0, 0.75);
+  --glass-vibrancy: rgba(255, 198, 11, 0.12);
+
+  --font-display: var(--font-luffy, "Bangers"), "Comic Sans MS", cursive;
+  --heading-letter-spacing: 0.01em;
+  --heading-text-transform: none;
+  --hero-watermark: url("/assets/One-Piece/nika-symbol.png");
+  --hero-watermark-tint: rgba(255, 198, 11, 0.55);
+}

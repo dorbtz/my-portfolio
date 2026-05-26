@@ -1,163 +1,196 @@
 /**
- * src/lib/audio.ts
- * Howler-based lazy audio layer.
+ * Tiny audio utility — no Howler / no extra deps. Uses the native
+ * HTMLAudioElement, with three guarantees that keep autoplay-blocking
+ * browsers + accessibility quiet:
  *
- * API: playSfx(name, opts?), stopSfx(name), setAudioMuted(bool)
+ *   1. Audio elements are created lazily, the FIRST time a sound is asked
+ *      for (so the page does no audio work when ambient theming is silent).
+ *   2. Play is gated on the first real user gesture (pointerdown / keydown /
+ *      touchstart). Calls before that gesture are NO-OPS — never queued.
+ *   3. TWO INDEPENDENT mute flags persisted to localStorage:
  *
- * Howler is **dynamically imported** on the first user gesture. Importing
- * `howler` synchronously at module level instantiates an AudioContext probe
- * that the browser blocks before any user interaction, producing repeated
- * "AudioContext was not allowed to start" warnings on page load.
+ *        pf-sound       → ambient theme music (drums-of-liberation, thunder)
+ *        pf-sound-webm  → contact-card WEBM audio (Heimdall sword,
+ *                          Den-Den snail ring)
  *
- * By deferring the import to a `pointerdown` / `keydown` / `touchstart`
- * handler, the AudioContext is created INSIDE the gesture and the browser
- * permits it cleanly — no warnings.
+ *      Both default to MUTED on first visit so nothing plays unexpectedly.
+ *      Two floating pills (Music + Voice) flip them independently — the
+ *      user can have the ambient music off but the WEBM ringing, or vice
+ *      versa, or both off, or both on.
+ *
+ * Public API: playSfx, startLoop, stopLoop, setMuted, isMuted, onMuteChange,
+ * setMutedWebm, isMutedWebm, onWebmMuteChange, isReady, stopAll.
+ * Use it from "use client" components only.
  */
 
-import { useModeStore } from '../stores/mode';
+export type SfxName = "thunder" | "drums";
 
-export type SfxName =
-  | 'thunder.short'
-  | 'hammer.ring'
-  | 'bifrost.hum'
-  | 'drums.liberation';
-
-const FILE_MAP: Record<SfxName, string> = {
-  'thunder.short': '/sounds/thunder-1.mp3',
-  'hammer.ring': '/sounds/hammer-ring.mp3',
-  'bifrost.hum': '/sounds/bifrost-hum.mp3',
-  'drums.liberation': '/sounds/drums_of_liberation.mp3',
+const FILES: Record<SfxName, string> = {
+  thunder: "/sounds/thunder-1.mp3",
+  drums: "/sounds/drums_of_liberation.mp3",
 };
 
-const KNOWN_FILES: ReadonlySet<SfxName> = new Set<SfxName>([
-  'thunder.short',
-  'drums.liberation',
-]);
+const VOLUMES: Record<SfxName, number> = {
+  thunder: 0.35,
+  drums: 0.28,
+};
 
-const HTML5_FILES: ReadonlySet<SfxName> = new Set<SfxName>([
-  'drums.liberation',
-]);
+const LOOPS: Record<SfxName, boolean> = {
+  thunder: false,
+  drums: true,
+};
 
-const LOOP_NAMES: ReadonlySet<SfxName> = new Set<SfxName>([
-  'drums.liberation',
-]);
+const STORAGE_KEY_MUSIC = "pf-sound"; // ambient theme music: "on" | "off"
+const STORAGE_KEY_WEBM = "pf-sound-webm"; // WEBM contact audio: "on" | "off"
 
-// ---------------------------------------------------------------------------
-// Lazy Howler import — promise resolves to the loaded module's { Howl, Howler }
-// after the FIRST user gesture. Until then it stays null and `playSfx` is a
-// silent no-op.
-// ---------------------------------------------------------------------------
-type HowlerModule = typeof import('howler');
-let howlerModulePromise: Promise<HowlerModule> | null = null;
-
-// Loose-typed cache of Howl instances keyed by sound name.
-const cache = new Map<SfxName, unknown>();
-const failedNames = new Set<SfxName>();
-
-function loadHowler(): Promise<HowlerModule> {
-  if (!howlerModulePromise) {
-    howlerModulePromise = import('howler').then((mod) => {
-      // Disable Howler's automatic unlock probing — the dynamic import
-      // already happens inside a user gesture, so the AudioContext is
-      // allowed to start cleanly. autoUnlock=true would re-trigger probes
-      // outside the gesture window and re-introduce the warnings.
-      mod.Howler.autoUnlock = false;
-      // Bump pool just in case any HTML5 streamer re-triggers rapidly.
-      mod.Howler.html5PoolSize = 30;
-      return mod;
-    });
-  }
-  return howlerModulePromise;
-}
-
-async function buildHowl(name: SfxName): Promise<unknown> {
-  const { Howl } = await loadHowler();
-  const src = FILE_MAP[name];
-  const isKnown = KNOWN_FILES.has(name);
-  const shouldLoop = LOOP_NAMES.has(name);
-  const useHtml5 = HTML5_FILES.has(name);
-  return new Howl({
-    src: [src],
-    preload: isKnown,
-    html5: useHtml5,
-    loop: shouldLoop,
-    volume: 0.45,
-    onloaderror: (_id, err) => {
-      console.warn(`[audio] missing file: ${src}`, err);
-      failedNames.add(name);
-      cache.set(name, null);
-    },
-  });
-}
-
-async function getHowl(name: SfxName): Promise<unknown | null> {
-  if (failedNames.has(name)) return null;
-  if (cache.has(name)) return cache.get(name) ?? null;
-  const howl = await buildHowl(name);
-  cache.set(name, howl);
-  return howl;
-}
-
-// ---------------------------------------------------------------------------
-// Module-init: arm a one-shot listener so Howler loads on first user gesture
-// and known SFX are warmed up. Doing this inside the gesture handler is what
-// keeps the AudioContext quiet on page load.
-// ---------------------------------------------------------------------------
+let cache: Partial<Record<SfxName, HTMLAudioElement>> = {};
 let gestureFired = false;
+let muted = readInitialMuted(STORAGE_KEY_MUSIC);
+let webmMuted = readInitialMuted(STORAGE_KEY_WEBM);
+const muteListeners = new Set<(muted: boolean) => void>();
+const webmMuteListeners = new Set<(muted: boolean) => void>();
 
-if (typeof window !== 'undefined') {
-  const fireWarmOnce = () => {
+function readInitialMuted(key: string): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    const stored = window.localStorage.getItem(key);
+    if (stored === "on") return false;
+    if (stored === "off") return true;
+  } catch {
+    /* ignore */
+  }
+  return true; // default: muted (autoplay-safe)
+}
+
+function persistMuted(key: string, next: boolean) {
+  try {
+    window.localStorage.setItem(key, next ? "off" : "on");
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Register a one-shot listener for the first user gesture. */
+if (typeof window !== "undefined") {
+  const arm = () => {
     if (gestureFired) return;
     gestureFired = true;
-    loadHowler()
-      .then(() => Promise.all(Array.from(KNOWN_FILES).map((n) => getHowl(n))))
-      .catch(() => { /* ignore — failed sounds are tracked individually */ });
-    window.removeEventListener('pointerdown', fireWarmOnce);
-    window.removeEventListener('keydown', fireWarmOnce);
-    window.removeEventListener('touchstart', fireWarmOnce);
+    window.removeEventListener("pointerdown", arm);
+    window.removeEventListener("keydown", arm);
+    window.removeEventListener("touchstart", arm);
   };
-  window.addEventListener('pointerdown', fireWarmOnce, { once: true, passive: true });
-  window.addEventListener('keydown', fireWarmOnce, { once: true });
-  window.addEventListener('touchstart', fireWarmOnce, { once: true, passive: true });
+  window.addEventListener("pointerdown", arm, { once: true, passive: true });
+  window.addEventListener("keydown", arm, { once: true });
+  window.addEventListener("touchstart", arm, { once: true, passive: true });
 }
 
-export type SfxOptions = {
-  volume?: number;
-};
+function getEl(name: SfxName): HTMLAudioElement | null {
+  if (typeof window === "undefined") return null;
+  let el = cache[name];
+  if (!el) {
+    el = new Audio(FILES[name]);
+    el.preload = "auto";
+    el.volume = VOLUMES[name];
+    el.loop = LOOPS[name];
+    cache[name] = el;
+  }
+  return el;
+}
 
-// ---------------------------------------------------------------------------
-// Public API — fire-and-forget. `playSfx` is async-internally but exposes a
-// sync signature so existing call sites don't need to await.
-// ---------------------------------------------------------------------------
+export function isReady(): boolean {
+  return gestureFired;
+}
 
-export function playSfx(name: SfxName, opts: SfxOptions = {}): void {
-  if (typeof window === 'undefined') return;
-  if (!useModeStore.getState().soundOn) return;
-  if (!gestureFired) return; // silent no-op until first user gesture
+export function isMuted(): boolean {
+  return muted;
+}
 
-  void (async () => {
-    const howl = (await getHowl(name)) as
-      | { play(): number; volume(v: number): unknown; playing(): boolean }
-      | null;
-    if (!howl) return;
-    if (opts.volume !== undefined) howl.volume(opts.volume);
-    if (LOOP_NAMES.has(name) && howl.playing()) return;
-    try {
-      howl.play();
-    } catch (err) {
-      console.warn(`[audio] play() failed for ${name}:`, err);
+export function onMuteChange(fn: (muted: boolean) => void): () => void {
+  muteListeners.add(fn);
+  return () => muteListeners.delete(fn);
+}
+
+export function setMuted(next: boolean): void {
+  if (muted === next) return;
+  muted = next;
+  persistMuted(STORAGE_KEY_MUSIC, next);
+  muteListeners.forEach((fn) => fn(next));
+  // Pause everything when muting — keep elements cached so unmute is instant.
+  if (next) {
+    for (const el of Object.values(cache)) {
+      try {
+        el?.pause();
+      } catch {
+        /* ignore */
+      }
     }
-  })();
+  }
 }
 
-export function stopSfx(name: SfxName): void {
-  const howl = cache.get(name) as { stop(): unknown } | null | undefined;
-  if (howl) howl.stop();
+/** WEBM voice (contact-card video audio) — INDEPENDENT from the music
+ *  channel.  HeimdallMedia + DenDenLuffyMedia subscribe via
+ *  onWebmMuteChange and flip their `<video muted>` accordingly. */
+export function isMutedWebm(): boolean {
+  return webmMuted;
 }
 
-export function setAudioMuted(muted: boolean): void {
-  if (typeof window === 'undefined') return;
-  // Lazy-load Howler on first mute call (rare path — only fires after
-  // gesture-triggered warm load). Safe to swallow the promise.
-  void loadHowler().then((mod) => mod.Howler.mute(muted));
+export function onWebmMuteChange(fn: (muted: boolean) => void): () => void {
+  webmMuteListeners.add(fn);
+  return () => webmMuteListeners.delete(fn);
+}
+
+export function setMutedWebm(next: boolean): void {
+  if (webmMuted === next) return;
+  webmMuted = next;
+  persistMuted(STORAGE_KEY_WEBM, next);
+  webmMuteListeners.forEach((fn) => fn(next));
+}
+
+export function playSfx(name: SfxName): void {
+  if (typeof window === "undefined") return;
+  if (muted || !gestureFired) return;
+  const el = getEl(name);
+  if (!el) return;
+  try {
+    el.currentTime = 0;
+    void el.play();
+  } catch {
+    /* ignore */
+  }
+}
+
+export function startLoop(name: SfxName): void {
+  if (typeof window === "undefined") return;
+  if (muted || !gestureFired) return;
+  const el = getEl(name);
+  if (!el) return;
+  if (!el.paused) return;
+  try {
+    void el.play();
+  } catch {
+    /* ignore */
+  }
+}
+
+export function stopLoop(name: SfxName): void {
+  const el = cache[name];
+  if (!el) return;
+  try {
+    el.pause();
+    el.currentTime = 0;
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Stop everything currently playing. Used on theme switch. */
+export function stopAll(): void {
+  for (const el of Object.values(cache)) {
+    try {
+      el?.pause();
+      if (el) el.currentTime = 0;
+    } catch {
+      /* ignore */
+    }
+  }
 }
