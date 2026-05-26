@@ -454,18 +454,24 @@ Each placeholder ships with: empty cover (auto-generated gradient), "Coming soon
 
 ## 9. AI architecture
 
-### Provider routing — Vercel AI Gateway
-Primary: `anthropic/claude-opus-4-7` (chat, complex reasoning, code review).
-Fallback (on Anthropic outage): `openai/gpt-4o`.
-Cheap classifier: `openai/gpt-4o-mini` (contact classify, language detect).
-Embeddings: `openai/text-embedding-3-small` (1536 dim).
-Image gen (playground): `openai/gpt-image-1`.
+### Provider — Google Gemini direct (free tier)
+- Chat / RAG / recommend / classify: `gemini-2.0-flash` (free, 1500 req/day, fast)
+- Embeddings: `text-embedding-004` (free, 768 dim)
+- Image gen (playground): deferred — Gemini doesn't expose generally-available
+  image generation on the free tier. M6 playground ships with text demos only;
+  image demo reserved for when paid tier or AI Gateway is enabled.
 
-Single env var: `AI_GATEWAY_API_KEY`. No per-provider SDK.
+Single env var: `GOOGLE_GENERATIVE_AI_API_KEY` (from https://aistudio.google.com/apikey).
+No credit card required. The AI SDK abstracts provider — swapping to Vercel AI
+Gateway (or Anthropic, OpenAI direct, etc.) is a one-line change in
+`src/shared/lib/ai/provider.ts`.
 
 ### Cost guardrails
-- **Hard spend cap** in Gateway dashboard: $20/day, $200/month.
-- **Per-IP rate limit** (Upstash-free or in-memory in dev):
+- **Free tier ceiling** (Gemini AI Studio): 1500 requests/day, 1M tokens/day.
+  Way more than a portfolio chatbot needs. Per-IP rate limits below stay
+  conservative so a single visitor can't burn the daily ceiling.
+- **Per-IP rate limit** (in-memory in dev; per-row in `message_rate_limit`
+  in prod with TTL via a cron):
   - `/api/ai/chat` — 20 messages / 1 hour
   - `/api/ai/recommend` — 30 / 1 hour
   - `/api/ai/playground/*` — 10 / 1 hour
@@ -475,10 +481,10 @@ Single env var: `AI_GATEWAY_API_KEY`. No per-provider SDK.
 
 ### RAG pipeline (chatbot)
 1. **Chunking** — projects: per-row JSON-stringified (small enough to fit in 1 chunk). site_content: per-row. case-studies: split MDX by H2 (target 400–800 token chunks).
-2. **Embedding** — `text-embedding-3-small`, batched 100 chunks per Gateway call.
-3. **Storage** — Supabase `embeddings` table, `cosine` ivfflat index (`lists=100`).
+2. **Embedding** — Gemini `text-embedding-004`, 768 dim, batched.
+3. **Storage** — Supabase `embeddings` table (now `vector(768)`), `cosine` ivfflat index (`lists=100`).
 4. **Retrieval** — top-5 by cosine similarity, with minimum threshold 0.55.
-5. **Generation** — `streamText` with retrieved chunks as system context. Cite source via `[1]` markers mapped to project slugs.
+5. **Generation** — `streamText` against `gemini-2.0-flash` with retrieved chunks as system context. Cite source via `[1]` markers mapped to project slugs.
 6. **Re-rank** — none in v1 (top-5 from a small corpus is fine). Add later if recall is poor.
 
 ### System prompt — RAG chatbot (verbatim)
@@ -626,7 +632,7 @@ WCAG 2.2 Level AA across every public route. Internal admin meets Level AA too.
 | `NEXT_PUBLIC_SUPABASE_URL` | Vercel + `.env.local` | Supabase project URL | yes |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Vercel + `.env.local` | Supabase anon key (client-safe) | yes |
 | `SUPABASE_SERVICE_ROLE_KEY` | Vercel only | Server-side admin writes (Server Actions) | yes |
-| `AI_GATEWAY_API_KEY` | Vercel + `.env.local` | Vercel AI Gateway unified key | yes |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Vercel + `.env.local` | Google AI Studio key (free tier). Backs Gemini chat + embeddings + translate | yes |
 | `RESEND_API_KEY` | Vercel only | Resend SMTP (Supabase auth + transactional) | yes |
 | `NEXT_PUBLIC_SITE_URL` | Vercel + `.env.local` | Canonical URL (e.g. `https://dorbtz.com`) | yes |
 | `VERCEL_API_TOKEN` | Vercel only | For /admin/health → Vercel deployment status | yes |

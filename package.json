@@ -21,8 +21,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ai-sdk/google": "^3.0.79",
+    "@ai-sdk/react": "^3.0.193",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.75.0",
+    "ai": "^6.0.191",
     "next": "^16.2.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"

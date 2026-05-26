@@ -4,6 +4,7 @@ import { readThemeState } from "@/shared/lib/theme/ssr";
 import { FloatingControls } from "@/shared/ui/FloatingControls";
 import { Header } from "@/features/chrome/Header";
 import { Footer } from "@/features/chrome/Footer";
+import { Chatbot } from "@/features/ai-chat/Chatbot";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://dorbtz.com"),
@@ -41,6 +42,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {children}
         <Footer />
         <FloatingControls initialTheme={theme} initialScheme={scheme} initialLocale={locale} />
+        <Chatbot />
       </body>
     </html>
   );
