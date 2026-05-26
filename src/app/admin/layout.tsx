@@ -78,7 +78,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     theme === "thor" ? item.thorIcon : theme === "luffy" ? item.luffyIcon : null;
 
   return (
-    <div className="min-h-dvh">
+    // dir="ltr" pins the entire admin shell (top bar, sidebar nav, cards)
+    // to LTR layout regardless of locale — admin chrome stays put even when
+    // the public site is in HE/RTL. Text inside still renders Hebrew
+    // correctly because short labels work fine inside an LTR container.
+    <div className="min-h-dvh" dir="ltr">
       <div className="max-w-[min(1200px,calc(100%-2rem))] mx-auto pt-6 pb-16">
         {/* Back-to-site bar — admin has no public Header, this gives a one-click
             exit. 3-column grid: back-link left, email center, empty right spacer

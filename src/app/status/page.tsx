@@ -3,6 +3,8 @@ import { createSupabaseServerClient, hasSupabaseEnv } from "@/shared/lib/supabas
 import { hasAIProvider } from "@/shared/lib/ai/provider";
 import { GlassCard } from "@/shared/ui/GlassCard";
 import { Section } from "@/shared/ui/Section";
+import { readThemeState } from "@/shared/lib/theme/ssr";
+import { localize } from "@/shared/lib/i18n/localize";
 
 export const metadata: Metadata = {
   title: "Status",
@@ -41,48 +43,76 @@ function StatusDot({ up }: { up: boolean }) {
   );
 }
 
+const EYEBROW = "Public";
+const TITLE = "Status";
+const BODY = "Live snapshot of the services this site depends on. Anyone can look — no login required.";
+const L_DB = "Database";
+const L_AI = "AI co-pilot";
+const L_CORPUS = "RAG corpus";
+const L_PROJECTS = "Live projects";
+const S_OPERATIONAL = "Operational";
+const S_UNREACHABLE = "Unreachable";
+const S_OFFLINE = "Offline";
+const H_DB = "Supabase Postgres + RLS";
+const H_AI = "Gemini 2.5 Flash · 768d embeddings";
+const H_CORPUS = "chunks indexed";
+const H_PROJECTS = "non-archived";
+
 export default async function StatusPage() {
-  const s = await getPublicStatus();
+  const [{ locale }, s] = await Promise.all([readThemeState(), getPublicStatus()]);
+  const t = await localize(locale, [
+    { en: EYEBROW, contentType: "status.eyebrow" },
+    { en: TITLE, contentType: "status.title" },
+    { en: BODY, contentType: "status.body" },
+    { en: L_DB, contentType: "status.label" },
+    { en: L_AI, contentType: "status.label" },
+    { en: L_CORPUS, contentType: "status.label" },
+    { en: L_PROJECTS, contentType: "status.label" },
+    { en: S_OPERATIONAL, contentType: "status.state" },
+    { en: S_UNREACHABLE, contentType: "status.state" },
+    { en: S_OFFLINE, contentType: "status.state" },
+    { en: H_DB, contentType: "status.hint" },
+    { en: H_AI, contentType: "status.hint" },
+    { en: H_CORPUS, contentType: "status.hint" },
+    { en: H_PROJECTS, contentType: "status.hint" },
+  ]);
 
   return (
     <main className="min-h-dvh">
       <Section padding={9} ariaLabel="Status">
-        <p className="text-caption uppercase tracking-[0.18em] text-accent">Public</p>
-        <h1 className="text-display font-bold tracking-tight mt-2">Status</h1>
-        <p className="text-body text-muted mt-2 max-w-2xl">
-          Live snapshot of the services this site depends on. Anyone can look —
-          no login required.
-        </p>
+        <p className="text-caption uppercase tracking-[0.18em] text-accent">{t(EYEBROW)}</p>
+        <h1 className="text-display font-bold tracking-tight mt-2">{t(TITLE)}</h1>
+        <p className="text-body text-muted mt-2 max-w-2xl">{t(BODY)}</p>
 
         <div className="grid gap-4 sm:grid-cols-2 mt-6 max-w-2xl">
           <GlassCard padding={5}>
-            <p className="text-caption uppercase tracking-wider text-muted">Database</p>
+            <p className="text-caption uppercase tracking-wider text-muted">{t(L_DB)}</p>
             <p className="text-h3 font-semibold mt-1">
               <StatusDot up={s.db === "up"} />
-              {s.db === "up" ? "Operational" : "Unreachable"}
+              {s.db === "up" ? t(S_OPERATIONAL) : t(S_UNREACHABLE)}
             </p>
-            <p className="text-caption text-muted mt-2">Supabase Postgres + RLS</p>
+            <p className="text-caption text-muted mt-2">{t(H_DB)}</p>
           </GlassCard>
 
           <GlassCard padding={5}>
-            <p className="text-caption uppercase tracking-wider text-muted">AI co-pilot</p>
+            <p className="text-caption uppercase tracking-wider text-muted">{t(L_AI)}</p>
             <p className="text-h3 font-semibold mt-1">
               <StatusDot up={s.ai} />
-              {s.ai ? "Operational" : "Offline"}
+              {s.ai ? t(S_OPERATIONAL) : t(S_OFFLINE)}
             </p>
-            <p className="text-caption text-muted mt-2">Gemini 2.5 Flash · 768d embeddings</p>
+            <p className="text-caption text-muted mt-2">{t(H_AI)}</p>
           </GlassCard>
 
           <GlassCard padding={5}>
-            <p className="text-caption uppercase tracking-wider text-muted">RAG corpus</p>
+            <p className="text-caption uppercase tracking-wider text-muted">{t(L_CORPUS)}</p>
             <p className="text-display font-bold leading-none mt-1">{s.embeddings}</p>
-            <p className="text-caption text-muted mt-2">chunks indexed</p>
+            <p className="text-caption text-muted mt-2">{t(H_CORPUS)}</p>
           </GlassCard>
 
           <GlassCard padding={5}>
-            <p className="text-caption uppercase tracking-wider text-muted">Live projects</p>
+            <p className="text-caption uppercase tracking-wider text-muted">{t(L_PROJECTS)}</p>
             <p className="text-display font-bold leading-none mt-1">{s.projects}</p>
-            <p className="text-caption text-muted mt-2">non-archived</p>
+            <p className="text-caption text-muted mt-2">{t(H_PROJECTS)}</p>
           </GlassCard>
         </div>
       </Section>

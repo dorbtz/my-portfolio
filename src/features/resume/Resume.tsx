@@ -8,43 +8,80 @@ import {
   PROFILE,
   SKILL_GROUPS,
 } from "@/shared/data/profile";
+import {
+  EDUCATION_HE,
+  EMPLOYMENT_HE,
+  MILITARY_HE,
+  PROFILE_HE,
+  RESUME_LABELS_EN,
+  RESUME_LABELS_HE,
+  SKILL_GROUPS_HE,
+} from "@/shared/data/profile.he";
+import { readThemeState } from "@/shared/lib/theme/ssr";
 
-export function Resume() {
+export async function Resume() {
+  const { locale } = await readThemeState();
+  const isHe = locale === "he";
+  const profile = isHe ? PROFILE_HE : PROFILE;
+  const education = isHe ? EDUCATION_HE : EDUCATION;
+  const employment = isHe ? EMPLOYMENT_HE : EMPLOYMENT;
+  const military = isHe ? MILITARY_HE : MILITARY;
+  const skills = isHe ? SKILL_GROUPS_HE : SKILL_GROUPS;
+  const t = isHe ? RESUME_LABELS_HE : RESUME_LABELS_EN;
+  const currentPdf = isHe ? "/cv/dor-ben-tzur-he.pdf" : "/cv/dor-ben-tzur-en.pdf";
+  const otherPdf = isHe ? "/cv/dor-ben-tzur-en.pdf" : "/cv/dor-ben-tzur-he.pdf";
+
   return (
     <Section padding={9} ariaLabel="Resume">
       <AppleSpring kind="fade-up" trigger="mount">
-        <p className="text-caption uppercase tracking-[0.18em] text-accent">Resume / CV</p>
-        <h1 className="text-display font-bold tracking-tight mt-2">{PROFILE.name}</h1>
-        <p className="text-h2 text-muted mt-2">{PROFILE.headline}</p>
+        <p className="text-caption uppercase tracking-[0.18em] text-accent">{t.eyebrow}</p>
+        <h1 className="text-display font-bold tracking-tight mt-2">{profile.name}</h1>
+        <p className="text-h2 text-muted mt-2">{profile.headline}</p>
         <div className="text-body-sm text-muted mt-2 flex flex-wrap gap-x-4 gap-y-1">
-          <a href={`mailto:${PROFILE.email}`} className="hover:text-accent">
-            {PROFILE.email}
+          <a href={`mailto:${profile.email}`} className="hover:text-accent">
+            {profile.email}
           </a>
           <span>·</span>
-          <span>{PROFILE.location}</span>
+          <span>{profile.location}</span>
           <span>·</span>
-          <a href={PROFILE.linkedin} target="_blank" rel="noreferrer noopener" className="hover:text-accent">
+          <a href={profile.linkedin} target="_blank" rel="noreferrer noopener" className="hover:text-accent">
             LinkedIn
           </a>
           <span>·</span>
-          <a href={PROFILE.github} target="_blank" rel="noreferrer noopener" className="hover:text-accent">
+          <a href={profile.github} target="_blank" rel="noreferrer noopener" className="hover:text-accent">
             GitHub
+          </a>
+        </div>
+        <div className="flex flex-wrap gap-3 mt-4">
+          <a
+            href={currentPdf}
+            download
+            className="text-body-sm text-fg hover:text-accent border border-line rounded-pill px-3 py-1.5 transition-colors"
+          >
+            ↓ {isHe ? t.downloadHe : t.downloadEn}
+          </a>
+          <a
+            href={otherPdf}
+            download
+            className="text-body-sm text-muted hover:text-accent border border-line rounded-pill px-3 py-1.5 transition-colors"
+          >
+            ↓ {isHe ? t.downloadEn : t.downloadHe}
           </a>
         </div>
       </AppleSpring>
 
       <AppleSpring kind="fade-up" delay={80}>
         <GlassCard padding={6} className="mt-8">
-          <h2 className="text-caption uppercase tracking-wider text-muted">Profile</h2>
-          <p className="text-body mt-2">{PROFILE.bioLong}</p>
+          <h2 className="text-caption uppercase tracking-wider text-muted">{t.profile}</h2>
+          <p className="text-body mt-2">{profile.bioLong}</p>
         </GlassCard>
       </AppleSpring>
 
       <AppleSpring kind="fade-up" delay={120}>
         <GlassCard padding={6} className="mt-6">
-          <h2 className="text-caption uppercase tracking-wider text-muted">Experience</h2>
+          <h2 className="text-caption uppercase tracking-wider text-muted">{t.experience}</h2>
           <ul className="grid gap-6 mt-4">
-            {EMPLOYMENT.map((job) => (
+            {employment.map((job) => (
               <li key={`${job.title}-${job.org}`}>
                 <div className="flex flex-wrap items-baseline justify-between gap-x-3">
                   <p className="text-h3 font-semibold">{job.title}</p>
@@ -67,9 +104,9 @@ export function Resume() {
       <div className="grid gap-6 lg:grid-cols-2 mt-6">
         <AppleSpring kind="fade-up" delay={140}>
           <GlassCard padding={6} className="h-full">
-            <h2 className="text-caption uppercase tracking-wider text-muted">Education</h2>
+            <h2 className="text-caption uppercase tracking-wider text-muted">{t.education}</h2>
             <ul className="grid gap-4 mt-4">
-              {EDUCATION.map((e) => (
+              {education.map((e) => (
                 <li key={`${e.title}-${e.org}`}>
                   <div className="flex flex-wrap items-baseline justify-between gap-x-3">
                     <p className="text-h3 font-semibold">{e.title}</p>
@@ -90,9 +127,9 @@ export function Resume() {
         </AppleSpring>
         <AppleSpring kind="fade-up" delay={160}>
           <GlassCard padding={6} className="h-full">
-            <h2 className="text-caption uppercase tracking-wider text-muted">Military Service (IDF)</h2>
+            <h2 className="text-caption uppercase tracking-wider text-muted">{t.military}</h2>
             <ul className="grid gap-4 mt-4">
-              {MILITARY.map((m) => (
+              {military.map((m) => (
                 <li key={`${m.title}-${m.org}`}>
                   <div className="flex flex-wrap items-baseline justify-between gap-x-3">
                     <p className="text-h3 font-semibold">{m.title}</p>
@@ -109,9 +146,9 @@ export function Resume() {
 
       <AppleSpring kind="fade-up" delay={180}>
         <GlassCard padding={6} className="mt-6">
-          <h2 className="text-caption uppercase tracking-wider text-muted">Skills</h2>
+          <h2 className="text-caption uppercase tracking-wider text-muted">{t.skills}</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-4">
-            {SKILL_GROUPS.map((g) => (
+            {skills.map((g) => (
               <div key={g.id}>
                 <p className="text-body-sm font-semibold">{g.label}</p>
                 <ul className="flex flex-wrap gap-1.5 mt-2">
