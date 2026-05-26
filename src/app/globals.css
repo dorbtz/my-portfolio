@@ -123,6 +123,133 @@ h1, h2, h3, .text-display, .text-h1, .text-h2 {
 }
 
 /* ============================================================
+ * Per-theme SKILLS BACKDROP (.skills-section)
+ * Thor: Yggdrasil tree silhouette + golden constellation glow
+ * Luffy: Grand Line ocean tint + One-Piece logo watermark
+ * ============================================================ */
+
+.skills-section { position: relative; isolation: isolate; }
+
+/* Thor — Yggdrasil tree */
+[data-theme="thor"] .skills-section::before {
+  content: "";
+  position: absolute;
+  inset: -2rem 0 -2rem 0;
+  z-index: 0;
+  background-image: url("/assets/Marvel/skills/YGGDRASIL-transparent.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.12;
+  pointer-events: none;
+  filter: drop-shadow(0 0 40px var(--color-accent));
+  animation: yggdrasil-glow 8s var(--ease-soft) infinite;
+}
+@keyframes yggdrasil-glow {
+  0%, 100% { opacity: 0.10; }
+  50%      { opacity: 0.18; }
+}
+[data-theme="thor"] .skills-section::after {
+  /* Drifting constellation dots layered above the tree, behind the cards */
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    radial-gradient(circle at 12% 18%, var(--color-accent) 1px, transparent 2px),
+    radial-gradient(circle at 28% 60%, var(--color-accent) 1px, transparent 2px),
+    radial-gradient(circle at 50%  8%, var(--color-accent) 1px, transparent 2px),
+    radial-gradient(circle at 70% 40%, var(--color-accent) 1px, transparent 2px),
+    radial-gradient(circle at 88% 72%, var(--color-accent) 1px, transparent 2px),
+    radial-gradient(circle at 62% 92%, var(--color-accent) 1px, transparent 2px),
+    radial-gradient(circle at 38% 30%, var(--color-accent) 1px, transparent 2px);
+  opacity: 0.5;
+  pointer-events: none;
+  animation: constellation-drift 12s var(--ease-soft) infinite alternate;
+}
+@keyframes constellation-drift {
+  0%   { transform: translate(0, 0); opacity: 0.35; }
+  100% { transform: translate(8px, -4px); opacity: 0.6; }
+}
+
+/* Luffy — Grand Line ocean + One-Piece logo watermark */
+[data-theme="luffy"] .skills-section::before {
+  content: "";
+  position: absolute;
+  inset: -2rem 0 -2rem 0;
+  z-index: 0;
+  background:
+    /* Hand-drawn ocean wave dotted lines */
+    repeating-radial-gradient(
+      circle at 50% 100%,
+      color-mix(in oklab, var(--color-accent) 8%, transparent) 0,
+      color-mix(in oklab, var(--color-accent) 8%, transparent) 1px,
+      transparent 2px,
+      transparent 40px
+    ),
+    /* Grand Line "log pose" radial */
+    radial-gradient(
+      circle at 50% 50%,
+      color-mix(in oklab, var(--color-accent) 8%, transparent),
+      transparent 60%
+    );
+  pointer-events: none;
+  animation: grandline-pulse 6s var(--ease-soft) infinite;
+}
+@keyframes grandline-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1; }
+}
+[data-theme="luffy"] .skills-section::after {
+  /* One-Piece logo watermark in the corner */
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: clamp(120px, 18vw, 220px);
+  height: clamp(60px, 9vw, 110px);
+  z-index: 0;
+  background-image: url("/assets/One-Piece/One-Piece-Logo-1416.webp");
+  background-repeat: no-repeat;
+  background-position: top right;
+  background-size: contain;
+  opacity: 0.18;
+  pointer-events: none;
+  transform: rotate(-3deg);
+}
+
+/* Per-theme skill cards (subtle decoration over the existing GlassCard) */
+[data-theme="thor"] .skill-card {
+  background: color-mix(in oklab, var(--color-bg-elevated) 90%, transparent);
+  border-color: color-mix(in oklab, var(--color-accent) 30%, transparent);
+  position: relative;
+}
+[data-theme="thor"] .skill-card::before {
+  /* Small "realm star" glyph in the top-right of each card */
+  content: "★";
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--color-accent);
+  opacity: 0.7;
+  text-shadow: 0 0 8px var(--color-accent);
+  animation: realm-twinkle 3s var(--ease-soft) infinite;
+}
+@keyframes realm-twinkle {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 1; }
+}
+[data-theme="luffy"] .skill-card {
+  background: color-mix(in oklab, var(--color-bg-elevated) 92%, transparent);
+  border: 3px solid color-mix(in oklab, var(--color-text) 88%, transparent);
+  border-radius: var(--radius-md);
+  box-shadow: 4px 4px 0 0 color-mix(in oklab, var(--color-text) 92%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* ============================================================
  * Per-theme PROJECT CARDS (.project-card)
  * Luffy: wanted-poster style (parchment + thick manga border + WANTED banner)
  * Thor:  MCU dossier style (navy + gold ridge + ASGARDIAN ARCHIVE header)
