@@ -10,7 +10,7 @@
  */
 import "server-only";
 import { embed, embedMany } from "ai";
-import { embedModel } from "./provider";
+import { embedModel, EMBED_PROVIDER_OPTIONS } from "./provider";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { PROFILE, SKILL_GROUPS, EDUCATION, EMPLOYMENT } from "@/shared/data/profile";
@@ -130,6 +130,7 @@ export async function embedTexts(chunks: EmbeddingChunk[]): Promise<
   const { embeddings } = await embedMany({
     model: embedModel(),
     values: chunks.map((c) => c.chunk),
+    providerOptions: EMBED_PROVIDER_OPTIONS,
   });
   return chunks.map((c, i) => ({ ...c, embedding: embeddings[i] }));
 }
@@ -139,6 +140,7 @@ export async function embedQuery(text: string): Promise<number[]> {
   const { embedding } = await embed({
     model: embedModel(),
     value: text,
+    providerOptions: EMBED_PROVIDER_OPTIONS,
   });
   return embedding;
 }

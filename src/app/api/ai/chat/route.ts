@@ -62,7 +62,9 @@ export async function POST(req: Request) {
   let context = "(retrieval not yet run)";
   if (queryText) {
     try {
-      const chunks = await retrieve(queryText, { topK: 5, minScore: 0.5 });
+      // 0.3 floor is calibrated for gemini-embedding-001 @ 768d (lower than
+      // OpenAI text-embedding-3-small). Top-5 picks are enough for ~15 chunks.
+      const chunks = await retrieve(queryText, { topK: 5, minScore: 0.3 });
       context = formatContext(chunks);
     } catch (err) {
       console.warn("[ai/chat] retrieval failed; falling back to empty context", err);

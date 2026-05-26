@@ -19,14 +19,25 @@
  */
 import { google } from "@ai-sdk/google";
 
-/** Chat + RAG + classifier + translator. Gemini 2.0 Flash is fast + cheap. */
-export const chatModel = () => google("gemini-2.0-flash");
+/** Chat + RAG + classifier + translator. Gemini 2.5 Flash is the current
+ *  free-tier default; gemini-2.0-flash moved to paid-only for new accounts. */
+export const chatModel = () => google("gemini-2.5-flash");
 
 /**
- * 768-dim text embeddings. Matches the `vector(768)` column in the
- * embeddings table (changed from 1536d via migration 0016).
+ * Text embeddings via `gemini-embedding-001` (the v1beta replacement for the
+ * deprecated `text-embedding-004`). Default output is 3072 dims; we force
+ * 768 dims via providerOptions on every embed() call to match the
+ * `vector(768)` column. See EMBED_PROVIDER_OPTIONS below.
  */
-export const embedModel = () => google.textEmbeddingModel("text-embedding-004");
+export const embedModel = () => google.textEmbeddingModel("gemini-embedding-001");
+
+/**
+ * Apply to every embed() / embedMany() call so the returned vector matches
+ * the `vector(768)` column in public.embeddings.
+ */
+export const EMBED_PROVIDER_OPTIONS = {
+  google: { outputDimensionality: 768 },
+} as const;
 
 /** True if the env is wired. Used to short-circuit calls with a friendly message. */
 export function hasAIProvider(): boolean {
