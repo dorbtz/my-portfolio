@@ -6,6 +6,7 @@ import { FloatingControls } from "@/shared/ui/FloatingControls";
 import { Header } from "@/features/chrome/Header";
 import { Footer } from "@/features/chrome/Footer";
 import { Chatbot } from "@/features/ai-chat/Chatbot";
+import { ConditionalChrome } from "@/shared/ui/ConditionalChrome";
 
 // Per-theme display fonts. Each theme's CSS sets --font-display to one of
 // these variables; the body class string just makes the variables available.
@@ -71,11 +72,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       suppressHydrationWarning
     >
       <body>
-        <Header />
+        <ConditionalChrome>
+          <Header />
+        </ConditionalChrome>
         {children}
-        <Footer />
+        <ConditionalChrome>
+          <Footer />
+        </ConditionalChrome>
         <FloatingControls initialTheme={theme} initialScheme={scheme} initialLocale={locale} />
-        <Chatbot />
+        <ConditionalChrome>
+          <Chatbot />
+        </ConditionalChrome>
       </body>
     </html>
   );
