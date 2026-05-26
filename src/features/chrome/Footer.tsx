@@ -53,8 +53,22 @@ export async function Footer() {
       </div>
       <div className="border-t border-line">
         <div className="max-w-[min(1200px,calc(100%-2rem))] mx-auto py-4 text-caption text-muted flex flex-wrap items-center justify-between gap-2">
-          <span>
-            © {year} {PROFILE.name}. {t.footer.builtWith}
+          <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span>
+              © {year} {PROFILE.name}. {t.footer.builtWith}
+            </span>
+            <span aria-hidden className="opacity-50">·</span>
+            <span className="inline-flex items-center gap-1">
+              Crafted with
+              <a
+                href="https://claude.com/claude-code"
+                target="_blank"
+                rel="noreferrer noopener"
+                className="font-medium text-fg hover:text-accent transition-colors"
+              >
+                Claude
+              </a>
+            </span>
           </span>
           <Link href="/admin" className="hover:text-accent transition-colors">
             {t.footer.admin}
