@@ -184,39 +184,29 @@ export const ISLAND_FILES: readonly string[] = [
 ];
 
 /**
- * Canonical Grand Line layout — % coords inside a 16:10 container.
+ * Positions on WORLDMAP.jpeg (4096 × 2085, ~2:1) — % coords.
  *
- *   East Blue (right side, outside Grand Line)
- *      └─ Dawn Island
+ *   East Blue (top-right quadrant): Dawn Island origin
+ *   Paradise (Grand Line band, RIGHT of Red Line, going east → west toward
+ *      the Red Line): 9 visited skill islands
+ *   Red Line (vertical center): Mariejois on top, Fishman Island under it
+ *   New World (Grand Line band, LEFT of Red Line, going east):
+ *      Fishman → ... → Elbaph (current) → Laugh Tale (future)
  *
- *   Reverse Mountain (entry to Grand Line, right-of-center top)
- *      └─ Paradise (upper half, west-bound)
- *           Whiskey Peak → Little Garden → Drum → Alabasta → Jaya
- *                ↑
- *           Skypiea (sky island ABOVE Jaya, accessed via knock-up stream)
- *                          ↓
- *           Water 7 → Thriller Bark → Sabaody (foot of Red Line, Paradise side)
- *
- *   Red Line (vertical wall, center)
- *      └─ Mariejois on top, Fishman Island under it
- *
- *   New World (lower half, east-bound from Fishman Island)
- *      Punk Hazard → Dressrosa → Zou → Whole Cake → Wano → Egghead → Elbaph (current arc)
- *           └─ Laugh Tale (legendary final island, only true future)
- *
- * Paradise islands going WEST from Reverse Mountain (entry on the east side).
- * Indexed parallel to SKILL_DOMAINS.
+ * Coordinates eyeballed from the canon map's painted islands.  Nudge in
+ * here if any marker lands clearly off-island — both halves live here.
  */
 export const ISLAND_POSITIONS: readonly { x: number; y: number }[] = [
-  { x: 73, y: 30 }, // 0 Whiskey Peak — first Paradise island
-  { x: 65, y: 22 }, // 1 Little Garden
-  { x: 57, y: 32 }, // 2 Drum Island
-  { x: 49, y: 22 }, // 3 Alabasta
-  { x: 41, y: 32 }, // 4 Jaya
-  { x: 41, y: 12 }, // 5 Skypiea — above Jaya (sky island via knock-up stream)
-  { x: 33, y: 26 }, // 6 Water 7
-  { x: 25, y: 34 }, // 7 Thriller Bark
-  { x: 17, y: 38 }, // 8 Sabaody — foot of Red Line, west end of Paradise
+  // Paradise — eastern entry near Reverse Mountain, working west toward Red Line
+  { x: 60, y: 48 }, // 0 Whiskey Peak — first Paradise island, east end
+  { x: 64, y: 51 }, // 1 Little Garden
+  { x: 68, y: 52 }, // 2 Drum Island
+  { x: 72, y: 53 }, // 3 Alabasta
+  { x: 76, y: 54 }, // 4 Jaya
+  { x: 76, y: 46 }, // 5 Skypiea — sky island ABOVE Jaya (knock-up stream)
+  { x: 80, y: 53 }, // 6 Water 7
+  { x: 84, y: 52 }, // 7 Thriller Bark
+  { x: 88, y: 51 }, // 8 Sabaody — foot of Red Line on the Paradise side
 ];
 
 // ============================================================
@@ -412,35 +402,21 @@ export const FUTURE_ISLANDS: readonly FutureIsland[] = [
 ];
 
 /**
- * New World positions — start at Fishman Island (under Red Line, near
- * Sabaody's foot) and flow EAST across the lower half of the map back
- * around the globe to Laugh Tale on the far right. Mirrors the
- * canonical "Straw Hats descend through Fishman Island then sail back
- * across the world" arc.
+ * New World positions on WORLDMAP.jpeg — start at Fishman Island (under
+ * Red Line, on the New World side which is the LEFT half of the map) and
+ * flow west then loop back. Eyeballed from the canon yellow trail.
  */
 export const FUTURE_ISLAND_POSITIONS: readonly { x: number; y: number }[] = [
-  { x: 17, y: 56 }, // 0 Fishman Island   — directly below Sabaody / under Red Line
-  { x: 25, y: 60 }, // 1 Punk Hazard
-  { x: 33, y: 68 }, // 2 Dressrosa
-  { x: 41, y: 74 }, // 3 Zou
-  { x: 49, y: 80 }, // 4 Whole Cake Island
-  { x: 57, y: 74 }, // 5 Wano Country
-  { x: 65, y: 68 }, // 6 Egghead
-  { x: 73, y: 62 }, // 7 Elbaph (current arc)
-  { x: 84, y: 56 }, // 8 Laugh Tale (future)
+  { x: 44, y: 56 }, // 0 Fishman Island   — under Red Line at center
+  { x: 40, y: 53 }, // 1 Punk Hazard
+  { x: 35, y: 52 }, // 2 Dressrosa
+  { x: 30, y: 53 }, // 3 Zou
+  { x: 25, y: 51 }, // 4 Whole Cake Island
+  { x: 20, y: 52 }, // 5 Wano Country
+  { x: 15, y: 51 }, // 6 Egghead
+  { x: 9,  y: 49 }, // 7 Elbaph (current arc) — far-left New World
+  { x: 4,  y: 51 }, // 8 Laugh Tale (future)
 ];
-
-/** Reverse Mountain — entry point to the Grand Line from any of the 4 Blues.
- *  Top-right of the map, just above the first Paradise island (Whiskey Peak). */
-export const REVERSE_MOUNTAIN_POS = { x: 81, y: 23 };
-
-/** Mariejois — Holy Land on top of the Red Line. */
-export const MARIEJOIS_POS = { x: 11, y: 6 };
-
-/** Red Line vertical wall. Renders as 5 stacked segments at x ≈ 8-14%, with
- *  small gaps between segments — the canonical "5 pieces" mid-wall split. */
-export const RED_LINE_X = { left: 7, right: 15 };
-export const RED_LINE_SEGMENTS = 5;
 
 /** Dawn Island — Luffy's origin. Special: backstory sections, not skills. */
 export type OriginIsland = {
@@ -457,8 +433,9 @@ export const DAWN_ISLAND: OriginIsland = {
   file: "dawn-island",
   sub: "East Blue · Foosha Village",
   lore: "East Blue. Foosha Village under Mt. Colubo — where the voyage began.",
-  // East Blue corner — outside the Grand Line, far-right edge of the map.
-  pos: { x: 92, y: 56 },
+  // East Blue quadrant on the WORLDMAP.jpeg — upper-right area, on the
+  // pink Straw Hat journey trail through East Blue.
+  pos: { x: 78, y: 25 },
   sections: [
     {
       title: "The Origin Code",
