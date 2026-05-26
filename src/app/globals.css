@@ -493,6 +493,18 @@ h1, h2, h3, .text-display, .text-h1, .text-h2 {
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
+/* Grand Line current-arc marker pulse (Elbaph) */
+@keyframes grandline-current-pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50%      { transform: translate(-50%, -50%) scale(1.06); }
+}
+.grandline-current-pulse {
+  animation: grandline-current-pulse 2.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .grandline-current-pulse { animation: none; }
+}
+
 /* Luffy theme ambient rain — drops fall from top to bottom of viewport */
 @keyframes luffy-rain-fall {
   0%   { transform: translateY(0)     rotate(-8deg);  opacity: 0; }

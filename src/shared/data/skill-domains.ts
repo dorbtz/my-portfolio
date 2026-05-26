@@ -183,17 +183,40 @@ export const ISLAND_FILES: readonly string[] = [
   "sabaody",
 ];
 
-/** Positions along the Grand Line spiral — % coords inside a 16:9 container. */
+/**
+ * Canonical Grand Line layout — % coords inside a 16:10 container.
+ *
+ *   East Blue (right side, outside Grand Line)
+ *      └─ Dawn Island
+ *
+ *   Reverse Mountain (entry to Grand Line, right-of-center top)
+ *      └─ Paradise (upper half, west-bound)
+ *           Whiskey Peak → Little Garden → Drum → Alabasta → Jaya
+ *                ↑
+ *           Skypiea (sky island ABOVE Jaya, accessed via knock-up stream)
+ *                          ↓
+ *           Water 7 → Thriller Bark → Sabaody (foot of Red Line, Paradise side)
+ *
+ *   Red Line (vertical wall, center)
+ *      └─ Mariejois on top, Fishman Island under it
+ *
+ *   New World (lower half, east-bound from Fishman Island)
+ *      Punk Hazard → Dressrosa → Zou → Whole Cake → Wano → Egghead → Elbaph (current arc)
+ *           └─ Laugh Tale (legendary final island, only true future)
+ *
+ * Paradise islands going WEST from Reverse Mountain (entry on the east side).
+ * Indexed parallel to SKILL_DOMAINS.
+ */
 export const ISLAND_POSITIONS: readonly { x: number; y: number }[] = [
-  { x: 12, y: 68 }, // Whiskey Peak
-  { x: 21, y: 40 }, // Little Garden
-  { x: 30, y: 70 }, // Drum Island
-  { x: 39, y: 35 }, // Alabasta
-  { x: 48, y: 72 }, // Jaya
-  { x: 57, y: 22 }, // Skypiea
-  { x: 66, y: 58 }, // Water 7
-  { x: 75, y: 32 }, // Thriller Bark
-  { x: 84, y: 60 }, // Sabaody
+  { x: 73, y: 30 }, // 0 Whiskey Peak — first Paradise island
+  { x: 65, y: 22 }, // 1 Little Garden
+  { x: 57, y: 32 }, // 2 Drum Island
+  { x: 49, y: 22 }, // 3 Alabasta
+  { x: 41, y: 32 }, // 4 Jaya
+  { x: 41, y: 12 }, // 5 Skypiea — above Jaya (sky island via knock-up stream)
+  { x: 33, y: 26 }, // 6 Water 7
+  { x: 25, y: 34 }, // 7 Thriller Bark
+  { x: 17, y: 38 }, // 8 Sabaody — foot of Red Line, west end of Paradise
 ];
 
 // ============================================================
@@ -286,11 +309,20 @@ export const FUTURE_REALM_STARS: readonly StarPos[] = [
   { x: 62, y: 12, tier: "top" }, // Eternity — right sky
 ];
 
+/**
+ * Post-Paradise islands. Status reflects canon as of the current arc:
+ *   visited : Fishman Island → Wano Country + Egghead (already crossed)
+ *   current : Elbaph (the arc the manga is in right now)
+ *   future  : Laugh Tale (the legendary final island, alone)
+ */
+export type IslandStatus = "visited" | "current" | "future";
+
 export type FutureIsland = {
   island: string;
   file: string; // filename in /assets/One-Piece/islands/
   gear: "Gear 3" | "Gear 4" | "Gear 5";
   color: string;
+  status: IslandStatus;
   hint: string;
   lore: string;
 };
@@ -301,7 +333,8 @@ export const FUTURE_ISLANDS: readonly FutureIsland[] = [
     file: "fishman-island",
     gear: "Gear 3",
     color: "#76cfff",
-    hint: "Underwater realtime — coming soon",
+    status: "visited",
+    hint: "Crossing into the New World (canon-visited)",
     lore: "Underwater bubble city 10,000m below the Red Line — Jinbe's homeland.",
   },
   {
@@ -309,7 +342,8 @@ export const FUTURE_ISLANDS: readonly FutureIsland[] = [
     file: "punk-hazard",
     gear: "Gear 3",
     color: "#fb923c",
-    hint: "Chaos engineering — coming soon",
+    status: "visited",
+    hint: "Canon-visited (post-Paradise)",
     lore: "Fire-and-ice island of Caesar Clown's lab.",
   },
   {
@@ -317,7 +351,8 @@ export const FUTURE_ISLANDS: readonly FutureIsland[] = [
     file: "dressrosa",
     gear: "Gear 4",
     color: "#f87171",
-    hint: "Reserved for the next dossier",
+    status: "visited",
+    hint: "Canon-visited (Gear 4 Boundman debut)",
     lore: "Doflamingo's SMILE factory kingdom — Gear 4 Boundman's debut.",
   },
   {
@@ -325,7 +360,8 @@ export const FUTURE_ISLANDS: readonly FutureIsland[] = [
     file: "zou",
     gear: "Gear 4",
     color: "#a78bfa",
-    hint: "Reserved for the next dossier",
+    status: "visited",
+    hint: "Canon-visited",
     lore: "Mokomo Dukedom on the back of the millennium-old elephant Zunesha.",
   },
   {
@@ -333,7 +369,8 @@ export const FUTURE_ISLANDS: readonly FutureIsland[] = [
     file: "whole-cake-island",
     gear: "Gear 4",
     color: "#fbbf24",
-    hint: "Reserved for the next dossier",
+    status: "visited",
+    hint: "Canon-visited (Snakeman debut)",
     lore: "Big Mom's confectionery kingdom — Snakeman's debut.",
   },
   {
@@ -341,7 +378,8 @@ export const FUTURE_ISLANDS: readonly FutureIsland[] = [
     file: "wano-country",
     gear: "Gear 5",
     color: "#ffd700",
-    hint: "Reserved for the next dossier",
+    status: "visited",
+    hint: "Canon-visited (Gear 5 awakening)",
     lore: "Feudal samurai nation — site of Onigashima and Gear 5 awakening.",
   },
   {
@@ -349,39 +387,60 @@ export const FUTURE_ISLANDS: readonly FutureIsland[] = [
     file: "egghead",
     gear: "Gear 5",
     color: "#34d399",
-    hint: "Reserved for the next dossier",
+    status: "visited",
+    hint: "Canon-visited",
     lore: "Vegapunk's futuristic egg-shaped lab island in the New World.",
   },
   {
     island: "Elbaph",
     file: "elbaph",
     gear: "Gear 5",
-    color: "#fbbf24",
-    hint: "Reserved for the next dossier",
-    lore: "Giant warrior nation under the colossal Elbaph World Tree.",
+    color: "#ffc60b",
+    status: "current",
+    hint: "Current arc",
+    lore: "Giant warrior nation under the colossal Elbaph World Tree — the Straw Hats are here now.",
   },
   {
     island: "Laugh Tale",
     file: "laugh-tale",
     gear: "Gear 5",
     color: "#ff6bd6",
+    status: "future",
     hint: "The legendary final island",
     lore: "Roger laughed — and the One Piece waits.",
   },
 ];
 
-/** Positions for future islands — second arc above the main line. */
+/**
+ * New World positions — start at Fishman Island (under Red Line, near
+ * Sabaody's foot) and flow EAST across the lower half of the map back
+ * around the globe to Laugh Tale on the far right. Mirrors the
+ * canonical "Straw Hats descend through Fishman Island then sail back
+ * across the world" arc.
+ */
 export const FUTURE_ISLAND_POSITIONS: readonly { x: number; y: number }[] = [
-  { x: 16, y: 18 }, // Fishman Island
-  { x: 26, y: 84 }, // Punk Hazard
-  { x: 35, y: 14 }, // Dressrosa
-  { x: 44, y: 88 }, // Zou
-  { x: 53, y: 12 }, // Whole Cake Island
-  { x: 62, y: 84 }, // Wano Country
-  { x: 71, y: 16 }, // Egghead
-  { x: 80, y: 80 }, // Elbaph
-  { x: 92, y: 28 }, // Laugh Tale
+  { x: 17, y: 56 }, // 0 Fishman Island   — directly below Sabaody / under Red Line
+  { x: 25, y: 60 }, // 1 Punk Hazard
+  { x: 33, y: 68 }, // 2 Dressrosa
+  { x: 41, y: 74 }, // 3 Zou
+  { x: 49, y: 80 }, // 4 Whole Cake Island
+  { x: 57, y: 74 }, // 5 Wano Country
+  { x: 65, y: 68 }, // 6 Egghead
+  { x: 73, y: 62 }, // 7 Elbaph (current arc)
+  { x: 84, y: 56 }, // 8 Laugh Tale (future)
 ];
+
+/** Reverse Mountain — entry point to the Grand Line from any of the 4 Blues.
+ *  Top-right of the map, just above the first Paradise island (Whiskey Peak). */
+export const REVERSE_MOUNTAIN_POS = { x: 81, y: 23 };
+
+/** Mariejois — Holy Land on top of the Red Line. */
+export const MARIEJOIS_POS = { x: 11, y: 6 };
+
+/** Red Line vertical wall. Renders as 5 stacked segments at x ≈ 8-14%, with
+ *  small gaps between segments — the canonical "5 pieces" mid-wall split. */
+export const RED_LINE_X = { left: 7, right: 15 };
+export const RED_LINE_SEGMENTS = 5;
 
 /** Dawn Island — Luffy's origin. Special: backstory sections, not skills. */
 export type OriginIsland = {
@@ -398,7 +457,8 @@ export const DAWN_ISLAND: OriginIsland = {
   file: "dawn-island",
   sub: "East Blue · Foosha Village",
   lore: "East Blue. Foosha Village under Mt. Colubo — where the voyage began.",
-  pos: { x: 4, y: 50 },
+  // East Blue corner — outside the Grand Line, far-right edge of the map.
+  pos: { x: 92, y: 56 },
   sections: [
     {
       title: "The Origin Code",
