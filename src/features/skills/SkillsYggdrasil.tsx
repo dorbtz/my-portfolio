@@ -230,7 +230,8 @@ function FutureStar({
       onBlur={onClose}
       className={[
         "absolute -translate-x-1/2 -translate-y-1/2",
-        "w-6 h-6 sm:w-7 sm:h-7 rounded-full",
+        // Mobile: 44px tap target (Apple HIG min). Desktop: visual restraint.
+        "w-11 h-11 sm:w-7 sm:h-7 rounded-full",
         "transition-[transform,opacity] duration-snap ease-snap",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]",
         "hover:scale-150 focus-visible:scale-150",

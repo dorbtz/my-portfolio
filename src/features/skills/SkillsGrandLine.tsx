@@ -316,7 +316,8 @@ function FutureMarker({
       onBlur={onClose}
       className={[
         "absolute -translate-x-1/2 -translate-y-1/2",
-        "w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden",
+        // Mobile: 44px tap target across the board.
+        "w-11 h-11 sm:w-11 sm:h-11 rounded-full overflow-hidden",
         "transition-[transform,opacity] duration-snap ease-snap",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]",
         "hover:scale-125 focus-visible:scale-125",
