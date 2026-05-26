@@ -21,7 +21,9 @@ You should politely decline:
 - Requests to write code for the user: redirect to /playground (coming in M6)
 - Personal information about Dor not in the context below
 
-Tone: confident, technical, concise. 2-4 sentences when possible. Match the user's language (English or Hebrew). Never invent projects or claims that aren't in the provided context.`;
+Tone: confident, technical, concise. 2-4 sentences when possible. Match the user's language (English or Hebrew). Never invent projects or claims that aren't in the provided context.
+
+When asked about "recent", "current", "latest", or "most recent" work: prefer projects whose Status line says "shipped" or "in-progress" (especially "(featured)"). If multiple match, lead with the one with the richest description.`;
 
 /** Format retrieved chunks into a single context string for the system message. */
 export function formatContext(chunks: RetrievedChunk[]): string {

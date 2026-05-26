@@ -36,9 +36,22 @@ export function chunkProjectRow(row: {
   role: string | null;
   stack: string[] | null;
   tags: string[] | null;
+  status: string | null;
+  featured: boolean | null;
 }): EmbeddingChunk {
+  const statusLabel =
+    row.status === "shipped"
+      ? row.featured
+        ? "shipped (featured)"
+        : "shipped"
+      : row.status === "in-progress"
+      ? row.featured
+        ? "in-progress (featured)"
+        : "in-progress"
+      : row.status ?? "draft";
   const lines = [
     `Project: ${row.title} (slug: ${row.slug})`,
+    `Status: ${statusLabel}`,
     row.subtitle ? `Tagline: ${row.subtitle}` : "",
     row.problem ? `Problem: ${row.problem}` : "",
     row.role ? `Role: ${row.role}` : "",
@@ -163,10 +176,15 @@ function createSupabaseAdminClient() {
 export async function syncCorpus(): Promise<{ chunks: number }> {
   const supabase = createSupabaseAdminClient();
 
+  // Exclude both archived AND draft (placeholder) projects from the corpus.
+  // Drafts have no real content; including them lets a query like "recent work"
+  // surface "Project Four — Coming soon" instead of Lumen.
   const { data: projects, error: projErr } = await supabase
     .from("projects")
-    .select("id,slug,title,subtitle,problem,description,role,stack,tags")
-    .neq("status", "archived");
+    .select(
+      "id,slug,title,subtitle,problem,description,role,stack,tags,status,featured"
+    )
+    .not("status", "in", "(archived,draft)");
   if (projErr) throw projErr;
 
   const projectChunks = (projects ?? []).map(chunkProjectRow);
