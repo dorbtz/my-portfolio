@@ -32,28 +32,72 @@ type Locale = "en" | "he";
 /** Higher free-tier quota than gemini-2.5-flash (used by the chatbot). */
 const TRANSLATE_MODEL = "gemini-2.5-flash-lite";
 
-const TRANSLATE_GLOSSARY = `These terms MUST stay verbatim in English / Latin script (do NOT translate):
+const TRANSLATE_GLOSSARY = `Brand names and tech proper nouns MUST stay in Latin script (do NOT translate, do NOT transliterate):
 Dor Ben Tzur, Lumen, Nebula-1, AI Brain, Mjolnir, Thor, Luffy, Nika,
 Bifrost, Asgard, Wolt, John Bryce, IDF, Next.js, React, Supabase, Vercel,
 Tailwind, TypeScript, JavaScript, Python, GitHub, LinkedIn, Gemini, Claude,
 OpenAI, Anthropic, Geist, Bangers, Bebas Neue, pgvector, Postgres,
 PostgreSQL, MongoDB, MySQL, Docker, Three.js, React Three Fiber,
-Framer Motion, AI SDK, RAG, MCP, REST, API.`;
+Framer Motion, AI SDK, RAG, MCP, REST, API, HTML, CSS, SQL, AVIF, WebP.`;
 
-const BATCH_SYSTEM_PROMPT = `You translate short snippets of website copy from English to Hebrew (he-IL).
+const BATCH_SYSTEM_PROMPT = `You are a senior Hebrew (he-IL) UX writer for an Israeli tech startup. You
+translate short snippets of website copy from English to modern, natural,
+spoken Hebrew that an Israeli developer/recruiter reads on a portfolio site.
 
-You receive a JSON array of source strings. Return STRICT JSON of the same
-length where translations[i] is the Hebrew translation of input[i].
+Input: a JSON object { "input": [<en1>, <en2>, ...] }.
+Output: STRICT JSON in exactly this shape, no preamble, no markdown fence:
+  { "translations": [<he1>, <he2>, ...] }
+The translations array MUST have the same length as input, same order.
 
-Output schema (exactly this shape, no preamble, no fence):
-  { "translations": ["…", "…", …] }
+HEBREW QUALITY RULES — these are non-negotiable:
 
-Rules:
-- Preserve Markdown / HTML tags exactly.
-- Preserve URLs verbatim.
-- Preserve numbers and dates as they appear.
-- Match the source's register (professional, casual, etc.).
-- ${TRANSLATE_GLOSSARY}`;
+1. Register: modern conversational Hebrew (לשון דבורה). Never Biblical, never
+   over-formal newspaper style. Write the way Wix, Monday.com, and AppsFlyer
+   write their Hebrew product copy.
+
+2. Don't translate word-for-word from English syntax. Re-shape the sentence
+   into natural Hebrew word order even if that changes the structure.
+   ✗ "אני אוהב לבנות תוכנה ש-X"  (calque)
+   ✓ "אני בונה תוכנה ש-X"        (natural)
+
+3. Gender neutrality:
+   - UI labels: use noun phrases, never imperative verbs.
+     ✗ "צפה באתר" (masc. imperative)  ✓ "לאתר" (directional noun)
+   - When a verb IS unavoidable, use third-person singular describing the
+     SYSTEM, not the user: "מתרגם…" not "תרגם".
+   - When referring to the user's gender, use the masculine form (standard
+     Hebrew default) but only if context makes a verb form unavoidable.
+
+4. Definite article ה־:
+   - When an adjective or possessive modifies a definite noun, the ה־ MUST
+     attach to the modifier too.
+       ✓ "כל הפרויקטים"   ✗ "כל פרויקטים"
+       ✓ "הבעיה המרכזית"  ✗ "הבעיה מרכזית"
+   - Do not invent unnecessary ה־ — proper nouns and possessive constructs
+     don't get one.
+
+5. Possessives — prefer inflected forms over "שלי" suffixes when shorter:
+     ✓ "תפקידי" (1 word, professional)
+     △ "התפקיד שלי" (2 words, conversational — only when emphasis warrants)
+
+6. Quote marks: use Hebrew quotation marks: ״״ for outer, ׳׳ for inner.
+   English smart quotes "…" should become ״…״.
+
+7. Numbers, dates, URLs: preserve verbatim.
+
+8. Markdown / HTML tags: preserve verbatim, including spacing.
+
+9. Glossary — these tokens MUST appear in the output EXACTLY as written,
+   in Latin script, never transliterated, never translated:
+${TRANSLATE_GLOSSARY}
+
+10. Arrows: → in the source becomes ← in Hebrew (RTL flip). Vice versa.
+
+11. If the source string is a single word that is itself a glossary item or
+    a brand name, return it unchanged.
+
+12. Never add a translator's note, never apologize, never explain. Return
+    only the JSON object.`;
 
 /** Sha-256 hex digest. Used as the cache key. */
 function makeKey(en: string, contentType: string): string {

@@ -3,7 +3,8 @@ import { createSupabaseServerClient } from "@/shared/lib/supabase/server";
 import { GlassCard } from "@/shared/ui/GlassCard";
 import { hasAIProvider } from "@/shared/lib/ai/provider";
 import { SyncEmbeddingsButton } from "./SyncEmbeddingsButton";
-import { triggerEmbeddingsSync } from "./actions";
+import { PurgeTranslationsButton } from "./PurgeTranslationsButton";
+import { triggerEmbeddingsSync, purgeTranslationsCache } from "./actions";
 
 export const metadata = { title: "Health" };
 
@@ -107,13 +108,32 @@ export default async function AdminHealthPage() {
 
       <GlassCard padding={6} className="admin-card mt-6">
         <h2 className="text-h2 font-semibold">Maintenance</h2>
-        <p className="text-body-sm text-muted mt-1">
-          Re-sync the embeddings table from the current content. Run after any
-          project / about / skills edit so the chatbot answers using the latest
-          copy.
-        </p>
-        <div className="mt-4">
-          <SyncEmbeddingsButton action={triggerEmbeddingsSync} />
+        <div className="mt-4 grid gap-6 sm:grid-cols-2">
+          <div>
+            <p className="text-caption uppercase tracking-wider text-muted">
+              Embeddings
+            </p>
+            <p className="text-body-sm text-muted mt-1">
+              Re-sync the embeddings table from the current content. Run after
+              any project / about / skills edit so the chatbot answers using
+              the latest copy.
+            </p>
+            <div className="mt-3">
+              <SyncEmbeddingsButton action={triggerEmbeddingsSync} />
+            </div>
+          </div>
+          <div>
+            <p className="text-caption uppercase tracking-wider text-muted">
+              Hebrew translations
+            </p>
+            <p className="text-body-sm text-muted mt-1">
+              Purge the cached EN → HE translations. Use after upgrading the
+              translation prompt so the next HE visit re-translates everything.
+            </p>
+            <div className="mt-3">
+              <PurgeTranslationsButton action={purgeTranslationsCache} />
+            </div>
+          </div>
         </div>
       </GlassCard>
     </div>

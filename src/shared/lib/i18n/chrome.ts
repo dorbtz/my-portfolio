@@ -1,12 +1,17 @@
 /**
  * Chrome / nav / common-UI strings — translated ahead of the AI pipeline.
  * These are short, brand-stable labels worth pinning by hand so the
- * EN/עברית toggle shows real translation immediately. The page-content
+ * EN/עברית toggle shows real translation immediately. Page-content
  * AI translation (Hero / About / Skills / projects copy / etc.) lives in
- * the AI translate pipeline (translations_cache + ai/translate Server Action).
+ * the translations_cache + ai/translate Server Action.
  *
- * If a string is prose (a sentence the user reads, not a UI label),
- * it belongs in the AI translation cache, not here.
+ * Hebrew translations follow Israeli tech-industry conventions (2026):
+ * - Modern conversational register (Google Israel's localization philosophy)
+ * - Gender-neutral noun forms (not imperative verbs)
+ * - Definite article ה־ properly chained on adjective phrases
+ * - Brand names (Next.js, GitHub, etc.) stay in Latin script
+ * Sources cross-referenced with cv-hebrew.com, geektime.co.il, makerlab.co.il,
+ * Monday.com he-IL, and Wix he-IL UI patterns.
  */
 import type { Locale } from "@/shared/lib/theme/types";
 
@@ -96,30 +101,42 @@ const EN: Strings = {
 
 const HE: Strings = {
   nav: {
-    work: "עבודות",
-    about: "אודות",
-    skills: "מיומנויות",
+    // "פרויקטים" not "עבודות" — Israeli portfolio convention; "עבודות" reads as job listings
+    work: "פרויקטים",
+    // "עליי" not "אודות" — personal first-person; "אודות" is corporate/About-the-company
+    about: "עליי",
+    // "כישורים" not "מיומנויות" — LinkedIn/CV-site standard; "מיומנויות" reads as HR/academic
+    skills: "כישורים",
     resume: "קורות חיים",
-    playground: "מגרש משחקים",
+    // "מעבדה" not "מגרש משחקים" — Israeli tech sites use "lab" for demo/experimental areas
+    playground: "מעבדה",
   },
   footer: {
     status: "סטטוס",
-    admin: "מנהל",
-    builtWith: "נבנה עם Next.js 16, Supabase, Vercel AI Gateway.",
+    // "ניהול" not "מנהל" — what Israeli SaaS admin panels use (Monday.com he-IL pattern)
+    admin: "ניהול",
+    builtWith: "נבנה עם Next.js 16, Supabase ו-Vercel AI Gateway.",
   },
   status: {
-    shipped: "פורסם",
-    "in-progress": "בעבודה",
+    // "הושק" not "פורסם" — "shipped/launched" in startup parlance; "פורסם" = published (content)
+    shipped: "הושק",
+    // "בפיתוח" not "בעבודה" — Israeli dev convention; "בעבודה" is generic
+    "in-progress": "בפיתוח",
     draft: "רעיון",
     archived: "בארכיון",
   },
   common: {
+    // "כל הפרויקטים" — definite ה chained correctly on "הפרויקטים"
     allProjects: "כל הפרויקטים",
-    visitLive: "אתר חי ←",
-    sourceOnGithub: "קוד מקור ב-GitHub",
+    // "לאתר" — concise, directional; "צפה" uses masc imperative (gender issue); "אתר חי" reads as "alive site"
+    visitLive: "לאתר ←",
+    // "קוד ב-GitHub" — Israeli dev-community phrasing; "מקור" is redundant
+    sourceOnGithub: "קוד ב-GitHub",
     theProblem: "הבעיה",
-    myRole: "התפקיד שלי",
+    // "תפקידי" — inflected possessive; tighter than "התפקיד שלי" and more professional
+    myRole: "תפקידי",
     whatItDoes: "מה זה עושה",
+    // "טכנולוגיות" — what Israeli job posts + GitHub README he-IL use for tech stack
     stack: "טכנולוגיות",
     tags: "תגיות",
   },
