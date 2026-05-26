@@ -122,6 +122,145 @@ h1, h2, h3, .text-display, .text-h1, .text-h2 {
               0 0 24px -8px var(--color-accent);
 }
 
+/* ============================================================
+ * Per-theme PROJECT CARDS (.project-card)
+ * Luffy: wanted-poster style (parchment + thick manga border + WANTED banner)
+ * Thor:  MCU dossier style (navy + gold ridge + ASGARDIAN ARCHIVE header)
+ * High-Tech: untouched — inherits the default .glass surface
+ * ============================================================ */
+
+/* ----- LUFFY: wanted-poster card ----- */
+[data-theme="luffy"] .project-card {
+  background: var(--color-bg-elevated);
+  border: 3px solid color-mix(in oklab, var(--color-text) 88%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: var(--radius-md);
+  /* Stamped manga ink offset shadow */
+  box-shadow:
+    6px 6px 0 0 color-mix(in oklab, var(--color-text) 92%, transparent),
+    inset 0 0 0 1px color-mix(in oklab, var(--color-text) 30%, transparent);
+  /* Aged paper noise via tiny repeating dots */
+  background-image:
+    radial-gradient(
+      circle at 10% 20%,
+      color-mix(in oklab, var(--color-text) 4%, transparent) 1px,
+      transparent 2px
+    ),
+    radial-gradient(
+      circle at 70% 80%,
+      color-mix(in oklab, var(--color-text) 3%, transparent) 1px,
+      transparent 2px
+    );
+  background-size: 24px 24px, 31px 31px;
+  position: relative;
+  isolation: isolate;
+  padding-top: 3.25rem !important; /* room for the WANTED bar */
+  transition: transform var(--duration-snap) var(--ease-snap),
+              box-shadow var(--duration-snap) var(--ease-snap);
+}
+[data-theme="luffy"] .project-card::before {
+  content: "WANTED";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: block;
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  font-family: var(--font-luffy, "Bangers"), "Comic Sans MS", cursive;
+  font-size: 1.5rem;
+  letter-spacing: 0.18em;
+  text-align: center;
+  padding: 0.35rem 0;
+  border-bottom: 3px solid color-mix(in oklab, var(--color-text) 88%, transparent);
+  text-shadow: 2px 2px 0 color-mix(in oklab, var(--color-text) 50%, transparent);
+}
+[data-theme="luffy"] .project-card:hover {
+  transform: translate(-2px, -3px) rotate(-0.3deg);
+  box-shadow:
+    8px 8px 0 0 color-mix(in oklab, var(--color-text) 95%, transparent),
+    inset 0 0 0 1px color-mix(in oklab, var(--color-text) 30%, transparent);
+}
+[data-theme="luffy"] .project-card h3 {
+  font-family: var(--font-luffy, "Bangers"), "Comic Sans MS", cursive;
+  letter-spacing: 0.02em;
+}
+
+/* ----- THOR: MCU dossier card ----- */
+[data-theme="thor"] .project-card {
+  background: linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--color-bg-elevated) 100%, transparent) 0%,
+      color-mix(in oklab, var(--color-bg) 100%, transparent) 100%
+    );
+  border: 1px solid color-mix(in oklab, var(--color-accent) 35%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: var(--radius-md);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--color-accent) 18%, transparent),
+    inset 0 -1px 0 color-mix(in oklab, var(--color-accent) 18%, transparent),
+    0 24px 64px -16px rgba(0, 0, 0, 0.55);
+  position: relative;
+  isolation: isolate;
+  padding-top: 2.75rem !important;
+  transition: transform var(--duration-snap) var(--ease-snap),
+              border-color var(--duration-snap) var(--ease-snap),
+              box-shadow var(--duration-snap) var(--ease-snap);
+}
+[data-theme="thor"] .project-card::before {
+  content: "// ASGARDIAN ARCHIVE  ·  CLASSIFIED";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: block;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--color-accent) 18%, transparent),
+    color-mix(in oklab, var(--color-accent) 6%, transparent) 60%,
+    transparent
+  );
+  color: var(--color-accent);
+  font-family: var(--font-thor, "Bebas Neue"), Impact, sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  padding: 0.55rem 1.1rem;
+  border-bottom: 1px solid color-mix(in oklab, var(--color-accent) 35%, transparent);
+}
+[data-theme="thor"] .project-card::after {
+  /* Gold runic line near the bottom edge */
+  content: "";
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 0.75rem;
+  height: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--color-accent) 0 8px,
+    transparent 8px 14px
+  );
+  opacity: 0.5;
+  pointer-events: none;
+}
+[data-theme="thor"] .project-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--color-accent) 60%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--color-accent) 28%, transparent),
+    inset 0 -1px 0 color-mix(in oklab, var(--color-accent) 28%, transparent),
+    0 0 32px -4px color-mix(in oklab, var(--color-accent) 35%, transparent),
+    0 24px 64px -16px rgba(0, 0, 0, 0.6);
+}
+[data-theme="thor"] .project-card h3 {
+  font-family: var(--font-thor, "Bebas Neue"), Impact, sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 /* Semantic helpers (small, used everywhere) */
 .bg-canvas { background-color: var(--color-bg); }
 .bg-surface { background-color: var(--color-bg-elevated); }

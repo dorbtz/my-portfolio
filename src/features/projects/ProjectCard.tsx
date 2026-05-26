@@ -17,7 +17,7 @@ export function ProjectCard({ project }: { project: Project }) {
       aria-label={`${project.title} — ${project.tagline}`}
       className="group block focus-visible:outline-none rounded-lg"
     >
-      <GlassCard padding={6} className="h-full transition-transform duration-snap ease-snap group-hover:-translate-y-0.5">
+      <GlassCard padding={6} className="project-card h-full overflow-hidden transition-transform duration-snap ease-snap group-hover:-translate-y-0.5">
         <div className="flex items-center justify-between gap-3">
           <p className="text-caption uppercase tracking-wider text-accent">
             {STATUS_LABEL[project.status]}
