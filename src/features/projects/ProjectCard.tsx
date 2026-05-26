@@ -4,12 +4,13 @@ import { GlassCard } from "@/shared/ui/GlassCard";
 
 const STATUS_LABEL: Record<Project["status"], string> = {
   shipped: "Shipped",
-  wip: "In progress",
-  concept: "Concept",
+  "in-progress": "In progress",
+  draft: "Concept",
+  archived: "Archived",
 };
 
 export function ProjectCard({ project }: { project: Project }) {
-  const isStub = project.status === "concept";
+  const isStub = project.status === "draft";
   return (
     <Link
       href={`/projects/${project.slug}`}

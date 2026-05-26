@@ -7,8 +7,9 @@ import { Section } from "@/shared/ui/Section";
 
 const STATUS_LABEL: Record<Project["status"], string> = {
   shipped: "Shipped",
-  wip: "In progress",
-  concept: "Concept",
+  "in-progress": "In progress",
+  draft: "Concept",
+  archived: "Archived",
 };
 
 export function ProjectDetail({ project }: { project: Project }) {

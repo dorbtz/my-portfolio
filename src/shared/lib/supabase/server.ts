@@ -12,11 +12,16 @@ type CookieToSet = { name: string; value: string; options?: CookieOptions };
  */
 export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // Prefer the canonical NEXT_PUBLIC_* names (used in Vercel env); fall back
+  // to v1's VITE_* names so the local .env from the previous Vite app keeps
+  // working without manual edits during the rebuild.
+  const url =
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+  const anon =
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
   if (!url || !anon) {
     throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY. Add them to .env.local."
+      "Missing Supabase env vars. Set NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local."
     );
   }
   return createServerClient(url, anon, {
@@ -42,7 +47,8 @@ export async function createSupabaseServerClient() {
 /** True when both Supabase env vars are set. Used by query helpers to decide
  *  between a real query and a fixture fallback during local dev / preview. */
 export function hasSupabaseEnv() {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+  const anon =
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
+  return Boolean(url && anon);
 }
