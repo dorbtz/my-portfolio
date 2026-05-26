@@ -26,20 +26,21 @@ const THOR_LINEUP = [
   { src: "/assets/Marvel/magneto.png", alt: "Magneto" },
 ];
 
-// Capitalized .png filenames — the high-res replacements the user dropped
-// into /public/assets/One-Piece/wanted/ (the lowercase .webp files in the
-// same folder are the older lower-res versions, kept around but unused).
+// Canonical post-Wano wanted posters downloaded from One Piece Fandom
+// (Bounty Gallery). Each comes with its own painted parchment + bounty
+// number, on a transparent background so the wood-grain board behind
+// shows through naturally — no extra wrapper styling required.
 const LUFFY_LINEUP = [
-  { src: "/assets/One-Piece/wanted/luffy.png", alt: "Wanted: Monkey D. Luffy" },
-  { src: "/assets/One-Piece/wanted/Zoro.png", alt: "Wanted: Roronoa Zoro" },
-  { src: "/assets/One-Piece/wanted/Nami.png", alt: "Wanted: Nami" },
-  { src: "/assets/One-Piece/wanted/Usopp.png", alt: "Wanted: Usopp" },
-  { src: "/assets/One-Piece/wanted/Sanji.png", alt: "Wanted: Sanji" },
-  { src: "/assets/One-Piece/wanted/Chopper.png", alt: "Wanted: Tony Tony Chopper" },
-  { src: "/assets/One-Piece/wanted/Robin.png", alt: "Wanted: Nico Robin" },
-  { src: "/assets/One-Piece/wanted/Franky.png", alt: "Wanted: Franky" },
-  { src: "/assets/One-Piece/wanted/Brook.png", alt: "Wanted: Brook" },
-  { src: "/assets/One-Piece/wanted/Jinbe.png", alt: "Wanted: Jinbe" },
+  { src: "/assets/One-Piece/wanted/luffy.webp", alt: "Wanted: Monkey D. Luffy — ฿3,000,000,000" },
+  { src: "/assets/One-Piece/wanted/zoro.webp", alt: "Wanted: Roronoa Zoro" },
+  { src: "/assets/One-Piece/wanted/nami.webp", alt: "Wanted: Nami" },
+  { src: "/assets/One-Piece/wanted/usopp.webp", alt: "Wanted: God Usopp" },
+  { src: "/assets/One-Piece/wanted/sanji.webp", alt: "Wanted: Sanji" },
+  { src: "/assets/One-Piece/wanted/chopper.webp", alt: "Wanted: Tony Tony Chopper" },
+  { src: "/assets/One-Piece/wanted/robin.webp", alt: "Wanted: Nico Robin" },
+  { src: "/assets/One-Piece/wanted/franky.webp", alt: "Wanted: Franky" },
+  { src: "/assets/One-Piece/wanted/brook.webp", alt: "Wanted: Brook" },
+  { src: "/assets/One-Piece/wanted/jinbe.webp", alt: "Wanted: Jinbe" },
 ];
 
 export function ThemeArtStrip() {
@@ -171,11 +172,12 @@ export function ThemeArtStrip() {
                 alt=""
                 className="h-36 sm:h-48 w-auto object-contain"
                 style={{
+                  // Drop-shadow only — no surrounding cream/border, because
+                  // each poster brings its own painted parchment. Wrapping
+                  // it in a second cream box read as "white border" on the
+                  // wood-grain board, which the user wanted off.
                   filter:
                     "drop-shadow(0 6px 12px rgba(0,0,0,0.5)) drop-shadow(0 2px 2px rgba(0,0,0,0.4))",
-                  border: "3px solid #1a0d05",
-                  background: "#fffaf0",
-                  padding: 2,
                 }}
                 loading="lazy"
               />
