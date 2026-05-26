@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+/* High-Tech default theme — full token map ships in M2. This is enough for the M1 placeholder. */
+@theme {
+  --color-bg: #f7f8fa;
+  --color-text: #0b0d12;
+  --color-muted: #5b6172;
+  --color-accent: #7c3aed;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  --text-display: 4rem;
+  --text-body: 1.0625rem;
+  --text-body-sm: 0.9375rem;
+  --text-caption: 0.8125rem;
+
+  --radius-lg: 22px;
+}
+
+@media (prefers-color-scheme: dark) {
+  @theme {
+    --color-bg: #0b0d12;
+    --color-text: #f7f8fa;
+    --color-muted: #a1a6b3;
+    --color-accent: #00d4ff;
+  }
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.glass {
+  background: color-mix(in oklab, var(--color-bg) 70%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-text) 12%, transparent);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    0 1px 0 0 color-mix(in oklab, white 60%, transparent) inset,
+    0 24px 64px -16px color-mix(in oklab, black 35%, transparent);
+}
+
+.text-muted { color: var(--color-muted); }
+.text-display { font-size: var(--text-display); line-height: 1.05; letter-spacing: -0.02em; }
+.text-body { font-size: var(--text-body); line-height: 1.55; }
+.text-body-sm { font-size: var(--text-body-sm); line-height: 1.5; }
+.text-caption { font-size: var(--text-caption); line-height: 1.4; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
