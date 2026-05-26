@@ -33,6 +33,10 @@ out/
 .env
 .env.*
 
+# Local npm config (e.g. Windows --use-system-ca tweaks). Anything machine-
+# specific lives only on the dev's box; CI + Vercel pick their own settings.
+.npmrc
+
 # Claude Code local working dir + MCP server config
 .claude/
 .mcp.json
