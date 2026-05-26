@@ -80,7 +80,17 @@ export default function HeimdallMedia({ playing, onEnded, alt }: Props) {
   }, [playing]);
 
   return (
-    <div className="relative w-full aspect-[16/10] isolate" aria-label={alt} role="img">
+    // Outer wrapper centers the card and caps the width — Heimdall was huge
+    // when the Contact form column went wide on desktop. Cap at sm
+    // (384px) and center; mobile gets the full width minus the column
+    // padding. aspect-[16/10] keeps the proportions stable.
+    // overflow-visible on the outer so the WEBM can spill past the card
+    // border (sword sweep, glow) when the animation peaks.
+    <div
+      className="relative w-full max-w-sm mx-auto aspect-[16/10] isolate overflow-visible"
+      aria-label={alt}
+      role="img"
+    >
       <div className="absolute inset-0 overflow-hidden rounded-lg">
         <img
           src={IMAGE_BG}
@@ -99,12 +109,15 @@ export default function HeimdallMedia({ playing, onEnded, alt }: Props) {
           />
         )}
       </div>
+      {/* WEBM overlay sized 115% with negative offsets so it spills past the
+          rounded backdrop frame when the animation extends beyond the card. */}
       <video
         ref={overlayRef}
         muted
         playsInline
         preload="auto"
-        className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+        className="absolute object-contain pointer-events-none"
+        style={{ width: "115%", height: "115%", left: "-7.5%", top: "-7.5%" }}
         onCanPlay={() => setFigureVisible(false)}
         onError={() => setFigureVisible(true)}
         onEnded={onEnded}

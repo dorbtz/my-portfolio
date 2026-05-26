@@ -488,6 +488,11 @@ h1, h2, h3, .text-display, .text-h1, .text-h2 {
 /* RTL bridge — most layout is already logical-property based; this catches a few decorative spots */
 [dir="rtl"] .flip-rtl { transform: scaleX(-1); }
 
+/* Hide scrollbar but keep horizontal scrolling — used by mobile Header nav
+   when 5 nav items + HE labels exceed the iPhone-SE viewport width. */
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
 /* Easter-egg effect: Bifrost flash on M-J-O-L combo */
 @keyframes easter-thor-flash {
   0%   { opacity: 0; }

@@ -27,11 +27,15 @@ import {
 const ISLANDS_DIR = "/assets/One-Piece/islands";
 
 type ActiveKind = "visited" | "future" | "origin";
-type TooltipState = { left: number; top: number; index: number; kind: ActiveKind } | null;
+type TooltipState = { left: number; top: number; width: number; index: number; kind: ActiveKind } | null;
 
-const TOOLTIP_W = 320;
 const TOOLTIP_H = 280;
 const GAP = 6;
+const MARGIN = 12;
+
+function tooltipWidth(vw: number): number {
+  return Math.min(320, vw - MARGIN * 2);
+}
 
 function clampTooltip(
   anchor: DOMRect,
@@ -39,14 +43,14 @@ function clampTooltip(
   vh: number,
   w: number,
   h: number
-): { left: number; top: number } {
-  let left = anchor.left + anchor.width / 2 - w / 2;
+): { left: number; top: number; width: number } {
+  const width = Math.min(w, vw - MARGIN * 2);
+  let left = anchor.left + anchor.width / 2 - width / 2;
   let top = anchor.top - h - GAP;
-  if (top < GAP) top = anchor.bottom + GAP;
-  if (left < GAP) left = GAP;
-  if (left + w > vw - GAP) left = vw - w - GAP;
-  if (top + h > vh - GAP) top = Math.max(GAP, vh - h - GAP);
-  return { left, top };
+  if (top < MARGIN) top = anchor.bottom + GAP;
+  left = Math.max(MARGIN, Math.min(left, vw - width - MARGIN));
+  top = Math.max(MARGIN, Math.min(top, vh - h - MARGIN));
+  return { left, top, width };
 }
 
 export function SkillsGrandLine() {
@@ -54,8 +58,10 @@ export function SkillsGrandLine() {
 
   const openAt = useCallback((el: Element, i: number, kind: ActiveKind) => {
     const rect = el.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
     setTip({
-      ...clampTooltip(rect, window.innerWidth, window.innerHeight, TOOLTIP_W, TOOLTIP_H),
+      ...clampTooltip(rect, vw, vh, tooltipWidth(vw), TOOLTIP_H),
       index: i,
       kind,
     });
@@ -132,13 +138,13 @@ export function SkillsGrandLine() {
       </div>
 
       {tip?.kind === "visited" && SKILL_DOMAINS[tip.index] && (
-        <VisitedTooltip domain={SKILL_DOMAINS[tip.index]} left={tip.left} top={tip.top} />
+        <VisitedTooltip domain={SKILL_DOMAINS[tip.index]} left={tip.left} top={tip.top} width={tip.width} />
       )}
       {tip?.kind === "future" && FUTURE_ISLANDS[tip.index] && (
-        <FutureTooltip island={FUTURE_ISLANDS[tip.index]} left={tip.left} top={tip.top} />
+        <FutureTooltip island={FUTURE_ISLANDS[tip.index]} left={tip.left} top={tip.top} width={tip.width} />
       )}
       {tip?.kind === "origin" && (
-        <OriginTooltip island={DAWN_ISLAND} left={tip.left} top={tip.top} />
+        <OriginTooltip island={DAWN_ISLAND} left={tip.left} top={tip.top} width={tip.width} />
       )}
     </div>
   );
@@ -337,7 +343,7 @@ function FutureMarker({
 
 // ---------- tooltips ----------
 
-function VisitedTooltip({ domain, left, top }: { domain: SkillDomain; left: number; top: number }) {
+function VisitedTooltip({ domain, left, top, width }: { domain: SkillDomain; left: number; top: number; width: number }) {
   return (
     <div
       role="tooltip"
@@ -345,7 +351,7 @@ function VisitedTooltip({ domain, left, top }: { domain: SkillDomain; left: numb
       style={{
         left,
         top,
-        width: TOOLTIP_W,
+        width,
         maxHeight: TOOLTIP_H,
         overflowY: "auto",
         background: "var(--color-bg-elevated)",
@@ -370,7 +376,7 @@ function VisitedTooltip({ domain, left, top }: { domain: SkillDomain; left: numb
   );
 }
 
-function FutureTooltip({ island, left, top }: { island: FutureIsland; left: number; top: number }) {
+function FutureTooltip({ island, left, top, width }: { island: FutureIsland; left: number; top: number; width: number }) {
   return (
     <div
       role="tooltip"
@@ -378,7 +384,7 @@ function FutureTooltip({ island, left, top }: { island: FutureIsland; left: numb
       style={{
         left,
         top,
-        width: TOOLTIP_W,
+        width,
         background: "var(--color-bg-elevated)",
         border: `2px dashed ${island.color}`,
         boxShadow: "4px 4px 0 0 color-mix(in oklab, var(--color-text) 60%, transparent)",
@@ -394,7 +400,7 @@ function FutureTooltip({ island, left, top }: { island: FutureIsland; left: numb
   );
 }
 
-function OriginTooltip({ island, left, top }: { island: OriginIsland; left: number; top: number }) {
+function OriginTooltip({ island, left, top, width }: { island: OriginIsland; left: number; top: number; width: number }) {
   return (
     <div
       role="tooltip"
@@ -402,7 +408,7 @@ function OriginTooltip({ island, left, top }: { island: OriginIsland; left: numb
       style={{
         left,
         top,
-        width: TOOLTIP_W,
+        width,
         maxHeight: TOOLTIP_H + 60,
         overflowY: "auto",
         background: "var(--color-bg-elevated)",

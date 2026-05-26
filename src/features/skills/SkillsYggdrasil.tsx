@@ -27,11 +27,17 @@ import {
 const YGGDRASIL_BG = "/assets/Marvel/skills/YGGDRASIL-transparent.png";
 
 type ActiveKind = "visited" | "future";
-type TooltipState = { left: number; top: number; index: number; kind: ActiveKind } | null;
+type TooltipState = { left: number; top: number; width: number; index: number; kind: ActiveKind } | null;
 
-const TOOLTIP_W = 300;
 const TOOLTIP_H = 240;
 const GAP = 6;
+const MARGIN = 12; // minimum distance to viewport edge — keeps tooltip readable
+
+/** Tooltip width adapts to viewport: caps at 300px, shrinks on small phones
+ *  so the popup is never wider than the screen minus a safe margin. */
+function tooltipWidth(vw: number): number {
+  return Math.min(300, vw - MARGIN * 2);
+}
 
 function clampTooltip(
   anchor: DOMRect,
@@ -39,14 +45,18 @@ function clampTooltip(
   vh: number,
   w: number,
   h: number
-): { left: number; top: number } {
-  let left = anchor.left + anchor.width / 2 - w / 2;
+): { left: number; top: number; width: number } {
+  // Final width — never wider than viewport minus the margin on each side.
+  const width = Math.min(w, vw - MARGIN * 2);
+  // Center on the anchor, then clamp.
+  let left = anchor.left + anchor.width / 2 - width / 2;
   let top = anchor.top - h - GAP;
-  if (top < GAP) top = anchor.bottom + GAP;
-  if (left < GAP) left = GAP;
-  if (left + w > vw - GAP) left = vw - w - GAP;
-  if (top + h > vh - GAP) top = Math.max(GAP, vh - h - GAP);
-  return { left, top };
+  if (top < MARGIN) top = anchor.bottom + GAP;
+  // Horizontal clamp — Math.max guards against negative when width === vw - 2*MARGIN
+  left = Math.max(MARGIN, Math.min(left, vw - width - MARGIN));
+  // Vertical clamp (tall tooltip on short viewport)
+  top = Math.max(MARGIN, Math.min(top, vh - h - MARGIN));
+  return { left, top, width };
 }
 
 export function SkillsYggdrasil() {
@@ -55,8 +65,10 @@ export function SkillsYggdrasil() {
 
   const openAt = useCallback((el: Element, i: number, kind: ActiveKind) => {
     const rect = el.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
     setTip({
-      ...clampTooltip(rect, window.innerWidth, window.innerHeight, TOOLTIP_W, TOOLTIP_H),
+      ...clampTooltip(rect, vw, vh, tooltipWidth(vw), TOOLTIP_H),
       index: i,
       kind,
     });
@@ -118,10 +130,10 @@ export function SkillsYggdrasil() {
       </div>
 
       {tip?.kind === "visited" && SKILL_DOMAINS[tip.index] && (
-        <VisitedTooltip domain={SKILL_DOMAINS[tip.index]} left={tip.left} top={tip.top} />
+        <VisitedTooltip domain={SKILL_DOMAINS[tip.index]} left={tip.left} top={tip.top} width={tip.width} />
       )}
       {tip?.kind === "future" && FUTURE_REALMS[tip.index] && (
-        <FutureTooltip realm={FUTURE_REALMS[tip.index]} left={tip.left} top={tip.top} />
+        <FutureTooltip realm={FUTURE_REALMS[tip.index]} left={tip.left} top={tip.top} width={tip.width} />
       )}
     </div>
   );
@@ -235,7 +247,7 @@ function FutureStar({
   );
 }
 
-function VisitedTooltip({ domain, left, top }: { domain: SkillDomain; left: number; top: number }) {
+function VisitedTooltip({ domain, left, top, width }: { domain: SkillDomain; left: number; top: number; width: number }) {
   return (
     <div
       role="tooltip"
@@ -243,7 +255,7 @@ function VisitedTooltip({ domain, left, top }: { domain: SkillDomain; left: numb
       style={{
         left,
         top,
-        width: TOOLTIP_W,
+        width,
         maxHeight: TOOLTIP_H,
         overflowY: "auto",
         background: `linear-gradient(180deg, color-mix(in oklab, ${domain.color} 14%, var(--color-bg-elevated)), var(--color-bg-elevated))`,
@@ -268,7 +280,7 @@ function VisitedTooltip({ domain, left, top }: { domain: SkillDomain; left: numb
   );
 }
 
-function FutureTooltip({ realm, left, top }: { realm: FutureRealm; left: number; top: number }) {
+function FutureTooltip({ realm, left, top, width }: { realm: FutureRealm; left: number; top: number; width: number }) {
   return (
     <div
       role="tooltip"
@@ -276,7 +288,7 @@ function FutureTooltip({ realm, left, top }: { realm: FutureRealm; left: number;
       style={{
         left,
         top,
-        width: TOOLTIP_W,
+        width,
         background: "var(--color-bg-elevated)",
         border: `1px dashed ${realm.color}`,
         boxShadow: `0 16px 48px -16px ${realm.color}66`,

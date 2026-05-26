@@ -70,7 +70,15 @@ export default function DenDenLuffyMedia({ playing, onEnded, alt }: Props) {
   }, [playing]);
 
   return (
-    <div className="relative w-full aspect-[16/10] isolate" aria-label={alt} role="img">
+    // Cap width so the Den-Den-Mushi doesn't dominate the Contact form on
+    // wide screens. overflow-visible so the snail's wobble + receiver
+    // lift extend past the rounded backdrop card border ("getting out
+    // of the card" as the user described).
+    <div
+      className="relative w-full max-w-sm mx-auto aspect-[16/10] isolate overflow-visible"
+      aria-label={alt}
+      role="img"
+    >
       <div className="absolute inset-0 overflow-hidden rounded-lg">
         <img
           src={IMAGE_BG}
@@ -80,12 +88,15 @@ export default function DenDenLuffyMedia({ playing, onEnded, alt }: Props) {
           loading="lazy"
         />
       </div>
+      {/* WEBM overlay sized 120% and offset so the snail's animation
+          spills out of the card frame at the bounce peak. */}
       <video
         ref={overlayRef}
         muted
         playsInline
         preload="auto"
-        className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+        className="absolute object-contain pointer-events-none"
+        style={{ width: "120%", height: "120%", left: "-10%", top: "-10%" }}
         onEnded={onEnded}
       >
         <source src={VIDEO_WEBM} type="video/webm" />
