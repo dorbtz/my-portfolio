@@ -7,6 +7,8 @@ import { Header } from "@/features/chrome/Header";
 import { Footer } from "@/features/chrome/Footer";
 import { Chatbot } from "@/features/ai-chat/Chatbot";
 import { ConditionalChrome } from "@/shared/ui/ConditionalChrome";
+import { EasterEggs } from "@/shared/ui/EasterEggs";
+import { EasterEggEffects } from "@/shared/ui/EasterEggEffects";
 
 // Per-theme display fonts. Each theme's CSS sets --font-display to one of
 // these variables; the body class string just makes the variables available.
@@ -68,6 +70,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       dir={dir}
       data-theme={theme}
       data-scheme={schemeAttr}
+      // Tell Next not to scroll-smooth during route transitions (avoids the
+      // double-scroll feel when navigating between pages). CSS smooth-scroll
+      // still applies to in-page anchor jumps thanks to the same attribute.
+      data-scroll-behavior="smooth"
       className={`${fontHightech.variable} ${fontThor.variable} ${fontLuffy.variable}`}
       suppressHydrationWarning
     >
@@ -83,6 +89,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ConditionalChrome>
           <Chatbot />
         </ConditionalChrome>
+        <EasterEggs />
+        <EasterEggEffects />
       </body>
     </html>
   );

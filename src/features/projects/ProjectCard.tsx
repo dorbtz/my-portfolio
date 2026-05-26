@@ -1,15 +1,12 @@
 import Link from "next/link";
 import type { Project } from "@/types/project";
 import { GlassCard } from "@/shared/ui/GlassCard";
+import { readThemeState } from "@/shared/lib/theme/ssr";
+import { getChromeStrings } from "@/shared/lib/i18n/chrome";
 
-const STATUS_LABEL: Record<Project["status"], string> = {
-  shipped: "Shipped",
-  "in-progress": "In progress",
-  draft: "Concept",
-  archived: "Archived",
-};
-
-export function ProjectCard({ project }: { project: Project }) {
+export async function ProjectCard({ project }: { project: Project }) {
+  const { locale } = await readThemeState();
+  const t = getChromeStrings(locale);
   const isStub = project.status === "draft";
   return (
     <Link
@@ -20,7 +17,7 @@ export function ProjectCard({ project }: { project: Project }) {
       <GlassCard padding={6} className="project-card h-full overflow-hidden transition-transform duration-snap ease-snap group-hover:-translate-y-0.5">
         <div className="flex items-center justify-between gap-3">
           <p className="text-caption uppercase tracking-wider text-accent">
-            {STATUS_LABEL[project.status]}
+            {t.status[project.status]}
           </p>
           {project.tags.length > 0 && (
             <span className="text-caption text-muted">

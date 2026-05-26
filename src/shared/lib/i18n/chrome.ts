@@ -1,12 +1,12 @@
 /**
- * Chrome / nav strings — translated ahead of the AI pipeline (M6).
+ * Chrome / nav / common-UI strings — translated ahead of the AI pipeline.
  * These are short, brand-stable labels worth pinning by hand so the
  * EN/עברית toggle shows real translation immediately. The page-content
- * AI translation (Hero / About / Skills / projects copy / etc.) wires
- * up in M6 via `ai/translate` Server Action + translations_cache.
+ * AI translation (Hero / About / Skills / projects copy / etc.) lives in
+ * the AI translate pipeline (translations_cache + ai/translate Server Action).
  *
- * Keep this list small. If a string isn't chrome (nav / footer / a11y
- * label), it belongs in the AI translation cache, not here.
+ * If a string is prose (a sentence the user reads, not a UI label),
+ * it belongs in the AI translation cache, not here.
  */
 import type { Locale } from "@/shared/lib/theme/types";
 
@@ -22,6 +22,22 @@ type Strings = {
     status: string;
     admin: string;
     builtWith: string;
+  };
+  status: {
+    shipped: string;
+    "in-progress": string;
+    draft: string;
+    archived: string;
+  };
+  common: {
+    allProjects: string;
+    visitLive: string;
+    sourceOnGithub: string;
+    theProblem: string;
+    myRole: string;
+    whatItDoes: string;
+    stack: string;
+    tags: string;
   };
   a11y: {
     primaryNav: string;
@@ -49,6 +65,22 @@ const EN: Strings = {
     admin: "Admin",
     builtWith: "Built with Next.js 16, Supabase, Vercel AI Gateway.",
   },
+  status: {
+    shipped: "Shipped",
+    "in-progress": "In progress",
+    draft: "Concept",
+    archived: "Archived",
+  },
+  common: {
+    allProjects: "All projects",
+    visitLive: "Visit live →",
+    sourceOnGithub: "Source on GitHub",
+    theProblem: "The problem",
+    myRole: "My role",
+    whatItDoes: "What it does",
+    stack: "Stack",
+    tags: "Tags",
+  },
   a11y: {
     primaryNav: "Primary",
     siteControls: "Site controls",
@@ -74,6 +106,22 @@ const HE: Strings = {
     status: "סטטוס",
     admin: "מנהל",
     builtWith: "נבנה עם Next.js 16, Supabase, Vercel AI Gateway.",
+  },
+  status: {
+    shipped: "פורסם",
+    "in-progress": "בעבודה",
+    draft: "רעיון",
+    archived: "בארכיון",
+  },
+  common: {
+    allProjects: "כל הפרויקטים",
+    visitLive: "אתר חי ←",
+    sourceOnGithub: "קוד מקור ב-GitHub",
+    theProblem: "הבעיה",
+    myRole: "התפקיד שלי",
+    whatItDoes: "מה זה עושה",
+    stack: "טכנולוגיות",
+    tags: "תגיות",
   },
   a11y: {
     primaryNav: "ניווט ראשי",

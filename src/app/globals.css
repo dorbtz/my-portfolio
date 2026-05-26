@@ -488,6 +488,37 @@ h1, h2, h3, .text-display, .text-h1, .text-h2 {
 /* RTL bridge — most layout is already logical-property based; this catches a few decorative spots */
 [dir="rtl"] .flip-rtl { transform: scaleX(-1); }
 
+/* Easter-egg effect: Bifrost flash on M-J-O-L combo */
+@keyframes easter-thor-flash {
+  0%   { opacity: 0; }
+  20%  { opacity: 0.45; }
+  100% { opacity: 0; }
+}
+.easter-thor-flash {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 30%, color-mix(in oklab, var(--color-accent) 70%, transparent), transparent 70%),
+    linear-gradient(180deg, color-mix(in oklab, var(--color-accent) 40%, transparent), transparent 60%);
+  animation: easter-thor-flash 1.4s var(--ease-soft) forwards;
+}
+
+/* Easter-egg effect: straw-hat flag rain on L-U-F-F-Y combo */
+@keyframes easter-luffy-drop {
+  0%   { transform: translateY(0)     rotate(-12deg); opacity: 0; }
+  10%  { opacity: 1; }
+  100% { transform: translateY(110vh) rotate(20deg);  opacity: 0; }
+}
+.easter-luffy-drop {
+  animation: easter-luffy-drop 1.3s var(--ease-soft) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .easter-thor-flash,
+  .easter-luffy-drop {
+    animation: none !important;
+    opacity: 0.2 !important;
+  }
+}
+
 /* Visually hidden helper for sr-only-style content (Tailwind has this too but keep explicit) */
 .sr-only {
   position: absolute;
