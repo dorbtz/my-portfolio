@@ -1,13 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import Image from "next/image";
+import { useState, type ReactNode } from "react";
 import { applyScheme, applyTheme } from "../lib/theme/client";
 import { THEME_VALUES, type ColorScheme, type Theme } from "../lib/theme/types";
 
-const LABELS: Record<Theme, { label: string; glyph: string; aria: string }> = {
-  hightech: { label: "High-Tech", glyph: "✨", aria: "Switch to High-Tech theme" },
-  thor: { label: "Thor", glyph: "⚡", aria: "Switch to Thor theme" },
-  luffy: { label: "Luffy", glyph: "🏴", aria: "Switch to Luffy theme" },
+type ThemeGlyph =
+  | { kind: "emoji"; value: string }
+  | { kind: "image"; src: string; alt: string };
+
+const LABELS: Record<Theme, { label: string; glyph: ThemeGlyph; aria: string }> = {
+  hightech: {
+    label: "High-Tech",
+    glyph: { kind: "emoji", value: "✨" },
+    aria: "Switch to High-Tech theme",
+  },
+  thor: {
+    label: "Thor",
+    glyph: { kind: "image", src: "/assets/Marvel/mjolnir.png", alt: "Mjolnir" },
+    aria: "Switch to Thor theme",
+  },
+  luffy: {
+    label: "Luffy",
+    glyph: { kind: "image", src: "/assets/One-Piece/nika-symbol.png", alt: "Nika sun symbol" },
+    aria: "Switch to Luffy theme",
+  },
 };
 
 const SCHEME_LABELS: Record<ColorScheme, { glyph: string; aria: string }> = {
@@ -15,6 +32,23 @@ const SCHEME_LABELS: Record<ColorScheme, { glyph: string; aria: string }> = {
   light: { glyph: "☼", aria: "Switch to light mode" },
   dark: { glyph: "☽", aria: "Switch to dark mode" },
 };
+
+function renderGlyph(g: ThemeGlyph): ReactNode {
+  if (g.kind === "emoji") return <span aria-hidden>{g.value}</span>;
+  // 20×20 image; next/image auto-converts the .png to AVIF/WebP at request time.
+  return (
+    <Image
+      src={g.src}
+      alt=""
+      width={20}
+      height={20}
+      aria-hidden
+      className="select-none pointer-events-none"
+      // Hint to next/image: this is a tiny icon, fetch eagerly with the header
+      priority
+    />
+  );
+}
 
 type Props = {
   initialTheme: Theme;
@@ -50,6 +84,7 @@ export function ThemeSwitcher({ initialTheme, initialScheme }: Props) {
               onClick={() => onThemeChange(t)}
               className={[
                 "h-9 min-w-[44px] px-3 rounded-pill text-body-sm font-medium select-none",
+                "inline-flex items-center justify-center",
                 "transition-[background-color,color,transform] duration-snap ease-snap",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]",
                 "active:scale-[0.96]",
@@ -59,7 +94,7 @@ export function ThemeSwitcher({ initialTheme, initialScheme }: Props) {
               ].join(" ")}
               title={label}
             >
-              <span aria-hidden>{glyph}</span>
+              {renderGlyph(glyph)}
               <span className="sr-only">{label}</span>
             </button>
           );

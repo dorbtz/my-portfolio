@@ -1,17 +1,24 @@
 import Link from "next/link";
 import { PROFILE } from "@/shared/data/profile";
+import { readThemeState } from "@/shared/lib/theme/ssr";
+import { getChromeStrings } from "@/shared/lib/i18n/chrome";
 
-export function Footer() {
+export async function Footer() {
   const year = new Date().getFullYear();
+  const { locale } = await readThemeState();
+  const t = getChromeStrings(locale);
+
   return (
-    <footer className="w-full border-t border-line mt-16">
+    // Pin LTR so the footer's column / link layout doesn't flip in HE mode.
+    // The footer's primary content (name, email, social handles) is Latin/brand.
+    <footer dir="ltr" className="w-full border-t border-line mt-16">
       <div className="max-w-[min(1200px,calc(100%-2rem))] mx-auto py-10 grid gap-6 sm:grid-cols-2">
         <div>
           <p className="font-semibold text-fg">{PROFILE.name}</p>
           <p className="text-body-sm text-muted mt-1">{PROFILE.headline}</p>
           <p className="text-body-sm text-muted mt-1">{PROFILE.location}</p>
         </div>
-        <div className="sm:text-end flex flex-col gap-2 sm:items-end">
+        <div className="sm:text-right flex flex-col gap-2 sm:items-end">
           <a
             href={`mailto:${PROFILE.email}`}
             className="text-body-sm text-fg hover:text-accent transition-colors"
@@ -39,7 +46,7 @@ export function Footer() {
               href="/status"
               className="text-body-sm text-muted hover:text-accent transition-colors"
             >
-              Status
+              {t.footer.status}
             </Link>
           </div>
         </div>
@@ -47,11 +54,10 @@ export function Footer() {
       <div className="border-t border-line">
         <div className="max-w-[min(1200px,calc(100%-2rem))] mx-auto py-4 text-caption text-muted flex flex-wrap items-center justify-between gap-2">
           <span>
-            © {year} {PROFILE.name}. Built with Next.js 16, Supabase, Vercel AI
-            Gateway.
+            © {year} {PROFILE.name}. {t.footer.builtWith}
           </span>
           <Link href="/admin" className="hover:text-accent transition-colors">
-            Admin
+            {t.footer.admin}
           </Link>
         </div>
       </div>
