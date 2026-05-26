@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getAllProjects } from "@/shared/data/queries";
 import { ProjectCard } from "@/features/projects/ProjectCard";
+import { Recommender } from "@/features/projects/Recommender";
 import { Section } from "@/shared/ui/Section";
 import { AppleSpring } from "@/shared/ui/AppleSpring";
 
@@ -22,7 +23,12 @@ export default async function ProjectsIndex() {
             Manually curated — quality over quantity.
           </p>
         </AppleSpring>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-8">
+        <AppleSpring kind="fade-up" delay={120}>
+          <div className="mt-8">
+            <Recommender />
+          </div>
+        </AppleSpring>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-4">
           {projects.map((p, i) => (
             <AppleSpring key={p.slug} kind="fade-up" delay={80 + i * 60}>
               <ProjectCard project={p} />

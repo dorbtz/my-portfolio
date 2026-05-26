@@ -10,6 +10,7 @@ export async function Header() {
     { label: t.nav.work, href: "/#projects" },
     { label: t.nav.about, href: "/#about" },
     { label: t.nav.skills, href: "/#skills" },
+    { label: t.nav.playground, href: "/playground" },
     { label: t.nav.resume, href: "/resume" },
   ];
 

@@ -16,6 +16,7 @@ type Strings = {
     about: string;
     skills: string;
     resume: string;
+    playground: string;
   };
   footer: {
     status: string;
@@ -41,6 +42,7 @@ const EN: Strings = {
     about: "About",
     skills: "Skills",
     resume: "Resume",
+    playground: "Playground",
   },
   footer: {
     status: "Status",
@@ -66,6 +68,7 @@ const HE: Strings = {
     about: "אודות",
     skills: "מיומנויות",
     resume: "קורות חיים",
+    playground: "מגרש משחקים",
   },
   footer: {
     status: "סטטוס",

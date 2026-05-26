@@ -1,19 +1,22 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, useTransition, type FormEvent } from "react";
 import { GlassButton } from "@/shared/ui/GlassButton";
+import { submitMessage } from "./actions";
 
 /**
- * Visual + client-side validation for the contact form. The Server Action
- * that writes to Supabase `messages` + the AI classifier wire up in M6.
- * For now, submitting shows a friendly "received" state without a backend.
+ * Contact form. Submits via a Server Action that:
+ *   1. Validates server-side and inserts to Supabase `messages`
+ *   2. Fires the per-theme media animation (Heimdall / Den-Den)
+ *   3. Kicks off the AI classifier in the background (M6) — not awaited
  */
 export function ContactForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [body, setBody] = useState("");
-  const [status, setStatus] = useState<"idle" | "submitting" | "sent" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
+  const [sent, setSent] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -26,24 +29,29 @@ export function ContactForm() {
       setError("That email doesn't look right.");
       return;
     }
-    setStatus("submitting");
-    // Tell ThemeContactMedia to play the Heimdall / Den-Den-Mushi overlay
-    // animation. The wrapper listens for this custom event.
+    // Trigger the per-theme media animation immediately for snappy feedback.
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent("pf-contact-submit"));
     }
-    // Stub: M6 replaces this with a Server Action that persists to Supabase
-    // messages + runs the AI classifier in the background.
-    setTimeout(() => setStatus("sent"), 600);
+    startTransition(async () => {
+      const result = await submitMessage({ name: name.trim(), email: email.trim(), message: body.trim() });
+      if (result.ok) {
+        setSent(true);
+      } else {
+        setError(result.error);
+      }
+    });
   }
+
+  const status: "idle" | "submitting" | "sent" | "error" =
+    sent ? "sent" : isPending ? "submitting" : error ? "error" : "idle";
 
   if (status === "sent") {
     return (
       <div role="status" aria-live="polite" className="text-center py-6">
         <p className="text-h3 font-semibold">Got it. ✨</p>
         <p className="text-body text-muted mt-2">
-          (Inbox persistence + AI classification ship in M6 — for now this is
-          a UI-only preview. Email me directly if it&apos;s urgent.)
+          Your message is in the inbox. I&apos;ll reply within a couple of days.
         </p>
       </div>
     );
