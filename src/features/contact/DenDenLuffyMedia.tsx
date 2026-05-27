@@ -9,16 +9,28 @@ import { useEffect, useRef, useSyncExternalStore } from "react";
 import { isMutedWebm, onWebmMuteChange } from "@/shared/lib/audio";
 
 /**
- * Luffy-mode Contact card visual — static background image with a
- * transparent WEBM overlay of the Den-Den-Mushi snail at rest.
+ * Luffy-mode Contact card visual — wooden-table backdrop with the
+ * Den-Den-Mushi snail overlaid.
  *
- * On `playing=true` the snail animates (rings); when `playing=false` it
- * pauses at frame 0 so the resting snail stays visible.
+ * Cross-platform video strategy mirrors HeimdallMedia:
+ *   - <source webm> primary  -> Chrome / Firefox / Edge use VP9 alpha
+ *                                so the snail floats cleanly above the
+ *                                wood-grain bg.
+ *   - <source mp4>  fallback -> Safari / iOS use the MP4 (no alpha,
+ *                                solid bg). `mix-blend-mode: screen`
+ *                                blends the dark areas into the wood-
+ *                                grain, and the video lives INSIDE the
+ *                                bg-card's overflow-hidden wrapper so any
+ *                                leftover halo is clipped at the card
+ *                                edge instead of leaking onto the cream
+ *                                page (the iOS "black box" bug the user
+ *                                reported).
  *
- * Muted by default (sound toggle ships in M8 alongside other polish).
+ * Muted by default (Voice pill flips both Heimdall + Snail WEBM audio).
  */
 
 const VIDEO_WEBM = "/assets/One-Piece/dendenluffy/dendenluffyg5-live-transparent.webm";
+const VIDEO_MP4 = "/assets/One-Piece/dendenluffy/dendenluffyg5-live-transparent.mp4";
 const IMAGE_BG = "/assets/One-Piece/dendenluffy/DenDenBackground.png";
 
 type Props = {
@@ -77,24 +89,16 @@ export default function DenDenLuffyMedia({ playing, onEnded, alt }: Props) {
   }, [playing]);
 
   return (
-    // Outer stage is wider so the snail WEBM has room to grow without being
-    // clipped, while the actual painted bg-image card is INSET (narrower)
-    // inside the stage. End result: the wooden-bar card reads as a smaller
-    // tabletop scene, and the snail looms over it — exactly what the user
-    // asked for ("background card less wide, snail can be bigger, animation
-    // has room to work").
+    // 16/11 stage — bg card spans the full width now (no narrower inset),
+    // and the video lives INSIDE the card so its black overflow on iOS
+    // gets clipped at the rounded card edge instead of leaking onto the
+    // cream page.
     <div
-      className="relative w-full max-w-[380px] mx-auto aspect-[16/11] isolate overflow-visible"
+      className="relative w-full max-w-[380px] mx-auto aspect-[16/11] isolate"
       aria-label={alt}
       role="img"
     >
-      {/* Painted bg card — narrower than the stage (~72 % width), full
-          height, centred. Rounded + clipped so the wood texture reads as
-          a discrete tabletop card. */}
-      <div
-        className="absolute top-0 bottom-0 overflow-hidden rounded-lg"
-        style={{ left: "14%", right: "14%" }}
-      >
+      <div className="absolute inset-0 overflow-hidden rounded-lg">
         <img
           src={IMAGE_BG}
           alt=""
@@ -102,29 +106,31 @@ export default function DenDenLuffyMedia({ playing, onEnded, alt }: Props) {
           className="absolute inset-0 w-full h-full object-cover"
           loading="lazy"
         />
+        {/* Snail sized 140 % so it still looms over the tabletop, but
+            clipped to the card so iOS-black halo never escapes onto the
+            cream page. `mix-blend-mode: screen` removes the dark MP4 bg
+            against the wood grain on Safari/iOS; on Chrome/Firefox the
+            WEBM has true alpha so the blend is a no-op. */}
+        <video
+          ref={overlayRef}
+          muted={webmMuted}
+          playsInline
+          preload="auto"
+          poster={IMAGE_BG}
+          className="absolute object-contain pointer-events-none"
+          style={{
+            width: "140%",
+            height: "140%",
+            left: "-20%",
+            top: "-20%",
+            mixBlendMode: "screen",
+          }}
+          onEnded={onEnded}
+        >
+          <source src={VIDEO_WEBM} type="video/webm" />
+          <source src={VIDEO_MP4} type="video/mp4" />
+        </video>
       </div>
-      {/* Snail WEBM sized 185 % so it visibly looms over the tabletop.
-          `mix-blend-mode: screen` cancels the black background iOS Safari
-          paints when it drops the VP9 alpha channel — black blended with
-          the dark wood backdrop disappears, restoring the cut-out look
-          without re-encoding the WEBM. */}
-      <video
-        ref={overlayRef}
-        muted={webmMuted}
-        playsInline
-        preload="auto"
-        className="absolute object-contain pointer-events-none"
-        style={{
-          width: "185%",
-          height: "185%",
-          left: "0%",
-          top: "-40%",
-          mixBlendMode: "screen",
-        }}
-        onEnded={onEnded}
-      >
-        <source src={VIDEO_WEBM} type="video/webm" />
-      </video>
     </div>
   );
 }

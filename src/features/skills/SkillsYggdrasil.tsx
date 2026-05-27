@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import {
   FUTURE_REALMS,
   FUTURE_REALM_STARS,
@@ -156,12 +157,19 @@ function StarLabel({ text, accent }: { text: string; accent: string }) {
 }
 
 function CardOverlay({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
-  return (
-    // skill-card-overlay class is targeted by globals.css to drop the dark
-    // backdrop + blur on Thor + light mode (per user request — the dark
-    // overlay clashes with the bright theme; the card alone reads cleaner).
+  // Portal to <body> so position:fixed escapes the MobileZoomPan transform
+  // ancestor. Without this, `fixed` resolves to the transformed element's
+  // box and the card gets clipped inside the map on mobile.
+  // useSyncExternalStore = hydration-safe "are we on the client?" check.
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+  if (!mounted) return null;
+  return createPortal(
     <div
-      className="skill-card-overlay fixed inset-0 z-[90] grid place-items-center p-4 sm:p-6"
+      className="skill-card-overlay fixed inset-0 z-[100] grid place-items-center p-4 sm:p-6"
       style={{ background: "rgba(8, 12, 28, 0.7)", backdropFilter: "blur(3px)" }}
       onClick={onClose}
       role="presentation"
@@ -170,13 +178,12 @@ function CardOverlay({ children, onClose }: { children: React.ReactNode; onClose
         role="dialog"
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
-        // Tighter on phones (88vw with a 420 px cap) so the realm card
-        // doesn't feel oversized; full desktop sizing on sm+.
         className="w-full max-w-[min(420px,88vw)] sm:max-w-[min(540px,92vw)] max-h-[85dvh] overflow-y-auto"
       >
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -237,7 +244,7 @@ function RealmStar({
       {...bindStarHandlers(h, setHovered)}
       className={[
         "absolute -translate-x-1/2 -translate-y-1/2",
-        "w-9 h-9 sm:w-11 sm:h-11 rounded-full border-2",
+        "w-5 h-5 sm:w-11 sm:h-11 rounded-full border-2",
         "grid place-items-center text-caption font-bold uppercase tracking-wider",
         "transition-[transform,box-shadow] duration-snap ease-snap",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]",
@@ -254,7 +261,7 @@ function RealmStar({
           : `0 0 12px 2px color-mix(in oklab, ${domain.color} 40%, transparent)`,
       }}
     >
-      {domain.realm.charAt(0)}
+      <span className="hidden sm:inline">{domain.realm.charAt(0)}</span>
       {hovered && h.canHover && <StarLabel text={domain.realm} accent={domain.color} />}
     </button>
   );
@@ -276,7 +283,7 @@ function FutureStar({
       {...bindStarHandlers(h, setHovered)}
       className={[
         "absolute -translate-x-1/2 -translate-y-1/2",
-        "w-11 h-11 sm:w-7 sm:h-7 rounded-full",
+        "w-4 h-4 sm:w-7 sm:h-7 rounded-full",
         "transition-[transform,opacity] duration-snap ease-snap",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]",
         "hover:scale-150 focus-visible:scale-150",

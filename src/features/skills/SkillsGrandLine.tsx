@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import {
   DAWN_ISLAND,
   ENIES_LOBBY,
@@ -251,9 +252,21 @@ function MarkerLabel({
 }
 
 function CardOverlay({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
-  return (
+  // Portal to <body> so position:fixed escapes the MobileZoomPan transform
+  // ancestor. With a CSS transform in the chain, `fixed` resolves to the
+  // transformed element's box instead of the viewport — which clipped the
+  // card inside the map on mobile (user-reported "card stuck in the map").
+  // useSyncExternalStore = hydration-safe "are we on the client?" check
+  // without the lint-flagged setState-in-effect pattern.
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+  if (!mounted) return null;
+  return createPortal(
     <div
-      className="fixed inset-0 z-[90] grid place-items-center p-4 sm:p-6"
+      className="fixed inset-0 z-[100] grid place-items-center p-4 sm:p-6"
       style={{ background: "rgba(8, 12, 28, 0.65)", backdropFilter: "blur(2px)" }}
       onClick={onClose}
       role="presentation"
@@ -262,13 +275,12 @@ function CardOverlay({ children, onClose }: { children: React.ReactNode; onClose
         role="dialog"
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
-        // Tighter on phones (88vw with a 420 px cap) so the card doesn't
-        // feel oversized; same desktop sizing (540 px / 92vw) on sm+.
         className="w-full max-w-[min(420px,88vw)] sm:max-w-[min(540px,92vw)] max-h-[85dvh] overflow-y-auto"
       >
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -336,7 +348,7 @@ function LandmarkMarker({
       type="button"
       aria-label={`${island.island} — ${island.sub}`}
       {...bindHandlers(h, setHovered)}
-      className={MARKER_BASE + "w-9 h-9 sm:w-10 sm:h-10 overflow-visible"}
+      className={MARKER_BASE + "w-5 h-5 sm:w-10 sm:h-10 overflow-visible"}
       style={{
         left: `${island.pos.x}%`,
         top: `${island.pos.y}%`,
@@ -381,7 +393,7 @@ function VisitedMarker({
       type="button"
       aria-label={`${domain.island} — ${domain.name}`}
       {...bindHandlers(h, setHovered)}
-      className={MARKER_BASE + "w-7 h-7 sm:w-8 sm:h-8 overflow-visible"}
+      className={MARKER_BASE + "w-4 h-4 sm:w-8 sm:h-8 overflow-visible"}
       style={{
         left: `${pos.x}%`,
         top: `${pos.y}%`,
@@ -429,7 +441,7 @@ function PostParadiseMarker({
       {...bindHandlers(h, setHovered)}
       className={
         MARKER_BASE +
-        (isFuture ? "w-6 h-6 sm:w-7 sm:h-7 " : "w-7 h-7 sm:w-8 sm:h-8 ") +
+        (isFuture ? "w-3.5 h-3.5 sm:w-7 sm:h-7 " : "w-4 h-4 sm:w-8 sm:h-8 ") +
         (isCurrent ? "grandline-current-pulse " : "") +
         "overflow-visible"
       }

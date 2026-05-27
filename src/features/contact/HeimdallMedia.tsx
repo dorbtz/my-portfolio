@@ -10,16 +10,26 @@ import { isMutedWebm, onWebmMuteChange } from "@/shared/lib/audio";
 
 /**
  * Thor-mode Contact card visual — heimall3-bg.png (the painted backdrop)
- * with the transparent Heimdall WEBM (sword sweep, glow) overlaid in the
- * exact same spot on every screen size.
+ * with the Heimdall sword sweep overlaid in the exact same spot on every
+ * screen size.
  *
- * Per user request the cartoon heimdall.png foreground figure was dropped;
- * only the painted backdrop + the WEBM remain. The WEBM is sized larger
- * than the frame (135 %) and offset so it sits visually centred while
- * spilling slightly past the card border at the animation peak.
+ * Cross-platform video strategy:
+ *   - <source webm> first  -> Chrome / Firefox / Edge play it with full
+ *                              VP9-alpha transparency, layered cleanly on
+ *                              top of the bifrost backdrop.
+ *   - <source mp4> fallback -> Safari / iOS use this; the MP4 has a black
+ *                              background baked in. We keep `mix-blend-mode:
+ *                              screen` so any black blends to nothing on
+ *                              the dark Asgard backdrop, AND we render the
+ *                              video INSIDE the bg-card's overflow-hidden
+ *                              wrapper so any leftover black halo is clipped
+ *                              at the card edge instead of spilling onto
+ *                              the page (the iOS "black box" bug the user
+ *                              reported).
  */
 
 const VIDEO_WEBM = "/assets/Marvel/heimdall/heimdall.webm";
+const VIDEO_MP4 = "/assets/Marvel/heimdall/heimdall.mp4";
 const IMAGE_BG = "/assets/Marvel/heimdall/heimall3-bg.png";
 
 type Props = {
@@ -81,17 +91,15 @@ export default function HeimdallMedia({ playing, onEnded, alt }: Props) {
   }, [playing]);
 
   return (
-    // 4/5 aspect (taller than the previous 16/10) so the portrait Asgard
-    // backdrop — runic doorway at the top, full bifrost descending,
-    // golden floor + runic mandala at the bottom — actually fits.
-    // 320 px wide keeps the card narrow on every breakpoint per user
-    // request. Background uses `object-cover` with the natural centre
-    // position so the bifrost reads top-to-bottom without crushing.
+    // 4/5 portrait so the bifrost backdrop fits top-to-bottom.
     <div
-      className="relative w-full max-w-[320px] mx-auto aspect-[4/5] isolate overflow-visible"
+      className="relative w-full max-w-[320px] mx-auto aspect-[4/5] isolate"
       aria-label={alt}
       role="img"
     >
+      {/* Clipped stage — bg image + video share this overflow-hidden,
+          rounded wrapper. Any MP4-black halo from iOS gets clipped at the
+          rounded edge instead of leaking onto the page. */}
       <div className="absolute inset-0 overflow-hidden rounded-lg">
         <img
           src={IMAGE_BG}
@@ -100,29 +108,32 @@ export default function HeimdallMedia({ playing, onEnded, alt }: Props) {
           className="absolute inset-0 w-full h-full object-cover object-center"
           loading="lazy"
         />
+        {/* Video sized 130 % so the sword still feels like it sweeps past
+            the frame, but lives INSIDE the clipped wrapper so iOS-black
+            never escapes the card. `mix-blend-mode: screen` makes the WEBM
+            transparency-as-black (on iOS) blend invisibly with the dark
+            Asgard backdrop; on Chrome/Firefox the WEBM already has true
+            alpha so the blend is a no-op. */}
+        <video
+          ref={overlayRef}
+          muted={webmMuted}
+          playsInline
+          preload="auto"
+          poster={IMAGE_BG}
+          className="absolute object-contain pointer-events-none"
+          style={{
+            width: "130%",
+            height: "130%",
+            left: "-15%",
+            top: "-15%",
+            mixBlendMode: "screen",
+          }}
+          onEnded={onEnded}
+        >
+          <source src={VIDEO_WEBM} type="video/webm" />
+          <source src={VIDEO_MP4} type="video/mp4" />
+        </video>
       </div>
-      {/* WEBM overlay sized 150 %. iOS Safari drops the alpha channel on
-          VP9-alpha WEBMs, painting black where the transparent area
-          should be — `mix-blend-mode: screen` makes that black composite
-          to nothing on top of the darker Asgard backdrop, restoring the
-          cut-out look without re-encoding the video. */}
-      <video
-        ref={overlayRef}
-        muted={webmMuted}
-        playsInline
-        preload="auto"
-        className="absolute object-contain pointer-events-none"
-        style={{
-          width: "150%",
-          height: "150%",
-          left: "0%",
-          top: "-25%",
-          mixBlendMode: "screen",
-        }}
-        onEnded={onEnded}
-      >
-        <source src={VIDEO_WEBM} type="video/webm" />
-      </video>
     </div>
   );
 }
