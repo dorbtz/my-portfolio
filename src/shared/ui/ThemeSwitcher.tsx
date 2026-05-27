@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { applyScheme, applyTheme } from "../lib/theme/client";
 import { THEME_VALUES, type ColorScheme, type Theme } from "../lib/theme/types";
 
@@ -71,8 +71,31 @@ type Props = {
 };
 
 export function ThemeSwitcher({ initialTheme, initialScheme }: Props) {
+  // Seed with the SSR-passed values so hydration matches the server render,
+  // then subscribe to <html data-theme>/<html data-scheme> via
+  // MutationObserver so the active button is ALWAYS in sync with the live
+  // DOM state — even after a remount (e.g. the MobileSettingsMenu
+  // dropdown unmounts the switcher on close and remounts it on open; with
+  // the old code that remount reset the active button to the SSR-time
+  // theme, so reopening the menu always showed Luffy regardless of the
+  // currently-applied theme).
   const [theme, setTheme] = useState<Theme>(initialTheme);
   const [scheme, setScheme] = useState<ColorScheme>(initialScheme);
+
+  useEffect(() => {
+    const el = document.documentElement;
+    const read = () => {
+      const t = el.dataset.theme;
+      if (t === "hightech" || t === "thor" || t === "luffy") setTheme(t);
+      const s = el.dataset.scheme;
+      if (s === "light" || s === "dark") setScheme(s);
+      else if (s === undefined) setScheme("auto");
+    };
+    read();
+    const obs = new MutationObserver(read);
+    obs.observe(el, { attributes: true, attributeFilter: ["data-theme", "data-scheme"] });
+    return () => obs.disconnect();
+  }, []);
 
   function onThemeChange(next: Theme) {
     setTheme(next);

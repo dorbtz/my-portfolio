@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { applyLocale } from "../lib/theme/client";
 import { LOCALE_VALUES, type Locale } from "../lib/theme/types";
@@ -29,9 +29,26 @@ type Props = {
  * the delay so the user knows something is happening.
  */
 export function LangSwitcher({ initialLocale }: Props) {
+  // Seed from SSR-passed value, then subscribe to <html lang> so the
+  // active button always reflects the live DOM state — necessary because
+  // MobileSettingsMenu unmounts/remounts this on every open/close, and
+  // without live sync the remount resets the active button to the
+  // SSR-time locale (showed EN even after switching to HE).
   const [locale, setLocale] = useState<Locale>(initialLocale);
   const [pending, start] = useTransition();
   const router = useRouter();
+
+  useEffect(() => {
+    const el = document.documentElement;
+    const read = () => {
+      const v = el.lang;
+      if (v === "en" || v === "he") setLocale(v);
+    };
+    read();
+    const obs = new MutationObserver(read);
+    obs.observe(el, { attributes: true, attributeFilter: ["lang"] });
+    return () => obs.disconnect();
+  }, []);
 
   function pick(next: Locale) {
     if (next === locale && !pending) return;
