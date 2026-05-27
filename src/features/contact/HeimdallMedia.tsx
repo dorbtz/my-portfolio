@@ -28,14 +28,13 @@ import { isMutedWebm, onWebmMuteChange } from "@/shared/lib/audio";
  *                              reported).
  */
 
-// HEVC-with-alpha source for Safari/iOS — drop the file at this path
-// (codec tag MUST be `hvc1`, encode via Rotato Converter on Windows or
-// hevc_videotoolbox on macOS) and Safari picks it FIRST, getting real
-// transparency. Until that file exists Safari falls through to WebM/MP4
-// (where alpha is dropped → black bg shows inside the card).
+// Two-source strategy (no H.264 fallback — per user request):
+//   - HEVC-alpha (hvc1) MP4 → Safari / iOS pick this and get real alpha.
+//   - WebM / VP9-alpha      → Chrome / Firefox / Edge use this.
+// No legacy H.264 fallback. Any browser that supports neither (essentially
+// none in 2026) gets the poster image and no video.
 const VIDEO_HEVC = "/assets/Marvel/heimdall/heimdall-hevc.mp4";
 const VIDEO_WEBM = "/assets/Marvel/heimdall/heimdall.webm";
-const VIDEO_MP4 = "/assets/Marvel/heimdall/heimdall.mp4";
 const IMAGE_BG = "/assets/Marvel/heimdall/heimall3-bg.png";
 
 type Props = {
@@ -114,17 +113,8 @@ export default function HeimdallMedia({ playing, onEnded, alt }: Props) {
           className="absolute inset-0 w-full h-full object-cover object-center"
           loading="lazy"
         />
-        {/* Source order matters:
-              1. HEVC-alpha MP4 (hvc1) — Safari/iOS pick this and get real
-                 transparency on the bifrost backdrop. Until the file
-                 exists at the path above, Safari fails the load and
-                 silently falls through to source #2/#3.
-              2. WebM/VP9-alpha — Chrome/Firefox/Edge use this with full
-                 alpha. Safari can decode VP9 but strips the alpha plane
-                 (Apple has never shipped VP9-alpha support — confirmed
-                 across iOS 13–18 per Jake Archibald's 2024 research +
-                 BobbyKegel 2025).
-              3. MP4 (H.264) — legacy fallback, no alpha. */}
+        {/* HEVC-alpha first → Safari/iOS pick it.
+            WebM/VP9-alpha second → Chrome/Firefox/Edge pick it. */}
         <video
           ref={overlayRef}
           muted={webmMuted}
@@ -142,7 +132,6 @@ export default function HeimdallMedia({ playing, onEnded, alt }: Props) {
         >
           <source src={VIDEO_HEVC} type='video/mp4; codecs="hvc1"' />
           <source src={VIDEO_WEBM} type="video/webm" />
-          <source src={VIDEO_MP4} type="video/mp4" />
         </video>
       </div>
     </div>
