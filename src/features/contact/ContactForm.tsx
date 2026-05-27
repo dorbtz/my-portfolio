@@ -31,10 +31,6 @@ export function ContactForm() {
       setError(t.badEmail);
       return;
     }
-    // Trigger the per-theme media animation immediately for snappy feedback.
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(new CustomEvent("pf-contact-submit"));
-    }
     startTransition(async () => {
       const result = await submitMessage({ name: name.trim(), email: email.trim(), message: body.trim() });
       if (result.ok) {

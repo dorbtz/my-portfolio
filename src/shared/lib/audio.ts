@@ -7,20 +7,12 @@
  *      for (so the page does no audio work when ambient theming is silent).
  *   2. Play is gated on the first real user gesture (pointerdown / keydown /
  *      touchstart). Calls before that gesture are NO-OPS — never queued.
- *   3. TWO INDEPENDENT mute flags persisted to localStorage:
- *
- *        pf-sound       → ambient theme music (drums-of-liberation, thunder)
- *        pf-sound-webm  → contact-card WEBM audio (Heimdall sword,
- *                          Den-Den snail ring)
- *
- *      Both default to MUTED on first visit so nothing plays unexpectedly.
- *      Two floating pills (Music + Voice) flip them independently — the
- *      user can have the ambient music off but the WEBM ringing, or vice
- *      versa, or both off, or both on.
+ *   3. One mute flag persisted to localStorage as `pf-sound` covering the
+ *      ambient theme music (Luffy drums of liberation, Thor thunder).
+ *      Default = muted (autoplay-safe). One floating pill flips it.
  *
  * Public API: playSfx, startLoop, stopLoop, setMuted, isMuted, onMuteChange,
- * setMutedWebm, isMutedWebm, onWebmMuteChange, isReady, stopAll.
- * Use it from "use client" components only.
+ * isReady, stopAll. Use it from "use client" components only.
  */
 
 export type SfxName = "thunder" | "drums";
@@ -41,14 +33,11 @@ const LOOPS: Record<SfxName, boolean> = {
 };
 
 const STORAGE_KEY_MUSIC = "pf-sound"; // ambient theme music: "on" | "off"
-const STORAGE_KEY_WEBM = "pf-sound-webm"; // WEBM contact audio: "on" | "off"
 
 let cache: Partial<Record<SfxName, HTMLAudioElement>> = {};
 let gestureFired = false;
 let muted = readInitialMuted(STORAGE_KEY_MUSIC);
-let webmMuted = readInitialMuted(STORAGE_KEY_WEBM);
 const muteListeners = new Set<(muted: boolean) => void>();
-const webmMuteListeners = new Set<(muted: boolean) => void>();
 
 function readInitialMuted(key: string): boolean {
   if (typeof window === "undefined") return true;
@@ -125,25 +114,6 @@ export function setMuted(next: boolean): void {
       }
     }
   }
-}
-
-/** WEBM voice (contact-card video audio) — INDEPENDENT from the music
- *  channel.  HeimdallMedia + DenDenLuffyMedia subscribe via
- *  onWebmMuteChange and flip their `<video muted>` accordingly. */
-export function isMutedWebm(): boolean {
-  return webmMuted;
-}
-
-export function onWebmMuteChange(fn: (muted: boolean) => void): () => void {
-  webmMuteListeners.add(fn);
-  return () => webmMuteListeners.delete(fn);
-}
-
-export function setMutedWebm(next: boolean): void {
-  if (webmMuted === next) return;
-  webmMuted = next;
-  persistMuted(STORAGE_KEY_WEBM, next);
-  webmMuteListeners.forEach((fn) => fn(next));
 }
 
 export function playSfx(name: SfxName): void {

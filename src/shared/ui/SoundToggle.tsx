@@ -1,36 +1,18 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import {
-  isMuted,
-  isMutedWebm,
-  onMuteChange,
-  onWebmMuteChange,
-  setMuted,
-  setMutedWebm,
-} from "../lib/audio";
+import { isMuted, onMuteChange, setMuted } from "../lib/audio";
 
 /**
- * Floating audio toggles. Two INDEPENDENT mute pills — one for the ambient
- * theme music (Luffy drums of liberation / Thor thunder), one for the
- * contact-card WEBM audio (Heimdall sword, Den-Den snail). The user can
- * silence either, both, or neither — they don't share a flag.
- *
- * Both pills are hidden on `data-theme="hightech"` because the default
- * theme has no theme-specific audio surface. Default state for both is
- * muted (autoplay-safe) — first click in each opts in.
+ * Ambient music toggle — single pill that mutes the per-theme background
+ * loop (Luffy drums of liberation / Thor thunder). Hidden on
+ * `data-theme="hightech"` because the default theme has no audio. Default
+ * is muted (autoplay-safe); first click opts in.
  */
 export function SoundToggle() {
-  // Hooks at top — `useSyncExternalStore` must run on every render, not
-  // gated behind the `if (theme === "hightech")` short-circuit below.
   const musicMuted = useSyncExternalStore(
     (cb) => onMuteChange(() => cb()),
     isMuted,
-    () => true
-  );
-  const webmMuted = useSyncExternalStore(
-    (cb) => onWebmMuteChange(() => cb()),
-    isMutedWebm,
     () => true
   );
   const [theme, setTheme] = useState<"hightech" | "thor" | "luffy">("hightech");
@@ -49,56 +31,24 @@ export function SoundToggle() {
 
   if (theme === "hightech") return null;
 
-  const musicLabel = theme === "thor" ? "Thunder" : "Drums";
+  const label = theme === "thor" ? "Thunder" : "Drums";
 
   return (
     <div className="flex items-center gap-1.5">
-      <Pill
-        kind="music"
-        on={!musicMuted}
-        labelOn={`${musicLabel} on`}
-        labelOff={`${musicLabel} off`}
-        iconOn="🎵"
-        iconOff="🎵"
-      />
-      <Pill
-        kind="webm"
-        on={!webmMuted}
-        labelOn="Voice on"
-        labelOff="Voice off"
-        iconOn="🔊"
-        iconOff="🔇"
-      />
+      <Pill on={!musicMuted} labelOn={`${label} on`} labelOff={`${label} off`} />
     </div>
   );
 }
 
-/** Single audio pill — minimal local UI so both mutes look + feel identical
- *  in the cluster while controlling different audio modules. */
-function Pill({
-  kind,
-  on,
-  labelOn,
-  labelOff,
-  iconOn,
-  iconOff,
-}: {
-  kind: "music" | "webm";
-  on: boolean;
-  labelOn: string;
-  labelOff: string;
-  iconOn: string;
-  iconOff: string;
-}) {
+function Pill({ on, labelOn, labelOff }: { on: boolean; labelOn: string; labelOff: string }) {
   const muted = !on;
-  const setter = kind === "music" ? setMuted : setMutedWebm;
   return (
     <button
       type="button"
       aria-pressed={on}
       aria-label={muted ? labelOff : labelOn}
       title={muted ? labelOff : labelOn}
-      onClick={() => setter(muted ? false : true)}
+      onClick={() => setMuted(muted ? false : true)}
       className={[
         "glass rounded-pill h-10 min-w-10 px-2.5 flex items-center gap-1 select-none",
         "transition-[background-color,color,transform] duration-snap ease-snap",
@@ -109,9 +59,7 @@ function Pill({
           : "bg-[var(--color-accent)] text-[var(--color-accent-contrast)]",
       ].join(" ")}
     >
-      <span aria-hidden className="text-base leading-none">
-        {muted ? iconOff : iconOn}
-      </span>
+      <span aria-hidden className="text-base leading-none">🎵</span>
     </button>
   );
 }
