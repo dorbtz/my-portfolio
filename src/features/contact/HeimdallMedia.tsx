@@ -109,11 +109,12 @@ export default function HeimdallMedia({ playing, onEnded, alt }: Props) {
           loading="lazy"
         />
         {/* Video sized 130 % so the sword still feels like it sweeps past
-            the frame, but lives INSIDE the clipped wrapper so iOS-black
-            never escapes the card. `mix-blend-mode: screen` makes the WEBM
-            transparency-as-black (on iOS) blend invisibly with the dark
-            Asgard backdrop; on Chrome/Firefox the WEBM already has true
-            alpha so the blend is a no-op. */}
+            the frame, but lives INSIDE the clipped wrapper so any fallback
+            black bg never escapes the card. Modern iOS 16+ + every desktop
+            browser play the WEBM with true VP9 alpha — no blend mode
+            needed; the figure renders opaquely on top of the bifrost
+            backdrop. Shifted right (+8 % left) per user note that Heimdall
+            sat too far left in the frame. */}
         <video
           ref={overlayRef}
           muted={webmMuted}
@@ -124,9 +125,8 @@ export default function HeimdallMedia({ playing, onEnded, alt }: Props) {
           style={{
             width: "130%",
             height: "130%",
-            left: "-15%",
+            left: "8%",
             top: "-15%",
-            mixBlendMode: "screen",
           }}
           onEnded={onEnded}
         >

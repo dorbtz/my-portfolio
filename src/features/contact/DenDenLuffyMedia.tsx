@@ -107,10 +107,12 @@ export default function DenDenLuffyMedia({ playing, onEnded, alt }: Props) {
           loading="lazy"
         />
         {/* Snail sized 140 % so it still looms over the tabletop, but
-            clipped to the card so iOS-black halo never escapes onto the
-            cream page. `mix-blend-mode: screen` removes the dark MP4 bg
-            against the wood grain on Safari/iOS; on Chrome/Firefox the
-            WEBM has true alpha so the blend is a no-op. */}
+            clipped to the card so any fallback black bg never escapes
+            onto the cream page. Modern iOS 16+ + every desktop browser
+            play the WEBM with true VP9 alpha — no blend mode needed;
+            the snail renders opaquely on top of the wood-grain backdrop.
+            Shifted right (+8 % left) per user note that the snail sat
+            too far left in the frame. */}
         <video
           ref={overlayRef}
           muted={webmMuted}
@@ -121,9 +123,8 @@ export default function DenDenLuffyMedia({ playing, onEnded, alt }: Props) {
           style={{
             width: "140%",
             height: "140%",
-            left: "-20%",
+            left: "8%",
             top: "-20%",
-            mixBlendMode: "screen",
           }}
           onEnded={onEnded}
         >
