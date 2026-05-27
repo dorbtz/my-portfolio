@@ -29,6 +29,12 @@ import { isMutedWebm, onWebmMuteChange } from "@/shared/lib/audio";
  * Muted by default (Voice pill flips both Heimdall + Snail WEBM audio).
  */
 
+// HEVC-with-alpha source for Safari/iOS — drop the file at this path
+// (codec tag MUST be `hvc1`, encode via Rotato Converter on Windows or
+// hevc_videotoolbox on macOS) and Safari picks it FIRST, getting real
+// transparency. Until that file exists Safari falls through to WebM/MP4
+// (where alpha is dropped → black bg shows inside the card).
+const VIDEO_HEVC = "/assets/One-Piece/dendenluffy/dendenluffyg5-live-transparent-hevc.mp4";
 const VIDEO_WEBM = "/assets/One-Piece/dendenluffy/dendenluffyg5-live-transparent.webm";
 const VIDEO_MP4 = "/assets/One-Piece/dendenluffy/dendenluffyg5-live-transparent.mp4";
 const IMAGE_BG = "/assets/One-Piece/dendenluffy/DenDenBackground.png";
@@ -106,13 +112,14 @@ export default function DenDenLuffyMedia({ playing, onEnded, alt }: Props) {
           className="absolute inset-0 w-full h-full object-cover"
           loading="lazy"
         />
-        {/* Snail sized 140 % so it still looms over the tabletop, but
-            clipped to the card so any fallback black bg never escapes
-            onto the cream page. Modern iOS 16+ + every desktop browser
-            play the WEBM with true VP9 alpha — no blend mode needed;
-            the snail renders opaquely on top of the wood-grain backdrop.
-            Shifted right (+8 % left) per user note that the snail sat
-            too far left in the frame. */}
+        {/* Source order matters:
+              1. HEVC-alpha MP4 (hvc1) — Safari/iOS pick this and get real
+                 transparency on the wood-grain backdrop.
+              2. WebM/VP9-alpha — Chrome/Firefox/Edge use this with full
+                 alpha. Safari decodes VP9 but strips alpha (never been
+                 supported on Safari — confirmed across iOS 13–18 per
+                 Jake Archibald 2024).
+              3. MP4 (H.264) — legacy fallback, no alpha. */}
         <video
           ref={overlayRef}
           muted={webmMuted}
@@ -123,11 +130,12 @@ export default function DenDenLuffyMedia({ playing, onEnded, alt }: Props) {
           style={{
             width: "140%",
             height: "140%",
-            left: "8%",
+            left: "-5%",
             top: "-20%",
           }}
           onEnded={onEnded}
         >
+          <source src={VIDEO_HEVC} type='video/mp4; codecs="hvc1"' />
           <source src={VIDEO_WEBM} type="video/webm" />
           <source src={VIDEO_MP4} type="video/mp4" />
         </video>

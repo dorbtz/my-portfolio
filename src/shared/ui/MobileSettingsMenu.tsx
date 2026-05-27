@@ -84,15 +84,15 @@ export function MobileSettingsMenu({ initialTheme, initialScheme, initialLocale 
           role="dialog"
           aria-label="Site settings"
           className={[
-            "absolute right-0 top-full mt-2 glass rounded-lg p-4",
-            "w-[min(290px,calc(100vw-1.5rem))]",
-            "flex flex-col gap-4 shadow-2xl",
-            // Ensure menu stays inside viewport on very narrow phones
+            "absolute right-0 top-full mt-2 glass rounded-lg p-3",
+            "w-[min(320px,calc(100vw-1rem))]",
+            "flex flex-col shadow-2xl",
+            // Stays inside viewport on very narrow phones
             "max-h-[calc(100dvh-5.5rem)] overflow-y-auto",
           ].join(" ")}
         >
-          <div className="flex items-center justify-between">
-            <p className="text-caption uppercase tracking-[0.16em] text-muted">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-caption uppercase tracking-[0.18em] text-muted font-semibold">
               Settings
             </p>
             <button
@@ -101,31 +101,48 @@ export function MobileSettingsMenu({ initialTheme, initialScheme, initialLocale 
               onClick={() => setOpen(false)}
               className="w-8 h-8 grid place-items-center rounded-full text-fg hover:bg-[color-mix(in_oklab,var(--color-text)_10%,transparent)] transition-colors"
             >
-              <span aria-hidden className="text-lg leading-none">×</span>
+              <span aria-hidden className="text-xl leading-none">×</span>
             </button>
           </div>
 
-          <section className="flex flex-col gap-2">
-            <p className="text-caption text-muted">Theme</p>
-            <ThemeSwitcher
-              initialTheme={initialTheme}
-              initialScheme={initialScheme}
-            />
-          </section>
+          <Section label="Theme">
+            <div className="flex justify-center">
+              <ThemeSwitcher
+                initialTheme={initialTheme}
+                initialScheme={initialScheme}
+              />
+            </div>
+          </Section>
 
-          <section className="flex flex-col gap-2">
-            <p className="text-caption text-muted">Language</p>
-            <LangSwitcher initialLocale={initialLocale} />
-          </section>
+          <Section label="Language">
+            <div className="flex justify-center">
+              <LangSwitcher initialLocale={initialLocale} />
+            </div>
+          </Section>
 
-          <section className="flex flex-col gap-2">
-            <p className="text-caption text-muted">Sound</p>
-            {/* SoundToggle self-hides on hightech theme — that's fine; the
-                Sound section just collapses to its label in that case. */}
-            <SoundToggle />
-          </section>
+          {/* SoundToggle self-hides on hightech theme. The Section wrapper
+              still renders its label even when empty so the menu layout
+              doesn't jump on theme switch. */}
+          <Section label="Sound">
+            <div className="flex justify-center min-h-[2.5rem] items-center">
+              <SoundToggle />
+            </div>
+          </Section>
         </div>
       )}
     </div>
+  );
+}
+
+/** Tiny section wrapper — small uppercase label + a thin divider above
+ *  (skipped on the first section). Keeps the menu rhythm consistent. */
+function Section({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <section className="flex flex-col gap-2 py-2.5 border-t border-[var(--color-border)] first:border-t-0">
+      <p className="text-caption uppercase tracking-[0.14em] text-muted text-center font-medium">
+        {label}
+      </p>
+      {children}
+    </section>
   );
 }
