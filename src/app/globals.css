@@ -625,8 +625,16 @@ h1, h2, h3, .text-display, .text-h1, .text-h2 {
   0%, 100% { opacity: 0.45; }
   50%      { opacity: 0.85; }
 }
+/* Thor — single forked-lightning bolt strike-and-decay (StormFX bolts) */
+@keyframes storm-bolt-fade {
+  0%   { opacity: 1; }
+  18%  { opacity: 1; }
+  35%  { opacity: 0.85; }
+  100% { opacity: 0; }
+}
 @media (prefers-reduced-motion: reduce) {
-  [style*="storm-engaged-pulse"] { animation: none !important; }
+  [style*="storm-engaged-pulse"],
+  [style*="storm-bolt-fade"] { animation: none !important; }
 }
 
 /* Chatbot thinking dots */
