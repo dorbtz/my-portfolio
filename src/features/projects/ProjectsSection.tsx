@@ -8,7 +8,8 @@ import { ProjectCard } from "./ProjectCard";
 
 const PS_EYEBROW = "Work";
 const PS_TITLE = "Selected projects.";
-const PS_BODY_PREFIX = "A curated slice of what I've been shipping. The full index lives at";
+const PS_BODY_PREFIX = "A curated slice of what I've been shipping. The full index lives";
+const PS_CTA = "here";
 
 export async function ProjectsSection() {
   const [{ locale }, projects] = await Promise.all([readThemeState(), getFeaturedProjects(6)]);
@@ -16,6 +17,7 @@ export async function ProjectsSection() {
     { en: PS_EYEBROW, contentType: "projects-section.eyebrow" },
     { en: PS_TITLE, contentType: "projects-section.title" },
     { en: PS_BODY_PREFIX, contentType: "projects-section.body" },
+    { en: PS_CTA, contentType: "projects-section.cta" },
   ]);
   return (
     <Section id="projects" ariaLabel="Selected projects">
@@ -26,10 +28,14 @@ export async function ProjectsSection() {
             <h2 className="text-h1 font-bold mt-2">{t(PS_TITLE)}</h2>
             <p className="text-body text-muted mt-3 max-w-2xl">
               {t(PS_BODY_PREFIX)}{" "}
-              <Link href="/projects" className="text-accent underline underline-offset-4">
-                /projects
+              <Link
+                href="/projects"
+                aria-label={t(PS_CTA)}
+                className="inline-flex items-center gap-1 rounded-pill px-3 py-1 align-middle text-body-sm font-semibold no-underline bg-[var(--color-accent)] text-[var(--color-accent-contrast)] shadow-sm hover:brightness-110 transition-[filter,transform] duration-snap ease-snap active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]"
+              >
+                {t(PS_CTA)}
+                <span aria-hidden>→</span>
               </Link>
-              .
             </p>
           </div>
         </div>

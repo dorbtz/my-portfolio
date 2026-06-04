@@ -15,6 +15,7 @@ export type ProjectInput = {
   stack: string[];
   tags: string[];
   cover_url: string;
+  gallery: string[];
   live_url: string;
   repo_url: string;
   status: "draft" | "in-progress" | "shipped" | "archived";
@@ -44,6 +45,7 @@ function sanitize(input: ProjectInput): ProjectInput {
     stack: input.stack.map((s) => s.trim()).filter(Boolean),
     tags: input.tags.map((s) => s.trim()).filter(Boolean),
     cover_url: input.cover_url.trim(),
+    gallery: input.gallery.map((s) => s.trim()).filter(Boolean),
     live_url: input.live_url.trim(),
     repo_url: input.repo_url.trim(),
     priority: Number.isFinite(input.priority) ? Math.max(0, Math.min(100, input.priority)) : 0,
@@ -71,6 +73,7 @@ export async function saveProject(input: ProjectInput, isNew: boolean): Promise<
     stack: clean.stack,
     tags: clean.tags,
     cover_url: clean.cover_url || null,
+    gallery: clean.gallery,
     live_url: clean.live_url || null,
     repo_url: clean.repo_url || null,
     status: clean.status,
@@ -97,10 +100,10 @@ export async function saveProject(input: ProjectInput, isNew: boolean): Promise<
 }
 
 /**
- * Upload a project cover image to the public `project-covers` bucket and
- * return its public URL. The admin's session client satisfies the bucket's
- * `is_admin()` INSERT policy. The returned URL is stored on the project row
- * (cover_url) when the editor form is saved.
+ * Upload a project image (cover OR a gallery screenshot) to the public
+ * `project-covers` bucket and return its public URL. The admin's session
+ * client satisfies the bucket's `is_admin()` INSERT policy. The returned URL
+ * is stored on the project row (cover_url / gallery[]) when the form is saved.
  */
 export async function uploadProjectCover(formData: FormData): Promise<UploadResult> {
   await requireAdmin();
@@ -119,7 +122,10 @@ export async function uploadProjectCover(formData: FormData): Promise<UploadResu
   const slugRaw = String(formData.get("slug") ?? "").trim().toLowerCase();
   const folder = SLUG_RE.test(slugRaw) ? slugRaw : "unsorted";
   const ext = (file.name.split(".").pop() ?? "").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-  const path = `${folder}/${Date.now()}.${ext}`;
+  // Random suffix avoids collisions when several gallery images upload in the
+  // same millisecond.
+  const rand = Math.random().toString(36).slice(2, 8);
+  const path = `${folder}/${Date.now()}-${rand}.${ext}`;
 
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.storage

@@ -550,6 +550,70 @@ h1, h2, h3, .text-display, .text-h1, .text-h2 {
   text-transform: uppercase;
 }
 
+/* ----- Per-theme COVER IMAGE (.project-cover) -----
+ * High-Tech: full-bleed cover (the Tailwind negative margins on the element).
+ * Luffy + Thor: the card has a decorative top banner (::before) and extra
+ *   padding-top, so the full-bleed image would slide UNDER that banner. Drop
+ *   the bleed and frame the image so it sits cleanly below the banner, styled
+ *   to match each theme. */
+
+/* Luffy: framed "mugshot" photo on the wanted poster — manga-ink border,
+   stamped offset shadow, lightly aged tint. */
+[data-theme="luffy"] .project-cover {
+  margin: 0 0 1rem !important; /* cancel -mx/-mt bleed; sit below the WANTED bar */
+  border: 3px solid color-mix(in oklab, var(--color-text) 88%, transparent);
+  border-radius: 2px;
+  box-shadow: 3px 3px 0 0 color-mix(in oklab, var(--color-text) 55%, transparent);
+  filter: sepia(0.22) saturate(0.92) contrast(1.03);
+}
+
+/* Thor: classified dossier photo — thin gold frame, cool desaturation. */
+[data-theme="thor"] .project-cover {
+  margin: 0 0 1.1rem !important; /* cancel bleed; sit below the ARCHIVE header */
+  border: 1px solid color-mix(in oklab, var(--color-accent) 42%, transparent);
+  border-radius: calc(var(--radius-md) - 6px);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--color-accent) 12%, transparent),
+    0 8px 24px -14px rgba(0, 0, 0, 0.6);
+  filter: saturate(0.85) contrast(1.05) brightness(0.97);
+}
+
+/* ----- Per-theme DETAIL-PAGE GALLERY (.gallery-shot) -----
+ * High-Tech: clean glass tiles (the default Tailwind border/rounded).
+ * Luffy: wanted-poster snapshots — manga-ink border + stamped offset shadow.
+ * Thor:  dossier evidence photos — gold frame + cool desaturation. */
+[data-theme="luffy"] .gallery-shot {
+  border: 3px solid color-mix(in oklab, var(--color-text) 88%, transparent);
+  border-radius: 2px;
+  box-shadow: 3px 3px 0 0 color-mix(in oklab, var(--color-text) 50%, transparent);
+  filter: sepia(0.16) saturate(0.95) contrast(1.02);
+  transition: transform var(--duration-snap) var(--ease-snap),
+    box-shadow var(--duration-snap) var(--ease-snap), filter var(--duration-snap) var(--ease-snap);
+}
+[data-theme="luffy"] .gallery-shot:hover {
+  transform: translate(-2px, -3px) rotate(-0.3deg);
+  box-shadow: 6px 6px 0 0 color-mix(in oklab, var(--color-text) 60%, transparent);
+  filter: sepia(0) saturate(1) contrast(1);
+}
+[data-theme="thor"] .gallery-shot {
+  border: 1px solid color-mix(in oklab, var(--color-accent) 42%, transparent);
+  border-radius: calc(var(--radius-md) - 4px);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--color-accent) 12%, transparent),
+    0 8px 24px -14px rgba(0, 0, 0, 0.6);
+  filter: saturate(0.86) contrast(1.04) brightness(0.98);
+  transition: border-color var(--duration-snap) var(--ease-snap),
+    box-shadow var(--duration-snap) var(--ease-snap), filter var(--duration-snap) var(--ease-snap);
+}
+[data-theme="thor"] .gallery-shot:hover {
+  border-color: color-mix(in oklab, var(--color-accent) 65%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--color-accent) 22%, transparent),
+    0 0 28px -6px color-mix(in oklab, var(--color-accent) 35%, transparent),
+    0 8px 24px -14px rgba(0, 0, 0, 0.6);
+  filter: saturate(1) contrast(1) brightness(1);
+}
+
 /* Semantic helpers (small, used everywhere) */
 .bg-canvas { background-color: var(--color-bg); }
 .bg-surface { background-color: var(--color-bg-elevated); }

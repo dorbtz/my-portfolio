@@ -18,6 +18,7 @@ type ProjectRow = {
   stack: string[] | null;
   tags: string[] | null;
   cover_url: string | null;
+  gallery: string[] | null;
   live_url: string | null;
   repo_url: string | null;
   status: string | null;
@@ -42,6 +43,7 @@ function mapProjectRow(row: ProjectRow): Project {
     stack: row.stack ?? [],
     tags: row.tags ?? [],
     coverUrl: row.cover_url ?? null,
+    gallery: row.gallery ?? [],
     liveUrl: row.live_url ?? null,
     repoUrl: row.repo_url ?? null,
     status: asStatus(row.status),
@@ -52,7 +54,7 @@ function mapProjectRow(row: ProjectRow): Project {
 }
 
 const PROJECT_COLUMNS =
-  "slug,title,subtitle,problem,description,role,stack,tags,cover_url,live_url,repo_url,status,featured,priority,sort_order";
+  "slug,title,subtitle,problem,description,role,stack,tags,cover_url,gallery,live_url,repo_url,status,featured,priority,sort_order";
 
 export async function getAllProjects(): Promise<Project[]> {
   if (!hasSupabaseEnv()) return [...PROJECT_FIXTURES];

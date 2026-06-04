@@ -17,6 +17,8 @@ export type Project = {
   stack: string[];
   tags: string[];
   coverUrl: string | null;
+  /** Showcase screenshots shown on the detail page (DB column: gallery). */
+  gallery: string[];
   liveUrl: string | null;
   repoUrl: string | null;
   status: ProjectStatus;

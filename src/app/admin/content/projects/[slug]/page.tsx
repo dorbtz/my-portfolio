@@ -18,6 +18,7 @@ type ProjectRow = {
   stack: string[] | null;
   tags: string[] | null;
   cover_url: string | null;
+  gallery: string[] | null;
   live_url: string | null;
   repo_url: string | null;
   status: string;
@@ -36,6 +37,7 @@ const EMPTY: ProjectRow = {
   stack: [],
   tags: [],
   cover_url: "",
+  gallery: [],
   live_url: "",
   repo_url: "",
   status: "draft",
@@ -59,7 +61,7 @@ export default async function ProjectEditPage({
     const { data, error } = await supabase
       .from("projects")
       .select(
-        "slug,title,subtitle,problem,description,role,stack,tags,cover_url,live_url,repo_url,status,featured,priority,sort_order"
+        "slug,title,subtitle,problem,description,role,stack,tags,cover_url,gallery,live_url,repo_url,status,featured,priority,sort_order"
       )
       .eq("slug", slug)
       .maybeSingle();
