@@ -14,6 +14,7 @@ export type ProjectInput = {
   role: string;
   stack: string[];
   tags: string[];
+  cover_url: string;
   live_url: string;
   repo_url: string;
   status: "draft" | "in-progress" | "shipped" | "archived";
@@ -23,8 +24,13 @@ export type ProjectInput = {
 };
 
 export type SaveResult = { ok: true; slug: string } | { ok: false; error: string };
+export type UploadResult = { ok: true; url: string } | { ok: false; error: string };
 
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*[a-z0-9]$/;
+
+const COVER_BUCKET = "project-covers";
+const COVER_MAX_BYTES = 5 * 1024 * 1024; // 5 MB
+const COVER_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"];
 
 function sanitize(input: ProjectInput): ProjectInput {
   return {
@@ -37,6 +43,7 @@ function sanitize(input: ProjectInput): ProjectInput {
     role: input.role.trim(),
     stack: input.stack.map((s) => s.trim()).filter(Boolean),
     tags: input.tags.map((s) => s.trim()).filter(Boolean),
+    cover_url: input.cover_url.trim(),
     live_url: input.live_url.trim(),
     repo_url: input.repo_url.trim(),
     priority: Number.isFinite(input.priority) ? Math.max(0, Math.min(100, input.priority)) : 0,
@@ -63,6 +70,7 @@ export async function saveProject(input: ProjectInput, isNew: boolean): Promise<
     role: clean.role || null,
     stack: clean.stack,
     tags: clean.tags,
+    cover_url: clean.cover_url || null,
     live_url: clean.live_url || null,
     repo_url: clean.repo_url || null,
     status: clean.status,
@@ -86,6 +94,41 @@ export async function saveProject(input: ProjectInput, isNew: boolean): Promise<
   revalidatePath(`/admin/content/projects/${clean.slug}`);
   revalidatePath("/admin");
   return { ok: true, slug: clean.slug };
+}
+
+/**
+ * Upload a project cover image to the public `project-covers` bucket and
+ * return its public URL. The admin's session client satisfies the bucket's
+ * `is_admin()` INSERT policy. The returned URL is stored on the project row
+ * (cover_url) when the editor form is saved.
+ */
+export async function uploadProjectCover(formData: FormData): Promise<UploadResult> {
+  await requireAdmin();
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, error: "No file selected." };
+  }
+  if (!COVER_TYPES.includes(file.type)) {
+    return { ok: false, error: "Use a JPG, PNG, WebP, AVIF, or GIF image." };
+  }
+  if (file.size > COVER_MAX_BYTES) {
+    return { ok: false, error: "Image must be under 5 MB." };
+  }
+
+  const slugRaw = String(formData.get("slug") ?? "").trim().toLowerCase();
+  const folder = SLUG_RE.test(slugRaw) ? slugRaw : "unsorted";
+  const ext = (file.name.split(".").pop() ?? "").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+  const path = `${folder}/${Date.now()}.${ext}`;
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.storage
+    .from(COVER_BUCKET)
+    .upload(path, file, { contentType: file.type, upsert: true });
+  if (error) return { ok: false, error: error.message };
+
+  const { data } = supabase.storage.from(COVER_BUCKET).getPublicUrl(path);
+  return { ok: true, url: data.publicUrl };
 }
 
 export async function deleteProject(slug: string): Promise<{ ok: boolean; error?: string }> {

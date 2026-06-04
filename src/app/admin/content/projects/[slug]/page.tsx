@@ -4,7 +4,7 @@ import { requireAdmin } from "@/shared/lib/auth/server";
 import { createSupabaseServerClient } from "@/shared/lib/supabase/server";
 import { GlassCard } from "@/shared/ui/GlassCard";
 import { ProjectEditor } from "./ProjectEditor";
-import { saveProject, deleteProject } from "./actions";
+import { saveProject, deleteProject, uploadProjectCover } from "./actions";
 
 export const metadata = { title: "Edit project" };
 
@@ -17,6 +17,7 @@ type ProjectRow = {
   role: string | null;
   stack: string[] | null;
   tags: string[] | null;
+  cover_url: string | null;
   live_url: string | null;
   repo_url: string | null;
   status: string;
@@ -34,6 +35,7 @@ const EMPTY: ProjectRow = {
   role: "",
   stack: [],
   tags: [],
+  cover_url: "",
   live_url: "",
   repo_url: "",
   status: "draft",
@@ -57,7 +59,7 @@ export default async function ProjectEditPage({
     const { data, error } = await supabase
       .from("projects")
       .select(
-        "slug,title,subtitle,problem,description,role,stack,tags,live_url,repo_url,status,featured,priority,sort_order"
+        "slug,title,subtitle,problem,description,role,stack,tags,cover_url,live_url,repo_url,status,featured,priority,sort_order"
       )
       .eq("slug", slug)
       .maybeSingle();
@@ -84,6 +86,7 @@ export default async function ProjectEditPage({
           isNew={isNew}
           saveAction={saveProject}
           deleteAction={deleteProject}
+          uploadAction={uploadProjectCover}
         />
       </GlassCard>
     </div>

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useTransition, type FormEvent } from "react";
+import { useRef, useState, useTransition, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { GlassButton } from "@/shared/ui/GlassButton";
-import type { ProjectInput, SaveResult } from "./actions";
+import type { ProjectInput, SaveResult, UploadResult } from "./actions";
 
 type InitialRow = {
   slug: string;
@@ -14,6 +14,7 @@ type InitialRow = {
   role: string | null;
   stack: string[] | null;
   tags: string[] | null;
+  cover_url: string | null;
   live_url: string | null;
   repo_url: string | null;
   status: string;
@@ -27,11 +28,12 @@ type Props = {
   isNew: boolean;
   saveAction: (input: ProjectInput, isNew: boolean) => Promise<SaveResult>;
   deleteAction: (slug: string) => Promise<{ ok: boolean; error?: string }>;
+  uploadAction: (formData: FormData) => Promise<UploadResult>;
 };
 
 const STATUS_VALUES: ProjectInput["status"][] = ["draft", "in-progress", "shipped", "archived"];
 
-export function ProjectEditor({ initial, isNew, saveAction, deleteAction }: Props) {
+export function ProjectEditor({ initial, isNew, saveAction, deleteAction, uploadAction }: Props) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +47,10 @@ export function ProjectEditor({ initial, isNew, saveAction, deleteAction }: Prop
   const [role, setRole] = useState(initial.role ?? "");
   const [stackText, setStackText] = useState((initial.stack ?? []).join(", "));
   const [tagsText, setTagsText] = useState((initial.tags ?? []).join(", "));
+  const [coverUrl, setCoverUrl] = useState(initial.cover_url ?? "");
+  const [uploading, setUploading] = useState(false);
+  const [coverError, setCoverError] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [liveUrl, setLiveUrl] = useState(initial.live_url ?? "");
   const [repoUrl, setRepoUrl] = useState(initial.repo_url ?? "");
   const [status, setStatus] = useState<ProjectInput["status"]>(
@@ -69,6 +75,7 @@ export function ProjectEditor({ initial, isNew, saveAction, deleteAction }: Prop
       role,
       stack: stackText.split(",").map((s) => s.trim()).filter(Boolean),
       tags: tagsText.split(",").map((s) => s.trim()).filter(Boolean),
+      cover_url: coverUrl,
       live_url: liveUrl,
       repo_url: repoUrl,
       status,
@@ -99,6 +106,35 @@ export function ProjectEditor({ initial, isNew, saveAction, deleteAction }: Prop
       const r = await deleteAction(slug);
       if (!r.ok) setError(r.error ?? "Failed to delete.");
     });
+  }
+
+  async function onCoverChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCoverError(null);
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.set("file", file);
+      fd.set("slug", slug);
+      const r = await uploadAction(fd);
+      if (!r.ok) {
+        setCoverError(r.error);
+        return;
+      }
+      setCoverUrl(r.url);
+    } catch {
+      setCoverError("Upload failed. Try again.");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  function onRemoveCover() {
+    setCoverUrl("");
+    setCoverError(null);
+    if (fileRef.current) fileRef.current.value = "";
   }
 
   const field =
@@ -140,6 +176,52 @@ export function ProjectEditor({ initial, isNew, saveAction, deleteAction }: Prop
           placeholder="One-sentence hook"
           className={field}
         />
+      </Field>
+
+      <Field label="Cover image">
+        <div className="flex flex-wrap items-start gap-4">
+          {coverUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element -- admin preview only
+            <img
+              src={coverUrl}
+              alt="Cover preview"
+              className="w-44 h-[6.1875rem] object-cover rounded-md border border-line bg-[color-mix(in_oklab,var(--color-text)_6%,transparent)]"
+            />
+          ) : (
+            <div className="w-44 h-[6.1875rem] rounded-md border border-dashed border-line grid place-items-center text-caption text-muted">
+              No image
+            </div>
+          )}
+          <div className="flex flex-col gap-2">
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/avif,image/gif"
+              onChange={onCoverChange}
+              disabled={pending || uploading}
+              className="text-body-sm file:mr-3 file:rounded-md file:border-0 file:bg-[var(--color-accent)] file:text-[var(--color-accent-contrast)] file:px-3 file:py-1.5 file:text-body-sm file:font-medium file:cursor-pointer disabled:opacity-50"
+            />
+            {uploading && <span className="text-caption text-muted">Uploading…</span>}
+            {coverError && (
+              <span role="alert" className="text-caption text-[var(--color-accent)]">
+                {coverError}
+              </span>
+            )}
+            {coverUrl && !uploading && (
+              <button
+                type="button"
+                onClick={onRemoveCover}
+                disabled={pending}
+                className="self-start text-caption text-muted hover:text-accent underline underline-offset-2 transition-colors"
+              >
+                Remove image
+              </button>
+            )}
+            <span className="text-caption text-muted">
+              Shown on the project card. JPG/PNG/WebP, ≤5 MB. ~16:9 looks best.
+            </span>
+          </div>
+        </div>
       </Field>
 
       <Field label="Problem">

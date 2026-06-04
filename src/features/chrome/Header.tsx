@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { readThemeState } from "@/shared/lib/theme/ssr";
 import { getChromeStrings } from "@/shared/lib/i18n/chrome";
+import { ThemeSwitcher } from "@/shared/ui/ThemeSwitcher";
+import { LangSwitcher } from "@/shared/ui/LangSwitcher";
+import { SoundToggle } from "@/shared/ui/SoundToggle";
 
 export async function Header() {
-  const { locale } = await readThemeState();
+  const { theme, scheme, locale } = await readThemeState();
   const t = getChromeStrings(locale);
 
   const nav = [
@@ -47,9 +50,23 @@ export async function Header() {
             </Link>
           ))}
         </nav>
-        {/* Right-side spacer keeps the centered nav truly centered on desktop.
-            Hidden on mobile so the nav can use the full row width. */}
-        <div aria-hidden className="hidden sm:block justify-self-end" />
+        {/* Right slot. On large screens it holds the site controls inline so
+            they sit IN the header bar instead of floating on top of it (the
+            old fixed top-right cluster overlapped the header on desktop).
+            Below lg the slot is an empty spacer that keeps the centered nav
+            balanced — the collapsed ⚙ settings menu (FloatingControls) takes
+            over there. The cluster is wide (~400px) so it only fits inline at
+            lg+; sm–lg falls back to the ⚙ menu. */}
+        <div
+          // ltr so EN/עב buttons keep their order in HE mode
+          dir="ltr"
+          className="hidden lg:flex items-center gap-2 justify-self-end"
+          aria-label={t.a11y.siteControls}
+        >
+          <ThemeSwitcher initialTheme={theme} initialScheme={scheme} />
+          <LangSwitcher initialLocale={locale} />
+          <SoundToggle />
+        </div>
       </div>
     </header>
   );
