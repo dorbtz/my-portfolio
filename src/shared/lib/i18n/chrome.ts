@@ -42,6 +42,7 @@ type Strings = {
     whatItDoes: string;
     stack: string;
     tags: string;
+    gallery: string;
   };
   a11y: {
     primaryNav: string;
@@ -83,6 +84,7 @@ const EN: Strings = {
     whatItDoes: "What it does",
     stack: "Stack",
     tags: "Tags",
+    gallery: "Gallery",
   },
   a11y: {
     primaryNav: "Primary",
@@ -136,6 +138,7 @@ const HE: Strings = {
     // "טכנולוגיות" — what Israeli job posts + GitHub README he-IL use for tech stack
     stack: "טכנולוגיות",
     tags: "תגיות",
+    gallery: "גלריה",
   },
   a11y: {
     primaryNav: "ניווט ראשי",

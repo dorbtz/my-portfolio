@@ -15,6 +15,7 @@ type InitialRow = {
   stack: string[] | null;
   tags: string[] | null;
   cover_url: string | null;
+  gallery: string[] | null;
   live_url: string | null;
   repo_url: string | null;
   status: string;
@@ -51,6 +52,10 @@ export function ProjectEditor({ initial, isNew, saveAction, deleteAction, upload
   const [uploading, setUploading] = useState(false);
   const [coverError, setCoverError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [gallery, setGallery] = useState<string[]>(initial.gallery ?? []);
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  const [galleryError, setGalleryError] = useState<string | null>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
   const [liveUrl, setLiveUrl] = useState(initial.live_url ?? "");
   const [repoUrl, setRepoUrl] = useState(initial.repo_url ?? "");
   const [status, setStatus] = useState<ProjectInput["status"]>(
@@ -76,6 +81,7 @@ export function ProjectEditor({ initial, isNew, saveAction, deleteAction, upload
       stack: stackText.split(",").map((s) => s.trim()).filter(Boolean),
       tags: tagsText.split(",").map((s) => s.trim()).filter(Boolean),
       cover_url: coverUrl,
+      gallery,
       live_url: liveUrl,
       repo_url: repoUrl,
       status,
@@ -135,6 +141,47 @@ export function ProjectEditor({ initial, isNew, saveAction, deleteAction, upload
     setCoverUrl("");
     setCoverError(null);
     if (fileRef.current) fileRef.current.value = "";
+  }
+
+  async function onGalleryAdd(e: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+    setGalleryError(null);
+    setGalleryUploading(true);
+    try {
+      const added: string[] = [];
+      for (const file of files) {
+        const fd = new FormData();
+        fd.set("file", file);
+        fd.set("slug", slug);
+        const r = await uploadAction(fd);
+        if (!r.ok) {
+          setGalleryError(r.error);
+          break;
+        }
+        added.push(r.url);
+      }
+      if (added.length) setGallery((g) => [...g, ...added]);
+    } catch {
+      setGalleryError("Upload failed. Try again.");
+    } finally {
+      setGalleryUploading(false);
+      if (galleryRef.current) galleryRef.current.value = "";
+    }
+  }
+
+  function removeGalleryAt(i: number) {
+    setGallery((g) => g.filter((_, idx) => idx !== i));
+  }
+
+  function moveGallery(i: number, dir: -1 | 1) {
+    setGallery((g) => {
+      const j = i + dir;
+      if (j < 0 || j >= g.length) return g;
+      const next = [...g];
+      [next[i], next[j]] = [next[j], next[i]];
+      return next;
+    });
   }
 
   const field =
@@ -219,6 +266,76 @@ export function ProjectEditor({ initial, isNew, saveAction, deleteAction, upload
             )}
             <span className="text-caption text-muted">
               Shown on the project card. JPG/PNG/WebP, ≤5 MB. ~16:9 looks best.
+            </span>
+          </div>
+        </div>
+      </Field>
+
+      <Field label="Gallery (screenshots)">
+        <div className="flex flex-col gap-3">
+          {gallery.length > 0 && (
+            <ul className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {gallery.map((url, i) => (
+                <li
+                  key={url}
+                  className="relative group rounded-md overflow-hidden border border-line bg-[color-mix(in_oklab,var(--color-text)_6%,transparent)]"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element -- admin preview only */}
+                  <img src={url} alt={`Screenshot ${i + 1}`} className="w-full aspect-[16/10] object-cover" />
+                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 p-1.5 bg-[color-mix(in_oklab,#000_55%,transparent)]">
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        aria-label="Move left"
+                        disabled={pending || i === 0}
+                        onClick={() => moveGallery(i, -1)}
+                        className="w-7 h-7 grid place-items-center rounded bg-white/15 text-white hover:bg-white/30 disabled:opacity-30 transition-colors"
+                      >
+                        ◀
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Move right"
+                        disabled={pending || i === gallery.length - 1}
+                        onClick={() => moveGallery(i, 1)}
+                        className="w-7 h-7 grid place-items-center rounded bg-white/15 text-white hover:bg-white/30 disabled:opacity-30 transition-colors"
+                      >
+                        ▶
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      aria-label="Remove image"
+                      disabled={pending}
+                      onClick={() => removeGalleryAt(i)}
+                      className="w-7 h-7 grid place-items-center rounded bg-red-500/80 text-white hover:bg-red-500 transition-colors"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="flex flex-col gap-2">
+            <input
+              ref={galleryRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/avif,image/gif"
+              multiple
+              onChange={onGalleryAdd}
+              disabled={pending || galleryUploading}
+              className="text-body-sm file:mr-3 file:rounded-md file:border-0 file:bg-[var(--color-accent)] file:text-[var(--color-accent-contrast)] file:px-3 file:py-1.5 file:text-body-sm file:font-medium file:cursor-pointer disabled:opacity-50"
+            />
+            {galleryUploading && <span className="text-caption text-muted">Uploading…</span>}
+            {galleryError && (
+              <span role="alert" className="text-caption text-[var(--color-accent)]">
+                {galleryError}
+              </span>
+            )}
+            <span className="text-caption text-muted">
+              Showcase screenshots shown on the project page (separate from the cover). Add
+              multiple at once; drag order with ◀ ▶. JPG/PNG/WebP, ≤5 MB each.
             </span>
           </div>
         </div>

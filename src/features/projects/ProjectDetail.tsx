@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Project } from "@/types/project";
 import { GlassCard } from "@/shared/ui/GlassCard";
 import { GlassButton } from "@/shared/ui/GlassButton";
@@ -108,6 +109,35 @@ export async function ProjectDetail({ project }: { project: Project }) {
           </GlassCard>
         </AppleSpring>
       </div>
+
+      {project.gallery.length > 0 && (
+        <AppleSpring kind="fade-up" delay={120}>
+          <div className="mt-12">
+            <h2 className="text-h3 font-semibold mb-4">{chrome.common.gallery}</h2>
+            <ul className="project-gallery grid gap-4 sm:grid-cols-2">
+              {project.gallery.map((src, i) => (
+                <li key={src}>
+                  <a
+                    href={src}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    aria-label={`${project.title} — screenshot ${i + 1} (open full size)`}
+                    className="gallery-shot group relative block aspect-[16/10] overflow-hidden rounded-lg border border-line bg-[color-mix(in_oklab,var(--color-text)_5%,transparent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+                  >
+                    <Image
+                      src={src}
+                      alt={`${project.title} screenshot ${i + 1}`}
+                      fill
+                      sizes="(max-width: 640px) 100vw, 50vw"
+                      className="object-cover transition-transform duration-snap ease-snap group-hover:scale-[1.02]"
+                    />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </AppleSpring>
+      )}
     </Section>
   );
 }
