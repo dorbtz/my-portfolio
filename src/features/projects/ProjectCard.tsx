@@ -5,7 +5,10 @@ import { GlassCard } from "@/shared/ui/GlassCard";
 import { readThemeState } from "@/shared/lib/theme/ssr";
 import { getChromeStrings } from "@/shared/lib/i18n/chrome";
 import { localize } from "@/shared/lib/i18n/localize";
-import { ProjectGlyph } from "./ProjectGlyph";
+
+/** Permanent fallback cover for projects without their own image
+ *  (e.g. "coming soon" placeholders). Lives in /public. */
+const PLACEHOLDER_COVER = "/coming_soon.png";
 
 export async function ProjectCard({ project }: { project: Project }) {
   const { locale } = await readThemeState();
@@ -22,29 +25,25 @@ export async function ProjectCard({ project }: { project: Project }) {
     <Link
       href={`/projects/${project.slug}`}
       aria-label={`${project.title} — ${project.tagline}`}
-      className="group block focus-visible:outline-none rounded-lg"
+      className="group block h-full focus-visible:outline-none rounded-lg"
     >
       <GlassCard
         padding={6}
-        className="project-card h-full overflow-hidden transition-transform duration-snap ease-snap group-hover:-translate-y-0.5 relative"
+        className="project-card h-full flex flex-col overflow-hidden transition-transform duration-snap ease-snap group-hover:-translate-y-0.5 relative"
       >
-        {/* Per-theme glyph — reactive client component so the icon swaps
-            live when the user flips the floating theme switcher (the
-            Server-Component cookie read used previously was stale until
-            the next navigation). Renders nothing when a cover image exists. */}
-        <ProjectGlyph hasCover={Boolean(project.coverUrl)} />
-        {project.coverUrl && (
-          // Bleed the cover to the card edges (cancel GlassCard's p-6/sm:p-7).
-          <div className="-mx-6 -mt-6 sm:-mx-7 sm:-mt-7 mb-5 relative aspect-[16/9] overflow-hidden bg-[color-mix(in_oklab,var(--color-text)_6%,transparent)]">
-            <Image
-              src={project.coverUrl}
-              alt=""
-              fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className="object-cover transition-transform duration-snap ease-snap group-hover:scale-[1.03]"
-            />
-          </div>
-        )}
+        {/* Cover image — every card shows one so all cards share the same
+            shape/height. Falls back to the permanent "coming soon" placeholder
+            when the project has no cover yet. Bleeds to the card edges
+            (cancels GlassCard's p-6/sm:p-7). */}
+        <div className="-mx-6 -mt-6 sm:-mx-7 sm:-mt-7 mb-5 relative aspect-[16/9] overflow-hidden bg-[color-mix(in_oklab,var(--color-text)_6%,transparent)]">
+          <Image
+            src={project.coverUrl || PLACEHOLDER_COVER}
+            alt=""
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover transition-transform duration-snap ease-snap group-hover:scale-[1.03]"
+          />
+        </div>
         <div className="flex items-center justify-between gap-3">
           <p className="text-caption uppercase tracking-wider text-accent">
             {t.status[project.status]}

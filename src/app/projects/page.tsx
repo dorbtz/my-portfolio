@@ -39,7 +39,7 @@ export default async function ProjectsIndex() {
         </AppleSpring>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-4">
           {projects.map((p, i) => (
-            <AppleSpring key={p.slug} kind="fade-up" delay={80 + i * 60}>
+            <AppleSpring key={p.slug} kind="fade-up" delay={80 + i * 60} className="h-full">
               <ProjectCard project={p} />
             </AppleSpring>
           ))}
