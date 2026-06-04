@@ -33,9 +33,11 @@ export async function ProjectCard({ project }: { project: Project }) {
       >
         {/* Cover image — every card shows one so all cards share the same
             shape/height. Falls back to the permanent "coming soon" placeholder
-            when the project has no cover yet. Bleeds to the card edges
-            (cancels GlassCard's p-6/sm:p-7). */}
-        <div className="-mx-6 -mt-6 sm:-mx-7 sm:-mt-7 mb-5 relative aspect-[16/9] overflow-hidden bg-[color-mix(in_oklab,var(--color-text)_6%,transparent)]">
+            when the project has no cover yet. On HighTech it bleeds to the card
+            edges (cancels GlassCard's p-6/sm:p-7); the Luffy / Thor themes
+            override .project-cover in globals.css to sit it BELOW their top
+            banner as a framed photo that matches each theme. */}
+        <div className="project-cover -mx-6 -mt-6 sm:-mx-7 sm:-mt-7 mb-5 relative aspect-[16/9] overflow-hidden bg-[color-mix(in_oklab,var(--color-text)_6%,transparent)]">
           <Image
             src={project.coverUrl || PLACEHOLDER_COVER}
             alt=""
