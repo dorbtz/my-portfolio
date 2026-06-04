@@ -26,7 +26,6 @@ type Strings = {
   footer: {
     status: string;
     admin: string;
-    builtWith: string;
   };
   status: {
     shipped: string;
@@ -68,7 +67,6 @@ const EN: Strings = {
   footer: {
     status: "Status",
     admin: "Admin",
-    builtWith: "Built with Next.js 16, Supabase, Vercel AI Gateway.",
   },
   status: {
     shipped: "Shipped",
@@ -115,7 +113,6 @@ const HE: Strings = {
     status: "סטטוס",
     // "ניהול" not "מנהל" — what Israeli SaaS admin panels use (Monday.com he-IL pattern)
     admin: "ניהול",
-    builtWith: "נבנה עם Next.js 16, Supabase ו-Vercel AI Gateway.",
   },
   status: {
     // "הושק" not "פורסם" — "shipped/launched" in startup parlance; "פורסם" = published (content)

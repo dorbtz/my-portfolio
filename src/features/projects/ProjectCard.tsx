@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Project } from "@/types/project";
 import { GlassCard } from "@/shared/ui/GlassCard";
 import { readThemeState } from "@/shared/lib/theme/ssr";
@@ -30,8 +31,20 @@ export async function ProjectCard({ project }: { project: Project }) {
         {/* Per-theme glyph — reactive client component so the icon swaps
             live when the user flips the floating theme switcher (the
             Server-Component cookie read used previously was stale until
-            the next navigation). */}
+            the next navigation). Renders nothing when a cover image exists. */}
         <ProjectGlyph hasCover={Boolean(project.coverUrl)} />
+        {project.coverUrl && (
+          // Bleed the cover to the card edges (cancel GlassCard's p-6/sm:p-7).
+          <div className="-mx-6 -mt-6 sm:-mx-7 sm:-mt-7 mb-5 relative aspect-[16/9] overflow-hidden bg-[color-mix(in_oklab,var(--color-text)_6%,transparent)]">
+            <Image
+              src={project.coverUrl}
+              alt=""
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover transition-transform duration-snap ease-snap group-hover:scale-[1.03]"
+            />
+          </div>
+        )}
         <div className="flex items-center justify-between gap-3">
           <p className="text-caption uppercase tracking-wider text-accent">
             {t.status[project.status]}
