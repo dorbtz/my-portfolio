@@ -44,6 +44,12 @@ export const metadata: Metadata = {
   openGraph: { type: "website", siteName: "Dor Ben Tzur", locale: "en_US" },
   twitter: { card: "summary_large_image" },
   robots: { index: true, follow: true },
+  // Google AdSense site-ownership verification. Renders
+  // <meta name="google-adsense-account" content="ca-pub-…"> in <head>.
+  // Verification only — no ad script, no auto-placed ads.
+  ...(process.env.NEXT_PUBLIC_ADSENSE_ID
+    ? { other: { "google-adsense-account": process.env.NEXT_PUBLIC_ADSENSE_ID } }
+    : {}),
   icons: {
     icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
     shortcut: "/favicon.svg",
