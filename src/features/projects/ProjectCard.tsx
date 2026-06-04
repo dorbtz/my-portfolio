@@ -1,14 +1,10 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { Project } from "@/types/project";
 import { GlassCard } from "@/shared/ui/GlassCard";
 import { readThemeState } from "@/shared/lib/theme/ssr";
 import { getChromeStrings } from "@/shared/lib/i18n/chrome";
 import { localize } from "@/shared/lib/i18n/localize";
-
-/** Permanent fallback cover for projects without their own image
- *  (e.g. "coming soon" placeholders). Lives in /public. */
-const PLACEHOLDER_COVER = "/coming_soon.png";
+import { ProjectMedia, PLACEHOLDER_COVER } from "./ProjectMedia";
 
 export async function ProjectCard({ project }: { project: Project }) {
   const { locale } = await readThemeState();
@@ -38,12 +34,11 @@ export async function ProjectCard({ project }: { project: Project }) {
             override .project-cover in globals.css to sit it BELOW their top
             banner as a framed photo that matches each theme. */}
         <div className="project-cover -mx-6 -mt-6 sm:-mx-7 sm:-mt-7 mb-5 relative aspect-[16/9] overflow-hidden bg-[color-mix(in_oklab,var(--color-text)_6%,transparent)]">
-          <Image
+          <ProjectMedia
             src={project.coverUrl || PLACEHOLDER_COVER}
             alt=""
-            fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover transition-transform duration-snap ease-snap group-hover:scale-[1.03]"
+            className="transition-transform duration-snap ease-snap group-hover:scale-[1.03]"
           />
         </div>
         <div className="flex items-center justify-between gap-3">

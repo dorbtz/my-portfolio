@@ -2,6 +2,7 @@ import Link from "next/link";
 import { PROFILE } from "@/shared/data/profile";
 import { readThemeState } from "@/shared/lib/theme/ssr";
 import { getChromeStrings } from "@/shared/lib/i18n/chrome";
+import { FooterName } from "./FooterName";
 
 export async function Footer() {
   const year = new Date().getFullYear();
@@ -14,7 +15,7 @@ export async function Footer() {
     <footer dir="ltr" className="w-full border-t border-line mt-16">
       <div className="max-w-[min(1200px,calc(100%-2rem))] mx-auto py-10 grid gap-6 sm:grid-cols-2">
         <div>
-          <p className="font-semibold text-fg">{PROFILE.name}</p>
+          <FooterName name={PROFILE.name} />
           <p className="text-body-sm text-muted mt-1">{PROFILE.headline}</p>
           <p className="text-body-sm text-muted mt-1">{PROFILE.location}</p>
         </div>
@@ -52,13 +53,12 @@ export async function Footer() {
         </div>
       </div>
       <div className="border-t border-line">
-        <div className="max-w-[min(1200px,calc(100%-2rem))] mx-auto py-4 text-caption text-muted flex flex-wrap items-center justify-between gap-2">
+        {/* Extra bottom padding so the fixed "Ask my portfolio" chat bubble
+            (bottom-right) never covers the footer text on small screens. */}
+        <div className="max-w-[min(1200px,calc(100%-2rem))] mx-auto py-4 pb-20 sm:pb-4 text-caption text-muted">
           <span>
             © {year} {PROFILE.name}.
           </span>
-          <Link href="/admin" className="hover:text-accent transition-colors">
-            {t.footer.admin}
-          </Link>
         </div>
       </div>
     </footer>

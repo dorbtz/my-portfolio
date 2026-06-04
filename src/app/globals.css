@@ -614,6 +614,15 @@ h1, h2, h3, .text-display, .text-h1, .text-h2 {
   filter: saturate(1) contrast(1) brightness(1);
 }
 
+/* Lightbox fade (gallery). Honors reduced-motion below. */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [class*="animate-[fade-in"] { animation: none !important; }
+}
+
 /* Semantic helpers (small, used everywhere) */
 .bg-canvas { background-color: var(--color-bg); }
 .bg-surface { background-color: var(--color-bg-elevated); }
