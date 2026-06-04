@@ -8,6 +8,8 @@ import { Section } from "@/shared/ui/Section";
 import { readThemeState } from "@/shared/lib/theme/ssr";
 import { getChromeStrings } from "@/shared/lib/i18n/chrome";
 import { localize } from "@/shared/lib/i18n/localize";
+import { ProjectGallery } from "./ProjectGallery";
+import { PLACEHOLDER_COVER } from "./ProjectMedia";
 
 export async function ProjectDetail({ project }: { project: Project }) {
   const { locale } = await readThemeState();
@@ -19,35 +21,63 @@ export async function ProjectDetail({ project }: { project: Project }) {
     { en: project.writeup, contentType: `project:${project.slug}.writeup` },
   ]);
 
+  const heroSrc = project.coverUrl || PLACEHOLDER_COVER;
+
   return (
     <Section padding={9} ariaLabel={project.title}>
-      <AppleSpring kind="fade-up" trigger="mount">
-        <Link
-          href="/projects"
-          className="inline-flex items-center gap-1 text-body-sm text-muted hover:text-accent transition-colors"
-        >
-          <span aria-hidden>←</span> {chrome.common.allProjects}
-        </Link>
+      {/* Background hero — the cover image fills the banner with a dark scrim
+          so the title/tagline stay legible in every theme + color scheme. */}
+      <AppleSpring kind="fade" trigger="mount">
+        <div className="project-hero relative flex flex-col overflow-hidden rounded-2xl border border-line min-h-[22rem] sm:min-h-[30rem]">
+          <Image
+            src={heroSrc}
+            alt=""
+            fill
+            priority
+            sizes="(max-width: 1024px) 100vw, 1200px"
+            className="object-cover"
+          />
+          <div
+            aria-hidden
+            className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/45 to-black/20"
+          />
 
-        <div className="mt-6">
-          <p className="text-caption uppercase tracking-[0.18em] text-accent">
-            {chrome.status[project.status]}
-          </p>
-          <h1 className="text-display font-bold tracking-tight mt-2">{project.title}</h1>
-          <p className="text-h2 text-muted mt-3 max-w-3xl">{t(project.tagline)}</p>
-        </div>
+          <div className="relative z-10 p-6 sm:p-8">
+            <Link
+              href="/projects"
+              className="inline-flex items-center gap-1 text-body-sm text-white/80 hover:text-white transition-colors"
+            >
+              <span aria-hidden>←</span> {chrome.common.allProjects}
+            </Link>
+          </div>
 
-        <div className="flex flex-wrap items-center gap-3 mt-6">
-          {project.liveUrl && (
-            <a href={project.liveUrl} target="_blank" rel="noreferrer noopener">
-              <GlassButton variant="primary">{chrome.common.visitLive}</GlassButton>
-            </a>
-          )}
-          {project.repoUrl && (
-            <a href={project.repoUrl} target="_blank" rel="noreferrer noopener">
-              <GlassButton variant="ghost">{chrome.common.sourceOnGithub}</GlassButton>
-            </a>
-          )}
+          <div className="relative z-10 mt-auto p-6 sm:p-10 pt-24">
+            <p className="text-caption uppercase tracking-[0.18em] text-accent drop-shadow">
+              {chrome.status[project.status]}
+            </p>
+            <h1 className="text-display font-bold tracking-tight mt-2 text-white drop-shadow-lg">
+              {project.title}
+            </h1>
+            <p className="text-h2 text-white/85 mt-3 max-w-3xl drop-shadow">{t(project.tagline)}</p>
+
+            <div className="flex flex-wrap items-center gap-3 mt-6">
+              {project.liveUrl && (
+                <a href={project.liveUrl} target="_blank" rel="noreferrer noopener">
+                  <GlassButton variant="primary">{chrome.common.visitLive}</GlassButton>
+                </a>
+              )}
+              {project.repoUrl && (
+                <a href={project.repoUrl} target="_blank" rel="noreferrer noopener">
+                  <GlassButton
+                    variant="ghost"
+                    className="!text-white ring-1 ring-inset ring-white/35 hover:!bg-white/10"
+                  >
+                    {chrome.common.sourceOnGithub}
+                  </GlassButton>
+                </a>
+              )}
+            </div>
+          </div>
         </div>
       </AppleSpring>
 
@@ -112,30 +142,11 @@ export async function ProjectDetail({ project }: { project: Project }) {
 
       {project.gallery.length > 0 && (
         <AppleSpring kind="fade-up" delay={120}>
-          <div className="mt-12">
-            <h2 className="text-h3 font-semibold mb-4">{chrome.common.gallery}</h2>
-            <ul className="project-gallery grid gap-4 sm:grid-cols-2">
-              {project.gallery.map((src, i) => (
-                <li key={src}>
-                  <a
-                    href={src}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    aria-label={`${project.title} — screenshot ${i + 1} (open full size)`}
-                    className="gallery-shot group relative block aspect-[16/10] overflow-hidden rounded-lg border border-line bg-[color-mix(in_oklab,var(--color-text)_5%,transparent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
-                  >
-                    <Image
-                      src={src}
-                      alt={`${project.title} screenshot ${i + 1}`}
-                      fill
-                      sizes="(max-width: 640px) 100vw, 50vw"
-                      className="object-cover transition-transform duration-snap ease-snap group-hover:scale-[1.02]"
-                    />
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <ProjectGallery
+            images={project.gallery}
+            title={project.title}
+            heading={chrome.common.gallery}
+          />
         </AppleSpring>
       )}
     </Section>
