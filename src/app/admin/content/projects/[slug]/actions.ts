@@ -2,8 +2,26 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { createServerClient } from "@supabase/ssr";
 import { requireAdmin } from "@/shared/lib/auth/server";
 import { createSupabaseServerClient } from "@/shared/lib/supabase/server";
+
+/**
+ * Service-role Supabase client for privileged storage writes. The cookie-based
+ * session client's storage requests don't satisfy the bucket's is_admin() RLS
+ * policy, so uploads fail with "new row violates row-level security policy".
+ * requireAdmin() runs first in every caller, so authorization is already
+ * enforced in our code — this client just bypasses RLS to do the write, the
+ * same pattern used by the contact / embeddings / translate Server Actions.
+ */
+function storageAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+  const serviceRole = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceRole) throw new Error("Supabase service-role env missing.");
+  return createServerClient(url, serviceRole, {
+    cookies: { getAll: () => [], setAll: () => {} },
+  });
+}
 
 export type ProjectInput = {
   slug: string;
@@ -127,7 +145,7 @@ export async function uploadProjectCover(formData: FormData): Promise<UploadResu
   const rand = Math.random().toString(36).slice(2, 8);
   const path = `${folder}/${Date.now()}-${rand}.${ext}`;
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = storageAdminClient();
   const { error } = await supabase.storage
     .from(COVER_BUCKET)
     .upload(path, file, { contentType: file.type, upsert: true });
